@@ -1,0 +1,4 @@
+# ninja log v5
+0	35	1696241788522598260	build.ninja	146dffeb27ec2d3c
+1	183	1696240305184759414	CMakeFiles/ServerTestTdameros.dir/main.cpp.o	d716f8bdeae71de9
+183	207	1696240305210804834	ServerTestTdameros	e614fbec377fedbd

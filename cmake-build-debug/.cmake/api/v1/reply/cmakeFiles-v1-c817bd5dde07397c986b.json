@@ -150,8 +150,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug",
-		"source" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros"
+		"build" : "/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug",
+		"source" : "/Users/aurelienlevra/CLionProjects/webserv"
 	},
 	"version" : 
 	{

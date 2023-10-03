@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: ServerTestTdameros
+# Project: webserv
 # Configurations: Debug
 # =============================================================================
 
@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = /Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug/
+cmake_ninja_workdir = /Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/
 # =============================================================================
 # Object build statements for EXECUTABLE target ServerTestTdameros
 
@@ -49,14 +49,20 @@ cmake_ninja_workdir = /Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmak
 
 build cmake_object_order_depends_target_ServerTestTdameros: phony || CMakeFiles/ServerTestTdameros.dir
 
-build CMakeFiles/ServerTestTdameros.dir/main.cpp.o: CXX_COMPILER__ServerTestTdameros_unscanned_Debug /Users/aurelienlevra/CLionProjects/ServerTestTdameros/main.cpp || cmake_object_order_depends_target_ServerTestTdameros
+build CMakeFiles/ServerTestTdameros.dir/main.cpp.o: CXX_COMPILER__ServerTestTdameros_unscanned_Debug /Users/aurelienlevra/CLionProjects/webserv/main.cpp || cmake_object_order_depends_target_ServerTestTdameros
   DEP_FILE = CMakeFiles/ServerTestTdameros.dir/main.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/ServerTestTdameros.dir
   OBJECT_FILE_DIR = CMakeFiles/ServerTestTdameros.dir
 
-build CMakeFiles/ServerTestTdameros.dir/Server.cpp.o: CXX_COMPILER__ServerTestTdameros_unscanned_Debug /Users/aurelienlevra/CLionProjects/ServerTestTdameros/Server.cpp || cmake_object_order_depends_target_ServerTestTdameros
+build CMakeFiles/ServerTestTdameros.dir/Server.cpp.o: CXX_COMPILER__ServerTestTdameros_unscanned_Debug /Users/aurelienlevra/CLionProjects/webserv/Server.cpp || cmake_object_order_depends_target_ServerTestTdameros
   DEP_FILE = CMakeFiles/ServerTestTdameros.dir/Server.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/ServerTestTdameros.dir
+  OBJECT_FILE_DIR = CMakeFiles/ServerTestTdameros.dir
+
+build CMakeFiles/ServerTestTdameros.dir/AHttpParser.cpp.o: CXX_COMPILER__ServerTestTdameros_unscanned_Debug /Users/aurelienlevra/CLionProjects/webserv/AHttpParser.cpp || cmake_object_order_depends_target_ServerTestTdameros
+  DEP_FILE = CMakeFiles/ServerTestTdameros.dir/AHttpParser.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/ServerTestTdameros.dir
   OBJECT_FILE_DIR = CMakeFiles/ServerTestTdameros.dir
@@ -69,7 +75,7 @@ build CMakeFiles/ServerTestTdameros.dir/Server.cpp.o: CXX_COMPILER__ServerTestTd
 #############################################
 # Link the executable ServerTestTdameros
 
-build ServerTestTdameros: CXX_EXECUTABLE_LINKER__ServerTestTdameros_Debug CMakeFiles/ServerTestTdameros.dir/main.cpp.o CMakeFiles/ServerTestTdameros.dir/Server.cpp.o
+build ServerTestTdameros: CXX_EXECUTABLE_LINKER__ServerTestTdameros_Debug CMakeFiles/ServerTestTdameros.dir/main.cpp.o CMakeFiles/ServerTestTdameros.dir/Server.cpp.o CMakeFiles/ServerTestTdameros.dir/AHttpParser.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk
   OBJECT_DIR = CMakeFiles/ServerTestTdameros.dir
   POST_BUILD = :
@@ -77,12 +83,49 @@ build ServerTestTdameros: CXX_EXECUTABLE_LINKER__ServerTestTdameros_Debug CMakeF
   TARGET_FILE = ServerTestTdameros
   TARGET_PDB = ServerTestTdameros.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target DEBUG_Parse_request
+
+
+#############################################
+# Order-only phony target for DEBUG_Parse_request
+
+build cmake_object_order_depends_target_DEBUG_Parse_request: phony || CMakeFiles/DEBUG_Parse_request.dir
+
+build CMakeFiles/DEBUG_Parse_request.dir/DEBUG_Parse_request.cpp.o: CXX_COMPILER__DEBUG_Parse_request_unscanned_Debug /Users/aurelienlevra/CLionProjects/webserv/DEBUG_Parse_request.cpp || cmake_object_order_depends_target_DEBUG_Parse_request
+  DEP_FILE = CMakeFiles/DEBUG_Parse_request.dir/DEBUG_Parse_request.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/DEBUG_Parse_request.dir
+  OBJECT_FILE_DIR = CMakeFiles/DEBUG_Parse_request.dir
+
+build CMakeFiles/DEBUG_Parse_request.dir/AHttpParser.cpp.o: CXX_COMPILER__DEBUG_Parse_request_unscanned_Debug /Users/aurelienlevra/CLionProjects/webserv/AHttpParser.cpp || cmake_object_order_depends_target_DEBUG_Parse_request
+  DEP_FILE = CMakeFiles/DEBUG_Parse_request.dir/AHttpParser.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/DEBUG_Parse_request.dir
+  OBJECT_FILE_DIR = CMakeFiles/DEBUG_Parse_request.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target DEBUG_Parse_request
+
+
+#############################################
+# Link the executable DEBUG_Parse_request
+
+build DEBUG_Parse_request: CXX_EXECUTABLE_LINKER__DEBUG_Parse_request_Debug CMakeFiles/DEBUG_Parse_request.dir/DEBUG_Parse_request.cpp.o CMakeFiles/DEBUG_Parse_request.dir/AHttpParser.cpp.o
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk
+  OBJECT_DIR = CMakeFiles/DEBUG_Parse_request.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = DEBUG_Parse_request
+  TARGET_PDB = DEBUG_Parse_request.dbg
+
 
 #############################################
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+  COMMAND = cd /Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -93,7 +136,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake --regenerate-during-build -S/Users/aurelienlevra/CLionProjects/ServerTestTdameros -B/Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug
+  COMMAND = cd /Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake --regenerate-during-build -S/Users/aurelienlevra/CLionProjects/webserv -B/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -109,9 +152,9 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 
 #############################################
-# Folder: /Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug
+# Folder: /Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug
 
-build all: phony ServerTestTdameros
+build all: phony ServerTestTdameros DEBUG_Parse_request
 
 # =============================================================================
 # Built-in targets
@@ -120,14 +163,14 @@ build all: phony ServerTestTdameros
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/UnixPaths.cmake /Users/aurelienlevra/CLionProjects/ServerTestTdameros/CMakeLists.txt CMakeCache.txt CMakeFiles/3.26.4/CMakeCCompiler.cmake CMakeFiles/3.26.4/CMakeCXXCompiler.cmake CMakeFiles/3.26.4/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/UnixPaths.cmake /Users/aurelienlevra/CLionProjects/webserv/CMakeLists.txt CMakeCache.txt CMakeFiles/3.26.4/CMakeCCompiler.cmake CMakeFiles/3.26.4/CMakeCXXCompiler.cmake CMakeFiles/3.26.4/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/UnixPaths.cmake /Users/aurelienlevra/CLionProjects/ServerTestTdameros/CMakeLists.txt CMakeCache.txt CMakeFiles/3.26.4/CMakeCCompiler.cmake CMakeFiles/3.26.4/CMakeCXXCompiler.cmake CMakeFiles/3.26.4/CMakeSystem.cmake: phony
+build /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-C.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Platform/UnixPaths.cmake /Users/aurelienlevra/CLionProjects/webserv/CMakeLists.txt CMakeCache.txt CMakeFiles/3.26.4/CMakeCCompiler.cmake CMakeFiles/3.26.4/CMakeCXXCompiler.cmake CMakeFiles/3.26.4/CMakeSystem.cmake: phony
 
 
 #############################################

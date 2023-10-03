@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug"
+			"value" : "/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -479,7 +479,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -539,7 +539,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros"
+			"value" : "/Users/aurelienlevra/CLionProjects/webserv"
 		},
 		{
 			"name" : "CMAKE_INSTALL_NAME_TOOL",
@@ -819,7 +819,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "ServerTestTdameros"
+			"value" : "webserv"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1102,7 +1102,7 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "ServerTestTdameros_BINARY_DIR",
+			"name" : "webserv_BINARY_DIR",
 			"properties" : 
 			[
 				{
@@ -1111,10 +1111,10 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros/cmake-build-debug"
+			"value" : "/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug"
 		},
 		{
-			"name" : "ServerTestTdameros_IS_TOP_LEVEL",
+			"name" : "webserv_IS_TOP_LEVEL",
 			"properties" : 
 			[
 				{
@@ -1126,7 +1126,7 @@
 			"value" : "ON"
 		},
 		{
-			"name" : "ServerTestTdameros_SOURCE_DIR",
+			"name" : "webserv_SOURCE_DIR",
 			"properties" : 
 			[
 				{
@@ -1135,7 +1135,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/aurelienlevra/CLionProjects/ServerTestTdameros"
+			"value" : "/Users/aurelienlevra/CLionProjects/webserv"
 		}
 	],
 	"kind" : "cache",

@@ -5,17 +5,15 @@
 
 Server::Server(void) {
 	Socket	serverSocket = Socket();
-
 	serverSocket.setReUse(true);
-	serverSocket.binding(AF_INET6, 8000, "::1");
+	serverSocket.binding(8000, "0.0.0.0");
 	serverSocket.listening();
 	_listenerSockets.push_back(serverSocket);
 	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
 
 	serverSocket = Socket();
-
 	serverSocket.setReUse(true);
-	serverSocket.binding(AF_INET6, 5000, "::1");
+	serverSocket.binding(5000, "0.0.0.0");
 	serverSocket.listening();
 	_listenerSockets.push_back(serverSocket);
 	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
@@ -33,9 +31,12 @@ Server &Server::operator=(const Server &other) {
 
 void Server::listen(void) {
 	std::cout << "Start listenning..." << std::endl;
+	for (size_t i = 0; i < _listenerSockets.size(); i++) {
+		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
+	}
 	while (true) {
-		//	TODO: secure
-		poll(_pollFd.data(), _pollFd.size(), -1);
+		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1)
+			throw std::runtime_error("Server listen: poll failed");
 		for (size_t i = 0; i < _pollFd.size(); ++i) {
 			if (_pollFd[i].revents & POLLHUP) {
 				std::cout << "A client socket has been close" << std::endl;
@@ -46,8 +47,9 @@ void Server::listen(void) {
 			}
 			if (_pollFd[i].revents & POLLIN) {
 				if (i  < _listenerSockets.size()) {
-					// TODO : secure
 					int newSocket = accept(_pollFd[i].fd, NULL, NULL);
+					if (newSocket == -1)
+						throw std::runtime_error("Server listen: accept failed");
 					struct pollfd newPoll;
 					newPoll.fd = newSocket;
 					newPoll.events = POLLIN;

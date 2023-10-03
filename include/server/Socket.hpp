@@ -1,8 +1,9 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-#include <arpa/inet.h>
-#include <poll.h>
+# include <string>
+# include <arpa/inet.h>
+# include <poll.h>
 
 class Socket
 {
@@ -13,20 +14,26 @@ class Socket
 
 		Socket &operator=(const Socket &other);
 
-		void	binding(const sa_family_t family, const int port,
-						const char* ip_address);
+		void	binding(const int port, const char* ip_address);
 		void	listening(void);
-		void	closeFd(void);
+		void	closeFD(void);
 
-		int				getFd(void) const;
+		int				getFD(void) const;
+		int 			getPort(void) const;
+		std::string 	getIP(void) const;
 		struct pollfd	getPollFd(const short events) const;
 
 		void	setReUse(const int option);
+		uint32_t	_convertIPToBinary(std::string ip_address);
 
 
 	private:
 		int	_fd;
-		struct sockaddr_in6	_address;
+		struct sockaddr_in _address;
+		std::string	_ip;
+		int			_port;
+
+
 
 };
 

@@ -1,4 +1,0 @@
-/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/CMakeFiles/ServerTestTdameros.dir
-/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/CMakeFiles/DEBUG_Parse_request.dir
-/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/aurelienlevra/CLionProjects/webserv/cmake-build-debug/CMakeFiles/rebuild_cache.dir

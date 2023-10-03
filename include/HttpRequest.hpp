@@ -1,15 +1,15 @@
-#ifndef AHTTPPARSER_HPP
-# define AHTTPPARSER_HPP
+#ifndef HTTPREQUEST_HPP
+# define HTTPREQUEST_HPP
 
 #include <string>
 #include <map>
 
-class AHttpParser {
+class HttpRequest {
 	public:
-		AHttpParser();
-		AHttpParser(const AHttpParser &other);
-		virtual ~AHttpParser();
-		AHttpParser &operator=(const AHttpParser &other);
+		HttpRequest();
+		HttpRequest(const HttpRequest &other);
+		virtual ~HttpRequest();
+		HttpRequest &operator=(const HttpRequest &other);
 		void parse();
 		void setRawRequest(const char *string);
 		void displayRequest();
@@ -18,12 +18,17 @@ class AHttpParser {
 				return "Invalid Request";
 			}
 		};
-		class InvalidPathException : public std::exception {
+		class InvalidPathException : public InvalidRequestException {
 				const char * what() const throw() {
 					return "Invalid path";
 				}
 		};
-		class InvalidVersionException : public std::exception {
+		class InvalidMethodException : public InvalidRequestException {
+				const char * what() const throw() {
+					return "Invalid method (or not supported)";
+				}
+		};
+		class InvalidVersionException : public InvalidRequestException {
 				const char * what() const throw() {
 					return "Invalid version";
 				}
@@ -40,10 +45,11 @@ class AHttpParser {
 		void parseMethod();
 		void parsePath();
 		void parseVersion();
-		void parseHeaders();
-		void processLine(const std::string &line);
+		void parseAllHeaders();
+		void parseHeader(const std::string &line);
 		void display(std::string message);
 		void checkPathValidity(size_t spacePos);
+		void checkDoubleSpaces();
 };
 
 #endif

@@ -1,9 +1,9 @@
-#include "AHttpParser.hpp"
+#include "HttpRequest.hpp"
 
 int main() {
-	AHttpParser parser;
+	HttpRequest myRequest;
 
-	parser.setRawRequest("DELETE /./123/./. HTTP/1.1\r\n"
+	myRequest.setRawRequest("DELETE  /./123/./. HTTP/1.1\r\n"
 	"Host: localhost:8080\r\n"
 	"User-Agent: Mozilla.5/0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0\r\n"
 	"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n"
@@ -13,7 +13,7 @@ int main() {
 	"Upgrade-Insecure-Requests: 1\r\n"
 	"\r\n"
 	"");
-	parser.parse();
-	parser.displayRequest();
+	myRequest.parse();
+	myRequest.displayRequest();
 	return 0;
 }

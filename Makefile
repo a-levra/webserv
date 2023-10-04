@@ -58,3 +58,11 @@ fclean: clean
 .PHONY: re
 re:				fclean
 				$(MAKE) all
+
+.PHONY: build_image
+build_image: Dockerfile
+	docker build -t webserv .
+
+.PHONY: run_container
+run_container:
+	docker run -p 8000:8000 -p 5000:5000 -v .:/app -it webserv

@@ -1,9 +1,14 @@
 #include "server/Server.hpp"
 
+#include "server/parser/ConfigParser.hpp"
+
 int main(void)
 {
-	Server	webserv = Server();
+//	Server	webserv = Server();
+//
+//	webserv.listen();
+	ConfigParser test;
 
-	webserv.listen();
+	test.parseConfigFile("webserv.conf");
 	return (0);
 }

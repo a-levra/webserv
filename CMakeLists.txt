@@ -4,14 +4,20 @@ project(42_webserv)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include)
+include_directories(include/config)
 include_directories(include/server)
-include_directories(include/server/parser)
 
 add_executable(42_webserv
-        include/server/parser/ConfigParser.hpp
+        include/config/ConfigContext.hpp
+        include/config/ConfigLexer.hpp
+        include/config/ConfigParser.hpp
         include/server/Server.hpp
         include/server/Socket.hpp
-        src/server/parser/ConfigParser.cpp
+        src/config/ConfigContext.cpp
+        src/config/ConfigLexer.cpp
+        src/config/ConfigParser.cpp
         src/server/Server.cpp
         src/server/Socket.cpp
-        src/main.cpp)
+        src/main.cpp
+        include/utils.hpp
+        src/utils/trim.cpp)

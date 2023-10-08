@@ -1,6 +1,6 @@
 #include "server/Server.hpp"
 
-#include "server/parser/ConfigParser.hpp"
+#include "config/ConfigParser.hpp"
 
 int main(void)
 {
@@ -9,6 +9,6 @@ int main(void)
 //	webserv.listen();
 	ConfigParser test;
 
-	test.parseConfigFile("webserv.conf");
-	return (0);
+	test.parseConfigFile("/home/tdameros/dev/42-webserv/webserv.conf");
+	return 0;
 }

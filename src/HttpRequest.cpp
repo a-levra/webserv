@@ -1,11 +1,16 @@
 #include <iostream>
+#include <exception>
 
 #include "HttpRequest.hpp"
-#include <exception>
+#include "utils.hpp"
 
 #define MAX_METHOD_LENGTH 6 // "DELETE" is the longest (supported) method
 
-HttpRequest::HttpRequest(void) : _isValid(true) {}
+HttpRequest::HttpRequest(void) : _statusCode(-1) {}
+
+HttpRequest::HttpRequest(std::string raw) : _statusCode(-1) {
+	this->setRawRequest(raw);
+}
 
 HttpRequest::HttpRequest(const HttpRequest &other) { *this = other; }
 
@@ -19,114 +24,113 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_headers = other._headers;
 		_body = other._body;
 		_rawRequest = other._rawRequest;
-		_isValid = other._isValid;
 	}
 	return (*this);
 }
 
-void HttpRequest::parse() {
-	checkDoubleSpaces();
-	parseMethod();
-	parsePath();
-	parseVersion();
-	parseAllHeaders();
+bool HttpRequest::parse() {
+	bool success = true;
+	bool (HttpRequest::*parseFunctions[])() = {
+		&HttpRequest::checkDoubleSpaces,
+		&HttpRequest::parseMethod,
+		&HttpRequest::parsePath,
+		&HttpRequest::parseVersion,
+		&HttpRequest::parseAllHeaders};
+
+	unsigned long size = sizeof(parseFunctions) / sizeof(parseFunctions[0]);
+	for (size_t i = 0; i < size; i++) {
+		if (!(this->*parseFunctions[i])()) {
+			success = false;
+			break;
+		}
+	}
+	return success;
 //	parseBody();
 }
 
-void HttpRequest::parseMethod() {
+bool HttpRequest::parseMethod() {
 	size_t spacePos = _rawRequest.substr(0, MAX_METHOD_LENGTH + 1).find(' ');
 
 	if (spacePos <= MAX_METHOD_LENGTH)
 		_method = _rawRequest.substr(0, spacePos);
-	else {
-		_isValid = false;
-		throw InvalidMethodException();
-	}
+	else
+		return false;
 
 	if (_method != "GET" &&
 		_method != "POST" &&
-		_method != "DELETE") {
-		_isValid = false;
-		throw InvalidMethodException();
-	}
+		_method != "DELETE")
+		return false;
 	_rawRequest = _rawRequest.substr(spacePos + 1);
+	return true;
 }
 
-void HttpRequest::parsePath() {
+bool HttpRequest::parsePath() {
 	size_t spacePos = _rawRequest.find(' ');
-	if (spacePos == std::string::npos) {
-		_isValid = false;
-		throw InvalidRequestException();
-	}
-	checkPathValidity(spacePos);
+	if (spacePos == std::string::npos || !checkPathValidity(spacePos))
+		return false;
 	_path = _rawRequest.substr(0, spacePos);
 	_rawRequest = _rawRequest.substr(spacePos + 1);
+	return true;
 }
 
-void HttpRequest::checkPathValidity(size_t spacePos) {
+bool HttpRequest::checkPathValidity(size_t spacePos) {
 	//path must be alphanumeric and can contain only '/', '.' and '-'
 	//path cannot contain ".." or "//"
 	for (size_t i = 0; i < spacePos; i++) {
 		if (
 			(!isalnum(_rawRequest[i]) && _rawRequest[i] != '/' && _rawRequest[i] != '.') ||
-			(_rawRequest[i] == '.' && _rawRequest[i + 1] == '.') ||
-				((_rawRequest[i] == '/') && (_rawRequest[i + 1] == '/'))) {
-			throw InvalidPathException();
-		}
+				(_rawRequest[i] == '.' && _rawRequest[i + 1] == '.') ||
+				((_rawRequest[i] == '/') && (_rawRequest[i + 1] == '/')))
+			return false;
 	}
+	return true;
 }
 
-void HttpRequest::parseVersion() {
+bool HttpRequest::parseVersion() {
 	size_t crlfPos = _rawRequest.find("\r\n");
-	if (crlfPos == std::string::npos) {
-		_isValid = false;
-		throw InvalidVersionException();
-	}
+	if (crlfPos == std::string::npos)
+		return false;
 	_version = _rawRequest.substr(0, crlfPos);
-	if (_version != "HTTP/1.1") {
-		_isValid = false;
-		throw InvalidVersionException();
-	}
+	if (_version != "HTTP/1.1")
+		return false;
 	_rawRequest = _rawRequest.substr(crlfPos + 2);
+	return true;
 }
 
-void HttpRequest::parseAllHeaders() {
+bool HttpRequest::parseAllHeaders() {
 	std::string line;
 	size_t crlfPos = _rawRequest.find("\r\n");
 
-	if (crlfPos == std::string::npos) {
-		_isValid = false;
-		throw InvalidRequestException();
-	}
+	if (crlfPos == std::string::npos)
+		return false;
 	line = _rawRequest.substr(0, crlfPos);
 	_rawRequest = _rawRequest.substr(crlfPos + 2);
 	while (!line.empty()) {
-		parseHeader(line);
-//		display(line);
-
+		if (!parseHeader(line))
+			return false;
 		crlfPos = _rawRequest.find("\r\n");
 		line = _rawRequest.substr(0, crlfPos);
 		_rawRequest = _rawRequest.substr(crlfPos + 2);
 	}
 	display(_rawRequest);
+	return true;
 }
 
-void HttpRequest::parseHeader(const std::string &line) {
+bool HttpRequest::parseHeader(const std::string &line) {
 	size_t semicolPos = line.find(':');
 	if (semicolPos == std::string::npos
-	|| semicolPos == 0
-	|| semicolPos == line.size() - 1
-	|| line[semicolPos + 1] != ' '
-	|| line[semicolPos + 2] == '\0'
-	|| line[semicolPos + 2] == '\r'
-	) {
-		_isValid = false;
-		throw InvalidRequestException();
-	}
+		|| semicolPos == 0
+		|| semicolPos == line.size() - 1
+		|| line[semicolPos + 1] != ' '
+		|| line[semicolPos + 2] == '\0'
+		|| line[semicolPos + 2] == '\r'
+		)
+		return false;
 	_headers[line.substr(0, semicolPos)] = line.substr(semicolPos + 2);
+	return true;
 }
 
-void HttpRequest::setRawRequest(const char *string) {
+void HttpRequest::setRawRequest(std::string string) {
 	_rawRequest = string;
 }
 
@@ -145,13 +149,52 @@ void HttpRequest::displayRequest() {
 	}
 	std::cout << "Body: " << _body << std::endl;
 	std::cout << "Raw request: " << _rawRequest << std::endl;
-	std::cout << "Is valid: " << _isValid << std::endl;
 }
 
-void HttpRequest::checkDoubleSpaces() {
+bool HttpRequest::checkDoubleSpaces() {
 	size_t pos = _rawRequest.find("  ");
-	if (pos != std::string::npos) {
-		_isValid = false;
-		throw InvalidRequestException();
+	if (pos != std::string::npos)
+		return false;
+	return true;
+}
+
+void HttpRequest::setVersion() {
+	this->_version = "HTTP/1.1";
+}
+
+void HttpRequest::setStatusCode(int code) {
+	this->_statusCode = code;
+}
+
+void HttpRequest::setStatusMessage(std::string statusMessage) {
+	this->_statusMessage = statusMessage;
+}
+
+void HttpRequest::setHeaders(std::string header, std::string content) {
+	this->_headers[header] = content;
+}
+
+void HttpRequest::setBody(std::string body) {
+	this->_body = body;
+}
+
+void HttpRequest::build() {
+	std::string request = "";
+	request += _version + " " + std::to_string(_statusCode) + " " + _statusMessage + "\r\n";
+	std::map<std::string, std::string>::iterator it;
+	for (it = _headers.begin(); it != _headers.end(); it++) {
+		request += it->first + ": " + it->second + "\r\n";
 	}
+	request += "\r\n";
+	request += _body;
+	_rawRequest = request;
+}
+
+std::string HttpRequest::getRawRequest() {
+	return _rawRequest;
+}
+
+void HttpRequest::setBodyFromFile(std::string path) {
+	//open a file, and put its content in _body
+	setBody(readFileToString(path));
 }

@@ -7,33 +7,22 @@
 class HttpRequest {
 	public:
 		HttpRequest();
+		HttpRequest(std::string raw);
 		HttpRequest(const HttpRequest &other);
 		virtual ~HttpRequest();
 		HttpRequest &operator=(const HttpRequest &other);
-		void parse();
-		void setRawRequest(const char *string);
+		bool parse();
+		void setRawRequest(std::string string);
 		void displayRequest();
-		class InvalidRequestException : public std::exception {
-			const char * what() const throw() {
-				return "Invalid Request";
-			}
-		};
-		class InvalidPathException : public InvalidRequestException {
-				const char * what() const throw() {
-					return "Invalid path";
-				}
-		};
-		class InvalidMethodException : public InvalidRequestException {
-				const char * what() const throw() {
-					return "Invalid method (or not supported)";
-				}
-		};
-		class InvalidVersionException : public InvalidRequestException {
-				const char * what() const throw() {
-					return "Invalid version";
-				}
-		};
 
+		void setVersion();
+		void setStatusCode(int i);
+		void setStatusMessage(std::string statusMessage);
+		void setHeaders(std::string header, std::string content);
+		void setBody(std::string body);
+		void build();
+		std::string getRawRequest();
+		void setBodyFromFile(std::string path);
 	private:
 		std::string _method;
 		std::string _path;
@@ -41,15 +30,16 @@ class HttpRequest {
 		std::map<std::string, std::string> _headers;
 		std::string _body;
 		std::string _rawRequest;
-		bool _isValid;
-		void parseMethod();
-		void parsePath();
-		void parseVersion();
-		void parseAllHeaders();
-		void parseHeader(const std::string &line);
+		bool parseMethod();
+		bool parsePath();
+		bool parseVersion();
+		bool parseAllHeaders();
+		bool parseHeader(const std::string &line);
 		void display(std::string message);
-		void checkPathValidity(size_t spacePos);
-		void checkDoubleSpaces();
+		bool checkPathValidity(size_t spacePos);
+		bool checkDoubleSpaces();
+		int _statusCode;
+		std::string _statusMessage;
 };
 
 #endif

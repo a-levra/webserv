@@ -59,13 +59,10 @@ void Server::listen(void) {
 					// C'est un client existant, lisez les données du client et traitez-les
 					char buffer[1024]; // Vous pouvez ajuster la taille du tampon selon vos besoins
 					std::string completeClientRequest;
-					while (true) {
-						ssize_t bytesRead = read(_pollFd[i].fd, buffer, sizeof(buffer));
-						if (bytesRead <= 0)
-							break;
+					ssize_t bytesRead = read(_pollFd[i].fd, buffer, sizeof(buffer));
+					while (bytesRead > 0 ) {
 						completeClientRequest.append(buffer, bytesRead);
-						if (bytesRead < sizeof(buffer))
-							break;
+						bytesRead = read(_pollFd[i].fd, buffer, sizeof(buffer));
 					}
 					std::cout << "A client has sent data" << std::endl;
 				}

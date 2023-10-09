@@ -11,4 +11,5 @@ add_executable(42_webserv
         include/server/Socket.hpp
         src/server/Server.cpp
         src/server/Socket.cpp
-        src/main.cpp)
+        src/main.cpp
+        src/HttpRequest.cpp)

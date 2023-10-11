@@ -3,12 +3,14 @@
 
 #include <fstream>
 #include <algorithm>
+#include <cctype>
 
 ConfigLexer::ConfigLexer(const std::string &fileName) {
 	std::ifstream	file(fileName.c_str());
 	std::string		line;
 	std::string		fileContent;
 
+	_error = NO_ERROR;
 	if (!file.is_open()) {
 		_error = INVALID_FILE;
 		return;
@@ -19,6 +21,7 @@ ConfigLexer::ConfigLexer(const std::string &fileName) {
 			line.erase(commentSeparator);
 		fileContent += line;
 	}
+	_mainContext = Context("main", "", _fileContent);
 	_fileContent = fileContent;
 	_analyzeContent(&_mainContext, _fileContent);
 }
@@ -62,6 +65,10 @@ std::string ConfigLexer::getError() const {
 	return "";
 }
 
+Context *ConfigLexer::getMainContext() {
+	return  &_mainContext;
+}
+
 bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) {
 	tokenType type = _identifyNextToken(content);
 	std::string::size_type	pos;
@@ -80,13 +87,13 @@ bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) 
 		_error = UNCLOSE_DIRECTIVE;
 	if (_error != NO_ERROR)
 		return false;
-	currentContext->inheritDirectives();
+//	currentContext->inheritDirectives();
 	_analyzeSubContexts(currentContext);
 	return true;
 }
 
 bool ConfigLexer::_analyzeSubContexts(Context *currentContext) {
-	std::vector<Context>	subContexts = currentContext->getContexts();
+	std::vector<Context>&	subContexts = currentContext->getSubContexts();
 	std::vector<Context>::iterator it;
 	for (it = subContexts.begin(); it != subContexts.end(); it++) {
 		if (_error != NO_ERROR)
@@ -106,9 +113,9 @@ std::string::size_type ConfigLexer::_analyzeDirective(Context *currentContext,
 	directive = trim(directive);
 	it = std::find_if(directive.begin(), directive.end(), isspace);
 	std::string directiveName(directive.begin(), it);
-	it = std::find_if(it, directive.end(),
-					  std::not1(std::ptr_fun<int, int>(std::isspace)));
+	it = std::find_if(it, directive.end(), isspace);
 	std::string directiveContent(it, directive.end());
+	directiveContent = trim(directiveContent);
 	if (directiveName.empty()) {
 		_error = EMPTY_DIRECTIVE;
 		return pos;
@@ -136,8 +143,7 @@ std::string::size_type	ConfigLexer::_analyzeContext(Context *currentContext,
 		_error = EMPTY_NAME_CONTEXT;
 		return pos.first;
 	}
-	it = std::find_if(it, header.end(),
-					  std::not1(std::ptr_fun<int, int>(std::isspace)));
+	it = std::find_if_not(it, header.end(), isspace);
 	std::string contextArguments(it, header.end());
 	std::string contextContent(std::find(context.begin(), context.end(), '{') + 1,
 							   context.end() - 1);

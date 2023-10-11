@@ -8,6 +8,8 @@ LIST_SRC	=\
 			server/Socket.cpp	\
 			\
 			\
+			utils/isDigitString.cpp	\
+			utils/split.cpp	\
 			utils/trim.cpp	\
 			\
 			\

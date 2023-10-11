@@ -2,13 +2,19 @@
 
 #include "config/ConfigParser.hpp"
 
-int main(void)
+#include "utils.hpp"
+#include <iostream>
+int main(int argc, char *argv[])
 {
-//	Server	webserv = Server();
-//
-//	webserv.listen();
-	ConfigParser test;
-
-	test.parseConfigFile("/home/tdameros/dev/42-webserv/webserv.conf");
+	if (argc == 3 && std::string(argv[1]) == "-t") {
+		ConfigParser test;
+		test.parseConfigFile(std::string(argv[2]));
+	}
+	else {
+		ConfigParser test;
+		test.parseConfigFile("/Users/tdameros/dev/42-webserv/webserv.conf");
+		Server	webserv = Server();
+		webserv.listen();
+	}
 	return 0;
 }

@@ -35,6 +35,7 @@ public:
 
 	ConfigLexer::codeError	getCodeError() const;
 	std::string				getError() const;
+	Context*			getMainContext();
 
 private:
 

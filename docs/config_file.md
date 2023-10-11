@@ -19,13 +19,10 @@ Context: http
 ```
 
 ### listen:
-Sets the address and port for IP, or the path for a UNIX-domain socket on which the server will accept requests. Both address and port, or only address or only port can be specified. An address may also be a hostname, for example:
+Sets the address and port for IP, or the path for a UNIX-domain socket on which the server will accept requests. An address may also be "localhost", for example:
 
 ```
 listen 127.0.0.1:8000;
-listen 127.0.0.1;
-listen 8000;
-listen *:8000;
 listen localhost:8000;
 ```
 ```
@@ -68,8 +65,8 @@ error_page 300 400 500 /50x.html;
 ```
 ```
 Syntax:	error_page code ... [=[response]] uri;
-Default:	—
-Context:	http, server, location
+Default: —
+Context: http, server, location
 ```
 
 ### root
@@ -83,6 +80,13 @@ location /i/ {
 Syntax:	root path;
 Default: root html;
 Context: http, server, location
+```
+
+### return
+```
+Syntax:	return code URL;
+Default: —
+Context: server, location
 ```
 
 ### index

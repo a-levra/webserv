@@ -17,8 +17,12 @@ public:
 
 	std::string getName() const;
 	std::string getContent() const;
+	std::string getArguments() const;
+	void	setName(std::string name);
 
-	const std::vector<Context>&	getContexts() const;
+	const std::map<std::string, std::string>&	getDirectives() const;
+	std::vector<Context>&	getSubContexts();
+	const std::vector<Context>&	getConstSubContexts() const;
 
 private:
 	std::string							_name;

@@ -3,6 +3,11 @@
 
 #include <string>
 
+bool	isDigitString(const std::string& s);
+
+std::vector<std::string>	splitDelimiter(const std::string& s, char delimiter);
+std::vector<std::string>	splitWhiteSpace(const std::string& s);
+
 std::string &trim(std::string &s);
 std::string &ltrim(std::string &s);
 std::string &rtrim(std::string &s);

@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
+#include <algorithm>
+
 std::vector<std::string> splitDelimiter(const std::string& s, char delimiter) {
 	std::vector<std::string> result;
 	std::string::size_type start = 0;
@@ -18,15 +20,14 @@ std::vector<std::string> splitDelimiter(const std::string& s, char delimiter) {
 
 std::vector<std::string>	splitWhiteSpace(const std::string& s) {
 	std::vector<std::string>	result;
-	std::string::const_iterator start = std::find_if_not(s.begin(), s.end(),
-														 std::isspace);
-	std::string::const_iterator end = std::find_if(start, s.end(),
-												   std::isspace);
+	std::string::const_iterator start = std::find_if(s.begin(), s.end(),
+				std::not1(std::ptr_fun(isspace)));
+	std::string::const_iterator end = std::find_if(start, s.end(), isspace);
 
 	while (start != end) {
 		result.push_back(std::string(start, end));
-		start = std::find_if_not(end, s.end(), std::isspace);
-		end = std::find_if(start, s.end(), std::isspace);
+		start = std::find_if(end, s.end(), std::not1(std::ptr_fun(isspace)));
+		end = std::find_if(start, s.end(), isspace);
 	}
 	return result;
 }

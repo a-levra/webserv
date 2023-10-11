@@ -14,5 +14,6 @@
 #include <string>
 
 bool	isDigitString(const std::string& s) {
-	return (std::find_if_not(s.begin(), s.end(), isdigit) != s.end());
+	return (std::find_if(s.begin(), s.end(),
+						 std::not1(std::ptr_fun(isdigit))) != s.end());
 }

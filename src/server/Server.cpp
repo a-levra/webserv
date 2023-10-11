@@ -4,17 +4,19 @@
 #include "server/Server.hpp"
 
 Server::Server(void) {
-//	Socket	serverSocket = Socket("localhost", 8000);
-	Socket	serverSocket = Socket("0.0.0.0", 8000);
+	Socket	serverSocket = Socket();
+	serverSocket.setReUse(true);
+	serverSocket.binding("0.0.0.0", 8000);
 	serverSocket.listening();
 	_listenerSockets.push_back(serverSocket);
-	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP | POLLERR));
+	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
 
-//	serverSocket = Socket("localhost", 5000);
-	serverSocket = Socket("0.0.0.0", 5000);
+	serverSocket = Socket();
+	serverSocket.setReUse(true);
+	serverSocket.binding("0.0.0.0", 5000);
 	serverSocket.listening();
 	_listenerSockets.push_back(serverSocket);
-	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP | POLLERR));
+	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
 }
 
 Server::Server(const Server &other) { *this = other; }
@@ -65,7 +67,16 @@ void Server::_accept_new_client(struct pollfd listener) {
 
 ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	char buffer[1024];
-	ssize_t bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
+	std::string completeClientRequest;
+	ssize_t bytesRead = 0;
+	while (true) {
+		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
+		if (bytesRead <= 0)
+			break;
+		completeClientRequest.append(buffer, bytesRead);
+		if ((size_t) bytesRead < sizeof(buffer))
+			break;
+	}
 	if (bytesRead == 0)
 	{
 		std::cout << "A client socket has been close" << std::endl;

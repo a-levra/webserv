@@ -1,9 +1,9 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-#include <arpa/inet.h>
-#include <poll.h>
-#include <string>
+# include <string>
+# include <arpa/inet.h>
+# include <poll.h>
 
 class Socket
 {
@@ -27,12 +27,13 @@ class Socket
 		void	setReUse(const int option);
 
 	private:
+		uint32_t	_convertIPToBinary(std::string ip_address);
+
 		struct sockaddr_in	_address;
 		std::string			_ip_adress;
 		int					_port;
 		int					_fd;
 
-		uint32_t	_convertIPToBinary(std::string ip_address);
 };
 
 #endif

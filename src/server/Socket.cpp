@@ -11,7 +11,7 @@
 static bool	isDigitStr(const std::string& str);
 
 Socket::Socket(void) {
-	this->_fd = socket(AF_INET6, SOCK_STREAM, 0);
+	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_fd == -1)
 		throw std::runtime_error("Socket: socket failed");
 	std::memset(&this->_address, 0, sizeof(this->_address));

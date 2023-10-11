@@ -144,7 +144,7 @@ std::string::size_type	ConfigLexer::_analyzeContext(Context *currentContext,
 		_error = EMPTY_NAME_CONTEXT;
 		return pos.first;
 	}
-	it = std::find_if_not(it, header.end(), isspace);
+	it = std::find_if(it, header.end(), std::not1(std::ptr_fun(isspace)));
 	std::string contextArguments(it, header.end());
 	std::string contextContent(std::find(context.begin(), context.end(), '{') + 1,
 							   context.end() - 1);

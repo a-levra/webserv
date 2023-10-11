@@ -1,6 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <vector>
 #include <string>
 
 bool	isDigitString(const std::string& s);

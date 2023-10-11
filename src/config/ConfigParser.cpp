@@ -2,7 +2,7 @@
 #include "config/ConfigLexer.hpp"
 #include "utils.hpp"
 
-#include <iostream>
+#include <limits>
 #include <algorithm>
 #include <cerrno>
 
@@ -48,7 +48,7 @@ int ConfigParser::parseConfigFile(const std::string &fileName) {
 
 bool	ConfigParser::_parseMainContext(const Context& context) {
 	std::vector<std::string> contexts;
-	contexts.emplace_back("http");
+	contexts.push_back(std::string("http"));
 	std::vector<std::string> directives;
 	if (!_parseAllowSubContexts(context, contexts))
 		return false;
@@ -74,7 +74,7 @@ std::string ConfigParser::getError() const {
 
 bool ConfigParser::_parseHttpContext(const Context& context) {
 	std::vector<std::string> contexts;
-	contexts.emplace_back("server");
+	contexts.push_back(std::string("server"));
 	std::vector<std::string> directives = splitWhiteSpace("error_page "
 														  "index root "
 														  "allow_methods "
@@ -91,7 +91,7 @@ bool ConfigParser::_parseHttpContext(const Context& context) {
 
 bool ConfigParser::_parseServersContext(const std::vector<Context> &servers) {
 	std::vector<std::string> contexts;
-	contexts.emplace_back("location");
+	contexts.push_back(std::string("location"));
 	std::vector<std::string> directives = splitWhiteSpace("error_page "
 														  "root index "
 														  "allow_methods "
@@ -120,8 +120,11 @@ bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations)
 														  "return ");
 	std::vector<Context>::const_iterator	it;
 	for (it = locations.begin(); it != locations.end(); it++) {
-		if (splitWhiteSpace(it->getArguments()).size() != 1)
+		if (splitWhiteSpace(it->getArguments()).size() != 1) {
+			_codeError = INVALID_ARGUMENTS;
+			_error = "invalid arguments in \"" + it->getName() + "\" context";
 			return false;
+		}
 		if (!_parseAllowSubContexts(*it, contexts))
 			return false;
 		if (!_parseDirectives(*it, directives))
@@ -247,8 +250,8 @@ bool ConfigParser::_parseListen(const std::string &directiveContent) {
 		return false;
 	port = std::strtol(arguments[1].c_str(), &endPtr, 10);
 	if (errno == ERANGE || *endPtr != '\0'
-		 || port < std::numeric_limits<uint16_t>::min()
-		 || port > std::numeric_limits<uint16_t>::max())
+		 || port < std::numeric_limits<u_int16_t>::min()
+		 || port > std::numeric_limits<u_int16_t>::max())
 		 return false;
 	return (arguments[0] == "localhost" || _parseIPAddress(arguments[0]));
 }

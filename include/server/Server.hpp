@@ -5,6 +5,7 @@
 # include <sys/poll.h>
 
 # include "Socket.hpp"
+# include "virtualServer/VirtualServer.hpp"
 
 class Server {
     public:
@@ -14,14 +15,18 @@ class Server {
 		Server &operator=(const Server &other);
 
 		void	listen(void);
+		void	addVirtualServer(const virtualServer &virtualServer);
 
 	private:
-		std::vector<Socket>	_listenerSockets;
-		std::vector<struct pollfd>	_pollFd;
 
 		void	_accept_new_client(struct pollfd listener);
 		void	_check_revents_sockets(void);
 		ssize_t	_read_persistent_connection(size_t client_index);
+
+		std::vector<Socket>	_listenerSockets;
+		std::vector<struct pollfd>	_pollFd;
+		std::vector<virtualServer>	_virtualServers;
+
 };
 
 #endif

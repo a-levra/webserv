@@ -66,16 +66,12 @@ void Server::_accept_new_client(struct pollfd listener) {
 }
 
 ssize_t	Server::_read_persistent_connection(size_t client_index) {
-	char buffer[1024];
+	char buffer[1024]; // Vous pouvez ajuster la taille du tampon selon vos besoins
 	std::string completeClientRequest;
-	ssize_t bytesRead = 0;
-	while (true) {
-		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
-		if (bytesRead <= 0)
-			break;
+	ssize_t bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
+	while (bytesRead > 0 ) {
 		completeClientRequest.append(buffer, bytesRead);
-		if ((size_t) bytesRead < sizeof(buffer))
-			break;
+		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
 	}
 	if (bytesRead == 0)
 	{

@@ -1,6 +1,5 @@
 #include "config/ConfigContext.hpp"
 
-
 Context::Context() {}
 
 Context::Context(const std::string& name, const std::string& arguments, const std::string& content): _name(name), _arguments(arguments), _content(content) {}

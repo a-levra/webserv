@@ -6,6 +6,8 @@
 
 bool	isDigitString(const std::string& s);
 
+std::string readFileToString(const std::string& filename);
+
 std::vector<std::string>	splitDelimiter(const std::string& s, char delimiter);
 std::vector<std::string>	splitWhiteSpace(const std::string& s);
 

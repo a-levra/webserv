@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cctype>
 
+ConfigLexer::ConfigLexer() {}
+
 ConfigLexer::ConfigLexer(const std::string &fileName) {
 	std::ifstream	file(fileName.c_str());
 	std::string		line;
@@ -87,7 +89,6 @@ bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) 
 		_error = UNCLOSE_DIRECTIVE;
 	if (_error != NO_ERROR)
 		return false;
-//	currentContext->inheritDirectives();
 	_analyzeSubContexts(currentContext);
 	return true;
 }

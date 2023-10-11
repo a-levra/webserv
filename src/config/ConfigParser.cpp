@@ -2,13 +2,20 @@
 #include "config/ConfigLexer.hpp"
 #include "utils.hpp"
 
-#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cerrno>
 
 ConfigParser::ConfigParser(void): _codeError(NO_ERROR) {
-
+	_directiveFunctions["error_page"] = &ConfigParser::_parseErrorPage;
+	_directiveFunctions["root"] = &ConfigParser::_parseRoot;
+	_directiveFunctions["index"] = &ConfigParser::_parseIndex;
+	_directiveFunctions["allow_methods"] = &ConfigParser::_parseAllowMethods;
+	_directiveFunctions["client_max_body_size"] = &ConfigParser::_parseClientMaxBodySize;
+	_directiveFunctions["autoindex"] = &ConfigParser::_parseAutoIndex;
+	_directiveFunctions["listen"] = &ConfigParser::_parseListen;
+	_directiveFunctions["server_name"] = &ConfigParser::_parseServerName;
+	_directiveFunctions["return"] = &ConfigParser::_parseReturn;
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
@@ -29,51 +36,40 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &other)
 }
 
 int ConfigParser::parseConfigFile(const std::string &fileName) {
-	ConfigLexer	lexer(fileName);
-	if (lexer.getCodeError() != ConfigLexer::NO_ERROR) {
-		std::cout << "Error: " << lexer.getError() << std::endl;
+	_lexer = ConfigLexer(fileName);
+	if (_lexer.getCodeError() != ConfigLexer::NO_ERROR) {
+		_error =  _lexer.getError();
 		return false;
 	}
-	if (_codeError != NO_ERROR)
-		std::cout << _error << std::endl;
-	if (!_parseMainContext(*lexer.getMainContext())) {
-		std::cout << "Error: " << _error << std::endl;
+	if (!_parseMainContext(*_lexer.getMainContext()))
 		return false;
-	}
-//	if (!_parseHttpContext(&lexer.getMainContext()->getSubContexts()[0])) {
-//		std::cout << "Error: " << _error << std::endl;
-//		return false;
-//	}
 	return true;
 }
-
-/*
- * Dans main : context{http}  directives{};
- * Dans http : context {server}
- * 			   directives {error_page, root, index, allow_methods, client_max_body_size, autoindex};
- * Dans server: context {location}
- * 				directives {listen, server_name, error_page, root, index, allow_methods, client_max_body_size, autoindex, return};
- * 	Dans location: context {}
- * 				   directives {error_page, root, index ,allow_methods, client_max_body_size, autoindex, return};
- *
- */
 
 bool	ConfigParser::_parseMainContext(const Context& context) {
 	std::vector<std::string> contexts;
 	contexts.emplace_back("http");
 	std::vector<std::string> directives;
-	if (!_checkSubContext(context, contexts))
+	if (!_parseAllowSubContexts(context, contexts))
 		return false;
 	if (context.getConstSubContexts().size() != 1) {
 		_codeError = DUPLICATE_CONTEXT;
 		_error = "\"http\" context is duplicate in main";
 		return false;
 	}
-	if (!_checkDirectives(context, directives))
+	if (!_parseDirectives(context, directives))
 		return false;
 	if (!_parseHttpContext(context.getConstSubContexts()[0]))
 		return false;
 	return true;
+}
+
+ConfigParser::codeError ConfigParser::getCodeError() const {
+	return _codeError;
+}
+
+std::string ConfigParser::getError() const {
+	return _error;
 }
 
 bool ConfigParser::_parseHttpContext(const Context& context) {
@@ -84,9 +80,9 @@ bool ConfigParser::_parseHttpContext(const Context& context) {
 														  "allow_methods "
 														  "client_max_body_size "
 														  "autoindex ");
-	if (!_checkSubContext(context, contexts))
+	if (!_parseAllowSubContexts(context, contexts))
 		return false;
-	if (!_checkDirectives(context, directives))
+	if (!_parseDirectives(context, directives))
 		return false;
 	if (!_parseServersContext(context.getConstSubContexts()))
 		return false;
@@ -104,9 +100,9 @@ bool ConfigParser::_parseServersContext(const std::vector<Context> &servers) {
 														  "server_name return ");
 	std::vector<Context>::const_iterator	it;
 	for (it = servers.begin(); it != servers.end(); it++) {
-		if (!_checkSubContext(*it, contexts))
+		if (!_parseAllowSubContexts(*it, contexts))
 			return false;
-		if (!_checkDirectives(*it, directives))
+		if (!_parseDirectives(*it, directives))
 			return false;
 		if (!_parseLocationsContext(it->getConstSubContexts()))
 			return false;
@@ -126,9 +122,9 @@ bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations)
 	for (it = locations.begin(); it != locations.end(); it++) {
 		if (splitWhiteSpace(it->getArguments()).size() != 1)
 			return false;
-		if (!_checkSubContext(*it, contexts))
+		if (!_parseAllowSubContexts(*it, contexts))
 			return false;
-		if (!_checkDirectives(*it, directives))
+		if (!_parseDirectives(*it, directives))
 			return false;
 	}
 	return true;
@@ -138,24 +134,10 @@ bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations)
 bool ConfigParser::_parseDirective(const std::string& name, const std::string& content) {
 	bool	returnCode = true;
 
-	if (name == "error_page")
-		returnCode = _parseErrorPage(content);
-	else if (name == "root")
-		returnCode = _parseRoot(content);
-	else if (name == "index")
-		returnCode = _parseIndex(content);
-	else if (name == "allow_methods")
-		returnCode = _parseAllowMethods(content);
-	else if (name == "client_max_body_size")
-		returnCode = _parseClientMaxBodySize(content);
-	else if (name == "autoindex")
-		returnCode = _parseAutoIndex(content);
-	else if (name == "listen")
-		returnCode = _parseListen(content);
-	else if (name == "server_name")
-		returnCode = _parseServerName(content);
-	else if (name == "return")
-		returnCode = _parseReturn(content);
+	directiveFunctionMap::const_iterator it = _directiveFunctions.find(name);
+
+	if (it != _directiveFunctions.end())
+		returnCode = (this->*(it->second))(content);
 	if (!returnCode) {
 		_codeError = INVALID_ARGUMENTS;
 		_error = "invalid arguments in \"" + name + "\"";
@@ -163,28 +145,33 @@ bool ConfigParser::_parseDirective(const std::string& name, const std::string& c
 	return returnCode;
 }
 
-bool	ConfigParser::_checkSubContext(const Context& context,
-									   const std::vector<std::string>& contexts)
+bool	ConfigParser::_parseAllowSubContexts(const Context& context,
+											 const std::vector<std::string>& allowSubContexts)
 {
-	std::vector<Context>::const_iterator it;
 	const std::vector<Context>& subContexts = context.getConstSubContexts();
+	std::vector<Context>::const_iterator it;
 	for (it = subContexts.begin(); it != subContexts.end(); it++) {
-		if (std::find(contexts.begin(), contexts.end(), it->getName()) == contexts.end()) {
+		if (std::find(allowSubContexts.begin(), allowSubContexts.end(),
+					  it->getName()) == allowSubContexts.end()) {
 			_codeError = FORBIDDEN_CONTEXT;
-			_error = "\"" + it->getName() + "\" context is not allowed in " + context.getName();
+			_error = "\"" + it->getName() + "\" context is not allowed in "
+					+ context.getName() + "context";
 			return false;
 		}
 	}
 	return true;
 }
 
-bool	ConfigParser::_checkDirectives(const Context& context, const std::vector<std::string>& allow_directives) {
+bool	ConfigParser::_parseDirectives(const Context& context,
+									   const std::vector<std::string>& allow_directives) {
 	std::map<std::string, std::string>::const_iterator it;
 	const std::map<std::string, std::string>& directives = context.getDirectives();
 	for (it = directives.begin(); it != directives.end(); it++) {
-		if (std::find(allow_directives.begin(), allow_directives.end(), it->first) == allow_directives.end()) {
+		if (std::find(allow_directives.begin(), allow_directives.end(),
+					  it->first) == allow_directives.end()) {
 			_codeError = FORBIDDEN_DIRECTIVE;
-			_error = "\"" + it->first + "\" directive is not allowed in " + context.getName() + " context";
+			_error = "\"" + it->first + "\" directive is not allowed in "
+					+ context.getName() + " context";
 			return false;
 		}
 		if (!_parseDirective(it->first, it->second))
@@ -192,7 +179,6 @@ bool	ConfigParser::_checkDirectives(const Context& context, const std::vector<st
 	}
 	return true;
 }
-
 
 // Directive
 

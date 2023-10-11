@@ -2,6 +2,7 @@
 # define CONFIGPARSER_HPP
 
 #include "config/ConfigContext.hpp"
+#include "config/ConfigLexer.hpp"
 
 #include <string>
 #include <vector>
@@ -30,6 +31,9 @@ public:
 
 	int	parseConfigFile(const std::string& fileName);
 
+	std::string getError() const;
+	codeError	getCodeError() const;
+
 
 private:
 
@@ -40,9 +44,9 @@ private:
 
 	// Utils
 	bool	_parseDirective(const std::string& name, const std::string& content);
-	bool	_checkSubContext(const Context& context,
-							 const std::vector<std::string>& contexts);
-	bool	_checkDirectives(const Context& context, const std::vector<std::string>& allow_directives);
+	bool	_parseAllowSubContexts(const Context& context,
+								   const std::vector<std::string>& allowSubContexts);
+	bool	_parseDirectives(const Context& context, const std::vector<std::string>& allow_directives);
 	bool	_parseIPAddress(const std::string& ipAddress);
 
 	// Directive
@@ -57,10 +61,14 @@ private:
 	bool	_parseReturn(const std::string& directiveContent);
 	bool	_parseServerName(const std::string& directiveContent);
 
+	typedef bool (ConfigParser::*directiveFunction)(const std::string& directiveContent);
+	typedef std::map<std::string, directiveFunction> directiveFunctionMap;
+
+	directiveFunctionMap _directiveFunctions;
 	codeError	_codeError;
 	std::string	_error;
+	ConfigLexer	_lexer;
+
 };
-
-
 
 #endif

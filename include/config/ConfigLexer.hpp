@@ -27,6 +27,7 @@ public:
 		EMPTY_NAME_CONTEXT,
 	};
 
+	ConfigLexer();
 	ConfigLexer(const std::string& fileName);
 	ConfigLexer(const ConfigLexer& other);
 	~ConfigLexer();

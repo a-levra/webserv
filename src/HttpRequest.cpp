@@ -180,7 +180,7 @@ void HttpRequest::setBody(std::string body) {
 
 void HttpRequest::build() {
 	std::string request = "";
-	request += _version + " " + std::to_string(_statusCode) + " " + _statusMessage + "\r\n";
+	request += _version + " " + toString(_statusCode) + " " + _statusMessage + "\r\n";
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
 		request += it->first + ": " + it->second + "\r\n";

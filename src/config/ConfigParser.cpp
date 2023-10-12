@@ -39,6 +39,7 @@ int ConfigParser::parseConfigFile(const std::string &fileName) {
 	_lexer = ConfigLexer(fileName);
 	if (_lexer.getCodeError() != ConfigLexer::NO_ERROR) {
 		_error =  _lexer.getError();
+		_codeError = LEXER_ERROR;
 		return false;
 	}
 	if (!_parseMainContext(*_lexer.getMainContext()))
@@ -212,7 +213,7 @@ bool ConfigParser::_parseClientMaxBodySize(const std::string &directiveContent) 
 
 	if (arguments.size() != 1)
 		return false;
-	std::strtol(arguments[0].c_str(), &endPtr, 10);
+	std::strtol(arguments[0].c_str(), &endPtr, DECIMAL_BASE);
 	if (errno == ERANGE || *(endPtr) != 'm' || *(endPtr + 1) != '\0')
 		return false;
 	return true;
@@ -226,7 +227,7 @@ bool	ConfigParser::_parseErrorPage(const std::string &directiveContent) {
 	std::vector<std::string>::iterator	it;
 	for (it = arguments.begin(); it != arguments.end() - 1; it++) {
 		char *endPtr;
-		long statusCode = std::strtol((*it).c_str(), &endPtr, 10);
+		long statusCode = std::strtol((*it).c_str(), &endPtr, DECIMAL_BASE);
 		if (errno == ERANGE || *endPtr != '\0' ||
 			statusCode < 300 || statusCode > 599)
 			return false;
@@ -248,7 +249,7 @@ bool ConfigParser::_parseListen(const std::string &directiveContent) {
 	if (std::count(directiveContent.begin(), directiveContent.end(), ':') != 1
 		|| arguments.size() != 2)
 		return false;
-	port = std::strtol(arguments[1].c_str(), &endPtr, 10);
+	port = std::strtol(arguments[1].c_str(), &endPtr, DECIMAL_BASE);
 	if (errno == ERANGE || *endPtr != '\0'
 		 || port < std::numeric_limits<u_int16_t>::min()
 		 || port > std::numeric_limits<u_int16_t>::max())
@@ -266,7 +267,7 @@ bool ConfigParser::_parseIPAddress(const std::string &ipAddress) {
 		return false;
 	std::vector<std::string>::iterator it;
 	for (it = bytesStrs.begin(); it != bytesStrs.end(); it++) {
-		byte = std::strtol((*it).c_str(), &endPtr, 10);
+		byte = std::strtol((*it).c_str(), &endPtr, DECIMAL_BASE);
 		if (errno == ERANGE || *endPtr != '\0' || byte < 0 || byte > 255)
 			return false;
 	}
@@ -292,7 +293,7 @@ bool ConfigParser::_parseReturn(const std::string &directiveContent) {
 
 	if (arguments.size() != 2)
 		return false;
-	statusCode = std::strtol(arguments[0].c_str(), &endPtr, 10);
+	statusCode = std::strtol(arguments[0].c_str(), &endPtr, DECIMAL_BASE);
 	if (errno == ERANGE || *endPtr != '\0'
 		|| statusCode < 100 || statusCode > 599)
 		return false;

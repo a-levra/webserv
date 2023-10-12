@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#define DECIMAL_BASE 10
+
 bool	isDigitString(const std::string& s);
 
 std::string readFileToString(const std::string& filename);

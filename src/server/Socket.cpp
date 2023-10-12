@@ -1,8 +1,7 @@
 #include <sys/socket.h>
 #include <cstring>
 #include <unistd.h>
-#include <cstdio>
-#include <iostream>
+#include <stdexcept>
 #include <cerrno>
 #include <cstdlib>
 #include <string>
@@ -18,6 +17,14 @@ Socket::Socket(void) {
 	std::memset(&this->_address, 0, sizeof(this->_address));
 }
 
+Socket::Socket(const std::string &ip_address, int port) {
+	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->_fd == -1)
+		throw std::runtime_error("Socket: socket failed");
+	std::memset(&this->_address, 0, sizeof(this->_address));
+	setReUse(true);
+	binding(ip_address, port);
+}
 
 Socket::Socket(const Socket &other) {
 	*this = other;
@@ -30,24 +37,25 @@ Socket &Socket::operator=(const Socket &other) {
 		return *this;
 	_fd = other._fd;
 	_address = other._address;
-	_ip = other._ip;
+	_ip_adress = other._ip_adress;
 	_port = other._port;
 	return *this;
 }
 
-void Socket::binding(const int port, const char* ip_address) {
+void Socket::binding(const std::string& ip_address, const int port) {
 	_port = port;
-	_ip = std::string(ip_address);
+	_ip_adress = std::string(ip_address);
 	_address.sin_family = AF_INET;
 	_address.sin_port = htons(port);
 	_address.sin_addr.s_addr = htonl(_convertIPToBinary(ip_address));
 	if (bind(_fd, (struct sockaddr *)&_address, sizeof(_address)) == -1)
-		throw std::runtime_error("Socket binding: bind failed");
+		throw std::runtime_error("Socket: bind failed");
 }
 
 void	Socket::listening(void) {
+	//	TODO: secure
 	if (listen(_fd, SOMAXCONN) == -1)
-		throw std::runtime_error("Socket listening: listen failed");
+		throw std::runtime_error("Socket: listen failed");
 }
 
 void	Socket::closeFD() {
@@ -63,9 +71,8 @@ int Socket::getPort() const {
 }
 
 std::string Socket::getIP() const {
-	return _ip;
+	return _ip_adress;
 }
-
 
 struct pollfd Socket::getPollFd(const short events) const {
 	return ((struct pollfd){.fd = _fd, .events = events, .revents = 0});
@@ -73,7 +80,6 @@ struct pollfd Socket::getPollFd(const short events) const {
 
 void	Socket::setReUse(const int option) {
 	int reuse = option;
-	//	TODO: secure
 	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) == -1)
 		throw std::runtime_error("Socket setReUse: setsockopt failed");
 	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)

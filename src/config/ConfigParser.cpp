@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cerrno>
 
+#include "virtualServer/VirtualServer.hpp"
+#include "config/ConfigFactory.hpp"
 ConfigParser::ConfigParser(void): _codeError(NO_ERROR) {
 	_directiveFunctions["error_page"] = &ConfigParser::_parseErrorPage;
 	_directiveFunctions["root"] = &ConfigParser::_parseRoot;
@@ -42,8 +44,10 @@ int ConfigParser::parseConfigFile(const std::string &fileName) {
 		_codeError = LEXER_ERROR;
 		return false;
 	}
-	if (!_parseMainContext(*_lexer.getMainContext()))
+	if (!_parseMainContext(_lexer.getMainContext()))
 		return false;
+	_lexer.getMainContext().inheritDirectives();
+	std::vector<virtualServer> test = ConfigFactory::createVirtualServers(_lexer.getMainContext());
 	return true;
 }
 
@@ -159,7 +163,7 @@ bool	ConfigParser::_parseAllowSubContexts(const Context& context,
 					  it->getName()) == allowSubContexts.end()) {
 			_codeError = FORBIDDEN_CONTEXT;
 			_error = "\"" + it->getName() + "\" context is not allowed in "
-					+ context.getName() + "context";
+					+ context.getName() + " context";
 			return false;
 		}
 	}

@@ -15,7 +15,6 @@ add_executable(42_webserv
         include/server/Socket.hpp
         include/virtualServer/VirtualServer.hpp
         include/virtualServer/Location.hpp
-        include/utils/utils.hpp
         include/utils.hpp
         src/config/ConfigContext.cpp
         src/config/ConfigLexer.cpp
@@ -30,4 +29,7 @@ add_executable(42_webserv
         src/virtualServer/VirtualServer.cpp
         src/virtualServer/Location.cpp
         src/utils/readFileToString.cpp
+        src/config/ConfigFactory.cpp
+        include/config/ConfigFactory.hpp
+        src/config/ConfigFactory.cpp
 )

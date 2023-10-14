@@ -1,5 +1,6 @@
 LIST_SRC	=\
 			config/ConfigContext.cpp	\
+			config/ConfigFactory.cpp	\
 			config/ConfigLexer.cpp		\
 			config/ConfigParser.cpp		\
 			\
@@ -13,6 +14,10 @@ LIST_SRC	=\
 			utils/isDigitString.cpp	\
 			utils/split.cpp	\
 			utils/trim.cpp	\
+			\
+			\
+			virtualServer/Location.cpp		\
+			virtualServer/VirtualServer.cpp	\
 			\
 			\
 			main.cpp

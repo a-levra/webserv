@@ -19,9 +19,8 @@ public:
 	static std::vector<virtualServer>	createVirtualServers(const Context& mainContext);
 
 private:
-	static virtualServer			_createVirtualServer(const Context& serverContext);
-//	static std::vector<Location>	_createLocations(const Context& locationContext);
-	static Location				_createLocation(const Context& locationContext);
+	static virtualServer	_createVirtualServer(const Context& serverContext);
+	static Location			_createLocation(const Context& locationContext);
 };
 
 #endif

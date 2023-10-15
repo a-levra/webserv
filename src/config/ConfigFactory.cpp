@@ -49,7 +49,6 @@ virtualServer ConfigFactory::_createVirtualServer(const Context& serverContext) 
 		server.setPort(std::atoi(ipAddress[1].c_str()));
 	}
 	std::vector<Context>::const_iterator it;
-	// ADD server IP : port and erver Name
 	for (it = locations.begin(); it != locations.end(); it++) {
 		Location location = _createLocation(*it);
 		server.addLocation(location.getURI(), location);

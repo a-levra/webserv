@@ -1,6 +1,7 @@
 #include "virtualServer/Location.hpp"
-
 #include "utils.hpp"
+
+#include <cstdlib>
 
 Location::Location(): _URI(""), _root("html"),
 					  _clientMaxBodySize(1),

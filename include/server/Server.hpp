@@ -9,13 +9,12 @@
 
 class Server {
     public:
-		Server();
+		Server(const std::vector<virtualServer>& virtualServers);
 		Server(const Server &other);
 		virtual ~Server();
 		Server &operator=(const Server &other);
 
 		void	listen(void);
-		void	addVirtualServer(const virtualServer &virtualServer);
 
 	private:
 

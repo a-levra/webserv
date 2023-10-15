@@ -1,6 +1,7 @@
 #include "config/ConfigFactory.hpp"
-
 #include "utils.hpp"
+
+#include <cstdlib>
 
 ConfigFactory::ConfigFactory(void)
 {

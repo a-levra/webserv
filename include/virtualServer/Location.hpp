@@ -2,6 +2,8 @@
 # define LOCATION_HPP
 
 #include <string>
+#include <vector>
+
 class Location {
 	public:
 		Location();

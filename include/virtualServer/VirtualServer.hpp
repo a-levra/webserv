@@ -1,7 +1,9 @@
 #ifndef VIRTUALSERVER_HPP
 # define VIRTUALSERVER_HPP
+
 #include <string>
 #include <map>
+#include <vector>
 
 class Location;
 

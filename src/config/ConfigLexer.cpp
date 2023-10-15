@@ -71,6 +71,10 @@ Context &ConfigLexer::getMainContext() {
 	return  _mainContext;
 }
 
+const Context &ConfigLexer::getConstMainContext() const {
+	return _mainContext;
+}
+
 bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) {
 	tokenType type = _identifyNextToken(content);
 	std::string::size_type	pos;

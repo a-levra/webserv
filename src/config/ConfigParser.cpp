@@ -7,7 +7,7 @@
 #include <cerrno>
 
 #include "virtualServer/VirtualServer.hpp"
-#include "config/ConfigFactory.hpp"
+
 ConfigParser::ConfigParser(void): _codeError(NO_ERROR) {
 	_directiveFunctions["error_page"] = &ConfigParser::_parseErrorPage;
 	_directiveFunctions["root"] = &ConfigParser::_parseRoot;
@@ -37,18 +37,8 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &other)
 	return (*this);
 }
 
-int ConfigParser::parseConfigFile(const std::string &fileName) {
-	_lexer = ConfigLexer(fileName);
-	if (_lexer.getCodeError() != ConfigLexer::NO_ERROR) {
-		_error =  _lexer.getError();
-		_codeError = LEXER_ERROR;
-		return false;
-	}
-	if (!_parseMainContext(_lexer.getMainContext()))
-		return false;
-	_lexer.getMainContext().inheritDirectives();
-	std::vector<virtualServer> test = ConfigFactory::createVirtualServers(_lexer.getMainContext());
-	return true;
+bool ConfigParser::parseConfigFile(const Context& mainContext) {
+	return _parseMainContext(mainContext);
 }
 
 bool	ConfigParser::_parseMainContext(const Context& context) {

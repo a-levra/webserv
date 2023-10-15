@@ -12,7 +12,7 @@ static int	runServer(const std::string& configFile);
 int main(int argc, char *argv[])
 {
 	if (!isParsingFlag(argc, argv) && argc != 2) {
-		std::cerr << "Usage: ./webserv webserv.conf" << std::endl;
+		std::cerr << "Usage: ./webserv *.conf" << std::endl;
 		return EXIT_FAILURE;
 	}
 	if (isParsingFlag(argc, argv))

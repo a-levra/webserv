@@ -41,13 +41,13 @@ public:
 
 private:
 
-	bool					_analyzeContent(Context *currentContext,
+	bool					_analyzeContent(Context& currentContext,
 											std::string content);
-	std::string::size_type	_analyzeDirective(Context *currentContext,
+	std::string::size_type	_analyzeDirective(Context& currentContext,
 											  const std::string& content);
-	std::string::size_type	_analyzeContext(Context *currentContext,
+	std::string::size_type	_analyzeContext(Context& currentContext,
 											const std::string& content);
-	bool					_analyzeSubContexts(Context *currentContext);
+	bool					_analyzeSubContexts(Context& currentContext);
 
 	static tokenType	_identifyNextToken(const std::string& content);
 	static std::pair<std::string::size_type, codeError> _getEndContext(const std::string& content);

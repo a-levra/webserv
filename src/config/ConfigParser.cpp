@@ -111,22 +111,28 @@ bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations)
 														  "root index "
 														  "allow_methods "
 														  "client_max_body_size "
-														  "autoindex "
-														  "return ");
+														  "autoindex return ");
+	std::vector<std::string> locationsURI;
 	std::vector<Context>::const_iterator	it;
 	for (it = locations.begin(); it != locations.end(); it++) {
-		if (splitWhiteSpace(it->getArguments()).size() != 1) {
+		std::vector<std::string> arguments = splitWhiteSpace(it->getArguments());
+		if (arguments.size() != 1) {
 			_codeError = INVALID_ARGUMENTS;
 			_error = "invalid arguments in \"" + it->getName() + "\" context";
 			return false;
 		}
-		if (!_parseAllowSubContexts(*it, contexts))
+		if (!_parseAllowSubContexts(*it, contexts) || !_parseDirectives(*it, directives))
 			return false;
-		if (!_parseDirectives(*it, directives))
+		if (std::find(locationsURI.begin(), locationsURI.end(),
+					  arguments[0]) != locationsURI.end()) {
+			_codeError = DUPLICATE_LOCATION;
+			_error = "duplicate location \"" + arguments[0] + "\"";
 			return false;
+		}
+		else
+			locationsURI.push_back(arguments[0]);
 	}
 	return true;
-
 }
 
 bool ConfigParser::_parseDirective(const std::string& name, const std::string& content) {

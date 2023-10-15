@@ -25,7 +25,7 @@ ConfigLexer::ConfigLexer(const std::string &fileName) {
 	}
 	_mainContext = Context("main", "", _fileContent);
 	_fileContent = fileContent;
-	_analyzeContent(&_mainContext, _fileContent);
+	_analyzeContent(_mainContext, _fileContent);
 }
 
 ConfigLexer::ConfigLexer(const ConfigLexer &other) {
@@ -75,7 +75,7 @@ const Context &ConfigLexer::getConstMainContext() const {
 	return _mainContext;
 }
 
-bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) {
+bool ConfigLexer::_analyzeContent(Context& currentContext, std::string content) {
 	tokenType type = _identifyNextToken(content);
 	std::string::size_type	pos;
 	while (type != UNDEFINED) {
@@ -97,18 +97,18 @@ bool ConfigLexer::_analyzeContent(Context *currentContext, std::string content) 
 	return true;
 }
 
-bool ConfigLexer::_analyzeSubContexts(Context *currentContext) {
-	std::vector<Context>&	subContexts = currentContext->getSubContexts();
+bool ConfigLexer::_analyzeSubContexts(Context& currentContext) {
+	std::vector<Context>&	subContexts = currentContext.getSubContexts();
 	std::vector<Context>::iterator it;
 	for (it = subContexts.begin(); it != subContexts.end(); it++) {
 		if (_error != NO_ERROR)
 			return false;
-		_analyzeContent(&(*it), it->getContent());
+		_analyzeContent(*it, it->getContent());
 	}
 	return true;
 }
 
-std::string::size_type ConfigLexer::_analyzeDirective(Context *currentContext,
+std::string::size_type ConfigLexer::_analyzeDirective(Context& currentContext,
 													  const std::string& content)
 {
 	std::string::size_type pos = content.find(';');
@@ -125,11 +125,11 @@ std::string::size_type ConfigLexer::_analyzeDirective(Context *currentContext,
 		_error = EMPTY_DIRECTIVE;
 		return pos;
 	}
-	currentContext->addDirective(directiveName, directiveContent);
+	currentContext.addDirective(directiveName, directiveContent);
 	return pos;
 }
 
-std::string::size_type	ConfigLexer::_analyzeContext(Context *currentContext,
+std::string::size_type	ConfigLexer::_analyzeContext(Context& currentContext,
 													 const std::string& content)
 {
 	std::pair<std::string::size_type, codeError> pos = _getEndContext(content);
@@ -153,7 +153,7 @@ std::string::size_type	ConfigLexer::_analyzeContext(Context *currentContext,
 	std::string contextContent(std::find(context.begin(), context.end(), '{') + 1,
 							   context.end() - 1);
 	Context newContext(contextName, contextArguments, contextContent);
-	currentContext->addContext(newContext);
+	currentContext.addContext(newContext);
 	return pos.first;
 }
 

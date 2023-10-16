@@ -1,4 +1,8 @@
 LIST_SRC	=\
+		config/ConfigLexer.cpp \
+		config/ConfigParser.cpp \
+		config/ConfigContext.cpp \
+		config/ConfigFactory.cpp \
         server/Server.cpp \
         server/Socket.cpp \
         \
@@ -14,4 +18,7 @@ LIST_SRC	=\
         utils/readFileToString.cpp \
         utils/coloredLog.cpp \
         utils/printBold.cpp \
-        utils/getDate.cpp
+        utils/getDate.cpp \
+        utils/isDigitString.cpp	\
+        utils/split.cpp	\
+        utils/trim.cpp	\

@@ -1,35 +1,59 @@
 #ifndef LOCATION_HPP
 # define LOCATION_HPP
-#include <vector>
+
 #include <string>
+#include <vector>
+
 class Location {
 	public:
 		Location();
+		Location(const std::string& URI);
 		Location(const Location &other);
 		virtual ~Location();
 
 		Location &operator=(const Location &other);
 		//getters and setters
+
+		void	addDirective(const std::string& name, const std::string& content);
+		void	addIndexDirective(const std::string& content);
+		void	addAllowMethodsDirective(const std::string& content);
+		void	addErrorPageDirective(const std::string& content);
+		void	addReturnDirective(const std::string& content);
+
+		std::string getURI() const;
 		std::string getRoot() const;
-		void setRoot(const std::string &root);
-		std::string getIndex() const;
-		void setIndex(const std::string &index);
-		size_t getClientMaxBodySize() const;
-		void setClientMaxBodySize(size_t clientMaxBodySize);
-		bool isAutoindex() const;
-		void setAutoindex(bool autoindex);
-		std::vector<std::string> & getMethods();
-		void addMethod(const std::string &method);
-		void display();
-		void setUri(const char *string);
-		std::string getUri();
-	protected:
-		std::string _uri;
+		size_t	getClientMaxBodySize() const;
+		bool getAutoIndex() const;
+		const std::vector<std::string>& getIndex() const;
+		const std::vector<std::string>& getAllowMethods() const;
+		const std::pair<std::vector<int>, std::string>& getErrorPage() const;
+		const std::pair<int, std::string>& getReturn() const;
+
+		void	setURI(const std::string& URI);
+		void	setRoot(const std::string& root);
+		void	setClientMaxBodySize(size_t clientMaxBodySize);
+		void	setAutoIndex(bool autoIndex);
+		void	setIndex(const std::vector<std::string>& index);
+		void	setAllowMethods(const std::vector<std::string>& allowMethods);
+		void	setErrorPage(const std::pair<std::vector<int>, std::string>& errorPage);
+		void	setReturn(const std::pair<int, std::string>& returnPage);
+
+	private:
+		// error page;
+		// root;
+		// index;
+		// allow_methods;
+		// autoindex;
+		// return;
+
+		std::string _URI;
 		std::string _root;
-		std::string _index;
+		std::vector<std::string> _index;
+		std::vector<std::string> _allowMethods;
+		std::pair<std::vector<int>, std::string> _errorPage;
+		std::pair<int, std::string> _return;
 		size_t _clientMaxBodySize;
-		std::vector<std::string> _allowedMethods;
-		bool _autoindex;
+		bool _autoIndex;
 };
 
 #endif

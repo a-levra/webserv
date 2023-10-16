@@ -4,17 +4,24 @@ project(42_webserv)
 set(CMAKE_CXX_STANDARD 98)
 
 include_directories(include)
+include_directories(include/config)
 include_directories(include/server)
 include_directories(include/HttpMessages)
 include_directories(include/utils)
 include_directories(include/virtualServer)
 
 add_executable(42_webserv
+        include/config/ConfigContext.hpp
+        include/config/ConfigLexer.hpp
+        include/config/ConfigParser.hpp
         include/server/Server.hpp
         include/server/Socket.hpp
         include/virtualServer/VirtualServer.hpp
         include/virtualServer/Location.hpp
         include/utils/utils.hpp
+        src/config/ConfigContext.cpp
+        src/config/ConfigLexer.cpp
+        src/config/ConfigParser.cpp
         src/server/Server.cpp
         src/server/Socket.cpp
         src/main.cpp
@@ -29,4 +36,14 @@ add_executable(42_webserv
         src/HttpMessages/HttpRequest.cpp
         src/virtualServer/VirtualServer.cpp
         src/virtualServer/Location.cpp
+        src/utils/isDigitString.cpp
+        src/utils/split.cpp
+        src/utils/trim.cpp
+        src/HttpRequest.cpp
+        src/virtualServer/VirtualServer.cpp
+        src/virtualServer/Location.cpp
+        src/utils/readFileToString.cpp
+        src/config/ConfigFactory.cpp
+        include/config/ConfigFactory.hpp
+        src/config/ConfigFactory.cpp
 )

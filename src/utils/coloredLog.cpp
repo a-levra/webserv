@@ -1,6 +1,6 @@
 #include "../include/utils/utils.hpp"
 
-void coloredLog(const std::string& str1, const std::string& str2, colors color)
+void coloredLog(std::string str1, std::string str2, colors color)
 {
 	std::string colorCode;
 	switch (color)

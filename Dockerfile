@@ -14,4 +14,4 @@ RUN make
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "make re && ./webserv"]
+CMD ["sh", "-c", "make re && ./webserv resources/webserv.conf"]

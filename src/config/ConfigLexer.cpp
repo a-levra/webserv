@@ -67,8 +67,12 @@ std::string ConfigLexer::getError() const {
 	return "";
 }
 
-Context *ConfigLexer::getMainContext() {
-	return  &_mainContext;
+Context &ConfigLexer::getMainContext() {
+	return  _mainContext;
+}
+
+const Context &ConfigLexer::getConstMainContext() const {
+	return _mainContext;
 }
 
 bool ConfigLexer::_analyzeContent(Context& currentContext, std::string content) {

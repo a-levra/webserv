@@ -1,9 +1,11 @@
 #ifndef VIRTUALSERVER_HPP
 # define VIRTUALSERVER_HPP
+
 #include <string>
 #include <map>
+#include <vector>
 
-class location;
+class Location;
 
 class virtualServer {
 	public:
@@ -12,25 +14,25 @@ class virtualServer {
 		virtual ~virtualServer();
 		virtualServer &operator=(const virtualServer &other);
 
-		void addLocation(const std::string &name, const location &location);
+		void addLocation(const std::string &name, const Location &location);
 		void removeLocation(const std::string &name);
 
 		//getters and setters
-		location getLocation(const std::string &name) const;
-		location getLocationByUri(const std::string &uri) const;
-		void setName(const std::string &name);
+		Location getLocation(const std::string &name) const;
+		Location getLocationByUri(const std::string &uri) const;
+		void setServerName(const std::vector<std::string>& serverName);
 		void setIP(const std::string &ip);
-		void setPort(const short port);
-		void setLocations(const std::map<std::string, location> &locations);
-		std::string getName() const;
+		void setPort(int port);
+		void setLocations(const std::map<std::string, Location> &locations);
+		const std::vector<std::string>& getServerName() const;
 		std::string getIP() const;
 		short getPort() const;
-		std::map<std::string, location> getLocations() const;
+		std::map<std::string, Location> getLocations() const;
 
 	private:
-		std::string _name;
-		std::string _ip;
-		short	_port;
-		std::map<std::string, location> _locations;
+		std::string _ipAddress;
+		int			_port;
+		std::vector<std::string> _serverName;
+		std::map<std::string, Location> _locations;
 };
 #endif

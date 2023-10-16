@@ -31,7 +31,7 @@ public:
 
 	ConfigParser &operator=(const ConfigParser &other);
 
-	int	parseConfigFile(const std::string& fileName);
+	bool parseConfigFile(const Context& mainContext);
 
 	std::string getError() const;
 	codeError	getCodeError() const;
@@ -69,7 +69,6 @@ private:
 	directiveFunctionMap _directiveFunctions;
 	codeError	_codeError;
 	std::string	_error;
-	ConfigLexer	_lexer;
 
 };
 

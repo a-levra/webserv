@@ -3,20 +3,18 @@
 
 #include "server/Server.hpp"
 
-Server::Server(void) {
-	Socket	serverSocket = Socket();
-	serverSocket.setReUse(true);
-	serverSocket.binding("0.0.0.0", 8000);
-	serverSocket.listening();
-	_listenerSockets.push_back(serverSocket);
-	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+Server::Server() {}
 
-	serverSocket = Socket();
-	serverSocket.setReUse(true);
-	serverSocket.binding("0.0.0.0", 5000);
-	serverSocket.listening();
-	_listenerSockets.push_back(serverSocket);
-	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+Server::Server(const std::vector<virtualServer>& virtualServers) {
+	std::vector<virtualServer>::const_iterator it;
+	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
+		Socket	serverSocket = Socket();
+		serverSocket.setReUse(true);
+		serverSocket.binding(it->getIP(), it->getPort());
+		serverSocket.listening();
+		_listenerSockets.push_back(serverSocket);
+		_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+	}
 }
 
 Server::Server(const Server &other) { *this = other; }
@@ -26,6 +24,9 @@ Server::~Server(void) {}
 Server &Server::operator=(const Server &other) {
 	if (this == &other)
 		return *this;
+	_listenerSockets = other._listenerSockets;
+	_pollFd = other._pollFd;
+	_virtualServers = other._virtualServers;
 	return (*this);
 }
 

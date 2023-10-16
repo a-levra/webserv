@@ -5,7 +5,7 @@ Context::Context() {}
 Context::Context(const std::string& name, const std::string& arguments, const std::string& content): _name(name), _arguments(arguments), _content(content) {}
 
 void Context::addDirective(const std::string &name, const std::string &content) {
-	_directives[name] = content;
+	_directives.insert(std::make_pair(name, content));
 }
 
 void Context::addContext(const Context context) {
@@ -13,9 +13,15 @@ void Context::addContext(const Context context) {
 }
 
 void Context::inheritDirectives() {
-	std::vector<Context>::iterator	it;
-	for (it = _subContexts.begin(); it != _subContexts.end(); it++) {
-		it->_directives = _directives;
+	std::vector<Context>::iterator	subContext;
+	for (subContext = _subContexts.begin(); subContext != _subContexts.end(); subContext++) {
+		std::map<std::string, std::string>::const_iterator it;
+		for (it = _directives.begin(); it != _directives.end(); it++) {
+			subContext->addDirective(it->first, it->second);
+		}
+	}
+	for (subContext = _subContexts.begin(); subContext != _subContexts.end(); subContext++) {
+		subContext->inheritDirectives();
 	}
 }
 

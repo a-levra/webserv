@@ -1,14 +1,14 @@
 #ifndef LOCATION_HPP
 # define LOCATION_HPP
-
+#include <vector>
 #include <string>
-class location {
+class Location {
 	public:
-		location();
-		location(const location &other);
-		virtual ~location();
+		Location();
+		Location(const Location &other);
+		virtual ~Location();
 
-		location &operator=(const location &other);
+		Location &operator=(const Location &other);
 		//getters and setters
 		std::string getRoot() const;
 		void setRoot(const std::string &root);
@@ -18,12 +18,17 @@ class location {
 		void setClientMaxBodySize(size_t clientMaxBodySize);
 		bool isAutoindex() const;
 		void setAutoindex(bool autoindex);
-
-	private:
+		std::vector<std::string> & getMethods();
+		void addMethod(const std::string &method);
+		void display();
+		void setUri(const char *string);
+		std::string getUri();
+	protected:
+		std::string _uri;
 		std::string _root;
 		std::string _index;
-		//allow method
 		size_t _clientMaxBodySize;
+		std::vector<std::string> _allowedMethods;
 		bool _autoindex;
 };
 

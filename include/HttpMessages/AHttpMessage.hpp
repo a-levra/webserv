@@ -1,17 +1,16 @@
-#ifndef HTTPREQUEST_HPP
-# define HTTPREQUEST_HPP
+#ifndef AHTTPMESSAGE_HPP
+# define AHTTPMESSAGE_HPP
 
 #include <string>
 #include <map>
 
-class HttpRequest {
+class AHttpMessage {
 	public:
-		HttpRequest();
-		HttpRequest(std::string raw);
-		HttpRequest(const HttpRequest &other);
-		virtual ~HttpRequest();
-		HttpRequest &operator=(const HttpRequest &other);
-		bool parse();
+		AHttpMessage();
+		AHttpMessage(std::string raw);
+		AHttpMessage(const AHttpMessage &other);
+		virtual ~AHttpMessage();
+		AHttpMessage &operator=(const AHttpMessage &other);
 		void setRawRequest(std::string string);
 		void displayRequest();
 
@@ -19,25 +18,20 @@ class HttpRequest {
 		void setStatusCode(int i);
 		void setStatusMessage(std::string statusMessage);
 		void setHeaders(std::string header, std::string content);
+		std::string getHeader(std::string header);
 		void setBody(std::string body);
-		void build();
+//		virtual void build() =0;
 		std::string getRawRequest();
 		void setBodyFromFile(std::string path);
-	private:
+
+	protected:
 		std::string _method;
 		std::string _path;
 		std::string _version;
 		std::map<std::string, std::string> _headers;
 		std::string _body;
-		std::string _rawRequest;
-		bool parseMethod();
-		bool parsePath();
-		bool parseVersion();
-		bool parseAllHeaders();
-		bool parseHeader(const std::string &line);
+		std::string _rawMessage;
 		void display(std::string message);
-		bool checkPathValidity(size_t spacePos);
-		bool checkDoubleSpaces();
 		int _statusCode;
 		std::string _statusMessage;
 };

@@ -1,12 +1,14 @@
 #include "virtualServer/VirtualServer.hpp"
 #include "virtualServer/Location.hpp"
-virtualServer::virtualServer(void) {}
+#include "utils/utils.hpp"
 
-virtualServer::virtualServer(const virtualServer &other) { *this = other; }
+VirtualServer::VirtualServer(void) {}
 
-virtualServer::~virtualServer(void) {}
+VirtualServer::VirtualServer(const VirtualServer &other) { *this = other; }
 
-virtualServer &virtualServer::operator=(const virtualServer &other) {
+VirtualServer::~VirtualServer(void) {}
+
+VirtualServer &VirtualServer::operator=(const VirtualServer &other) {
 	if (this != &other) {
 		setLocations(other._locations);
 		this->_ip = other._ip;
@@ -16,56 +18,65 @@ virtualServer &virtualServer::operator=(const virtualServer &other) {
 	return (*this);
 }
 
-void virtualServer::setName(const std::string &name) {
+void VirtualServer::setName(const std::string &name) {
 	_name = name;
 }
 
-void virtualServer::setIP(const std::string &ip) {
+void VirtualServer::setIP(const std::string &ip) {
 	_ip = ip;
 }
 
-void virtualServer::setPort(const short port) {
+void VirtualServer::setPort(const short port) {
 	_port = port;
 }
 
-void virtualServer::setLocations(const std::map<std::string, location> &locations) {
+void VirtualServer::setLocations(const std::map<std::string, Location> &locations) {
 	_locations = locations;
 }
 
-std::string virtualServer::getName() const {
+const std::string & VirtualServer::getName() const {
 	return _name;
 }
 
-std::string virtualServer::getIP() const {
+std::string VirtualServer::getIP() const {
 	return _ip;
 }
 
-short virtualServer::getPort() const {
+short VirtualServer::getPort() const {
 	return _port;
 }
 
-std::map<std::string, location> virtualServer::getLocations() const {
+std::map<std::string, Location> VirtualServer::getLocations() const {
 	return _locations;
 }
 
-void virtualServer::addLocation(const std::string &name, const location &location) {
-	_locations.insert(std::pair<std::string, ::location>(name, location));
+void VirtualServer::addLocation(Location &location) {
+	_locations.insert(std::pair<std::string, ::Location>(location.getUri(), location));
 }
 
-void virtualServer::removeLocation(const std::string &name) {
+void VirtualServer::removeLocation(const std::string &name) {
 	_locations.erase(name);
 }
 
 //example: name = /index.html
-location virtualServer::getLocation(const std::string &name) const {
-	return _locations.find(name)->second;
+Location * VirtualServer::getLocation(const std::string &name) {
+	std::map<std::string, Location>::iterator res = _locations.find(name);
+	if (res == _locations.end())
+		return (NULL);
+	return &(res->second);
+}
+void VirtualServer::display() {
+	coloredLog("Virtual server " + this->_name + ": ", "", PURPLE);
+	coloredLog("\tname: ", _name, GREEN);
+	coloredLog("\tip: ", _ip, GREEN);
+	coloredLog("\tport: ", toString(_port), GREEN);
+	coloredLog("\tlocation : ", "", GREEN);
+	if (_locations.empty()) {
+		coloredLog("", "(empty)", GREEN);
+		return;
+	}
+	std::map<std::string, Location>::iterator it;
+	for (it = _locations.begin(); it != _locations.end(); it++)
+		printBold("\t\t" + it->first);
 }
 
-location virtualServer::getLocationByUri(const std::string &uri) const {
-	std::map<std::string, location>::const_iterator it;
-	for (it = _locations.begin(); it != _locations.end(); it++) {
-		if (uri.find(it->first) != std::string::npos)
-			return it->second;
-	}
-	return _locations.find("/")->second;
-}

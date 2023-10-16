@@ -35,12 +35,12 @@ Socket &Socket::operator=(const Socket &other) {
 	return *this;
 }
 
-void Socket::binding(const int port, const char* ip_address) {
+void Socket::binding(std::string ip, int port) {
+	_ip = ip;
 	_port = port;
-	_ip = std::string(ip_address);
 	_address.sin_family = AF_INET;
 	_address.sin_port = htons(port);
-	_address.sin_addr.s_addr = htonl(_convertIPToBinary(ip_address));
+	_address.sin_addr.s_addr = htonl(_convertIPToBinary(_ip));
 	if (bind(_fd, (struct sockaddr *)&_address, sizeof(_address)) == -1)
 		throw std::runtime_error("Socket binding: bind failed");
 }

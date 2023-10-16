@@ -14,7 +14,7 @@ class Socket
 
 		Socket &operator=(const Socket &other);
 
-		void	binding(const int port, const char* ip_address);
+		void	binding(std::string ip, int port);
 		void	listening(void);
 		void	closeFD(void);
 

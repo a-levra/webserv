@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 98)
 
 include_directories(include)
 include_directories(include/server)
+include_directories(include/HttpMessages)
+include_directories(include/utils)
+include_directories(include/virtualServer)
 
 add_executable(42_webserv
         include/server/Server.hpp
@@ -15,9 +18,15 @@ add_executable(42_webserv
         src/server/Server.cpp
         src/server/Socket.cpp
         src/main.cpp
-        src/HttpRequest.cpp)
-        src/HttpRequest.cpp
         src/virtualServer/VirtualServer.cpp
         src/virtualServer/Location.cpp
         src/utils/readFileToString.cpp
+        src/utils/coloredLog.cpp
+        src/utils/getDate.cpp
+        src/utils/printBold.cpp
+        src/HttpMessages/AHttpMessage.cpp
+        src/HttpMessages/HttpResponse.cpp
+        src/HttpMessages/HttpRequest.cpp
+        src/virtualServer/VirtualServer.cpp
+        src/virtualServer/Location.cpp
 )

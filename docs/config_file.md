@@ -48,10 +48,10 @@ Default: server_name "";
 Context: server
 ```
 
-### Location:
+### location:
 Sets configuration depending on a request URI.
 ```
-Syntaxe: Location uri { ... }
+Syntaxe: location uri { ... }
 Défaut:	—
 Contexte: server
 ```
@@ -66,27 +66,27 @@ error_page 300 400 500 /50x.html;
 ```
 Syntax:	error_page code ... [=[response]] uri;
 Default: —
-Context: http, server, Location
+Context: http, server, location
 ```
 
 ### root
 Sets the root directory for requests. For example, with the following configuration
 ```
-Location /i/ {
+location /i/ {
     root /data/w3;
 }
 ```
 ```
 Syntax:	root path;
 Default: root html;
-Context: http, server, Location
+Context: http, server, location
 ```
 
 ### return
 ```
 Syntax:	return code URL;
 Default: —
-Context: server, Location
+Context: server, location
 ```
 
 ### index
@@ -97,7 +97,7 @@ index index.html index0.html something.html;
 ```
 Syntax: index file ...;
 Default: index index.html;
-Context: http, server, Location
+Context: http, server, location
 ```
 
 ### allow_methods
@@ -108,7 +108,7 @@ allow_methods GET POST;
 ```
 Syntax: allow_methods ...
 Default: allow_methods GET POST DELETE;
-Context: http, server, Location
+Context: http, server, location
 ```
 
 ### client_max_body_size
@@ -116,7 +116,7 @@ Sets the maximum allowed size of the client request body.
 ```
 Syntax: client_max_body_size size;
 Default: client_max_body_size 1m;
-Context: http, server, Location
+Context: http, server, location
 ```
 
 ### autoindex
@@ -124,6 +124,6 @@ Enables or disables the directory listing output.
 ```
 Syntax:	autoindex on | off;
 Default: autoindex off;
-Context: http, server, Location
+Context: http, server, location
 ```
 

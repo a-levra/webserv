@@ -35,16 +35,17 @@ static int	testConfigFile(const std::string& configFile) {
 }
 
 static int runServer(const std::string& configFile) {
-	ConfigLexer*	lexer = new ConfigLexer(configFile);
+	Server			webserv;
 
-	if (!parseConfigFile(*lexer)) {
-		delete lexer;
-		return EXIT_FAILURE;
+	{
+		ConfigLexer	lexer = ConfigLexer(configFile);
+		if (!parseConfigFile(lexer)) {
+			return EXIT_FAILURE;
+		}
+		lexer.getMainContext().inheritDirectives();
+		webserv = Server(ConfigFactory::createVirtualServers(
+				lexer.getMainContext()));
 	}
-	lexer->getMainContext().inheritDirectives();
-	Server	webserv = Server(ConfigFactory::createVirtualServers(
-							 lexer->getMainContext()));
-	delete lexer;
 	webserv.listen();
 	return EXIT_FAILURE;
 }

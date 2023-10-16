@@ -3,6 +3,8 @@
 
 #include "server/Server.hpp"
 
+Server::Server() {}
+
 Server::Server(const std::vector<virtualServer>& virtualServers) {
 	std::vector<virtualServer>::const_iterator it;
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
@@ -22,6 +24,9 @@ Server::~Server(void) {}
 Server &Server::operator=(const Server &other) {
 	if (this == &other)
 		return *this;
+	_listenerSockets = other._listenerSockets;
+	_pollFd = other._pollFd;
+	_virtualServers = other._virtualServers;
 	return (*this);
 }
 

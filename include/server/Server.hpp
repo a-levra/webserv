@@ -9,6 +9,7 @@
 
 class Server {
     public:
+		Server();
 		Server(const std::vector<virtualServer>& virtualServers);
 		Server(const Server &other);
 		virtual ~Server();

@@ -1,5 +1,5 @@
 #include "config/ConfigFactory.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 #include <cstdlib>
 
@@ -25,8 +25,8 @@ ConfigFactory &ConfigFactory::operator=(const ConfigFactory &other)
 	return (*this);
 }
 
-std::vector<virtualServer> ConfigFactory::createVirtualServers(const Context &mainContext) {
-	std::vector<virtualServer>	virtualServers;
+std::vector<VirtualServer> ConfigFactory::createVirtualServers(const Context &mainContext) {
+	std::vector<VirtualServer>	virtualServers;
 	const Context httpContext = mainContext.getConstSubContexts()[0];
 	const std::vector<Context>& servers = httpContext.getConstSubContexts();
 
@@ -37,8 +37,8 @@ std::vector<virtualServer> ConfigFactory::createVirtualServers(const Context &ma
 	return virtualServers;
 }
 
-virtualServer ConfigFactory::_createVirtualServer(const Context& serverContext) {
-	virtualServer	server;
+VirtualServer ConfigFactory::_createVirtualServer(const Context& serverContext) {
+	VirtualServer	server;
 	const std::vector<Context>& locations = serverContext.getConstSubContexts();
 	const std::map<std::string, std::string>& directives = serverContext.getDirectives();
 	std::map<std::string, std::string>::const_iterator listenIt = directives.find("listen");

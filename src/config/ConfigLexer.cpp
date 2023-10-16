@@ -1,5 +1,5 @@
 #include "config/ConfigLexer.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 #include <fstream>
 #include <algorithm>

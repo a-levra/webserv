@@ -1,6 +1,6 @@
 #include "config/ConfigParser.hpp"
 #include "config/ConfigLexer.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 #include <limits>
 #include <algorithm>

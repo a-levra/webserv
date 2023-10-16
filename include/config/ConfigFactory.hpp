@@ -16,10 +16,10 @@ public:
 
 	ConfigFactory &operator=(const ConfigFactory &other);
 
-	static std::vector<virtualServer>	createVirtualServers(const Context& mainContext);
+	static std::vector<VirtualServer>	createVirtualServers(const Context& mainContext);
 
 private:
-	static virtualServer	_createVirtualServer(const Context& serverContext);
+	static VirtualServer	_createVirtualServer(const Context& serverContext);
 	static Location			_createLocation(const Context& locationContext);
 };
 

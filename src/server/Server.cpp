@@ -1,12 +1,17 @@
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
 
 #include "server/Server.hpp"
+#include "HttpMessages/AHttpMessage.hpp"
+#include "HttpMessages/HttpRequest.hpp"
+#include "HttpMessages/HttpResponse.hpp"
+#include "utils/utils.hpp"
 
 Server::Server() {}
 
-Server::Server(const std::vector<virtualServer>& virtualServers) {
-	std::vector<virtualServer>::const_iterator it;
+Server::Server(const std::vector<VirtualServer>& virtualServers) {
+	std::vector<VirtualServer>::const_iterator it;
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
 		Socket	serverSocket = Socket();
 		serverSocket.setReUse(true);
@@ -31,7 +36,7 @@ Server &Server::operator=(const Server &other) {
 }
 
 void Server::listen(void) {
-	std::cout << "Start listenning..." << std::endl;
+	coloredLog("Start listenning...", "", GREEN);
 	for (size_t i = 0; i < _listenerSockets.size(); i++) {
 		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
 	}
@@ -67,12 +72,21 @@ void Server::_accept_new_client(struct pollfd listener) {
 }
 
 ssize_t	Server::_read_persistent_connection(size_t client_index) {
-	char buffer[1024]; // Vous pouvez ajuster la taille du tampon selon vos besoins
+	coloredLog("Request received :", "", BLUE);
+	char buffer[4096];
+	memset(buffer, 0, sizeof(buffer));
 	std::string completeClientRequest;
-	ssize_t bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
-	while (bytesRead > 0 ) {
-		completeClientRequest.append(buffer, bytesRead);
+	completeClientRequest = "";
+	ssize_t bytesRead = (ssize_t)(sizeof(buffer));
+	while (bytesRead >= (ssize_t)(sizeof(buffer))) {
+		coloredLog("Reading request", "", YELLOW);
 		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
+		coloredLog("Bytes read: ", toString(bytesRead), YELLOW);
+		coloredLog("Request: ", buffer, PURPLE);
+		coloredLog("End of request", "", YELLOW);
+		if (bytesRead == -1)
+			break;
+		completeClientRequest.append(buffer, bytesRead);
 	}
 	if (bytesRead == 0)
 	{
@@ -81,6 +95,31 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		_pollFd.erase(_pollFd.begin() + client_index);
 		return (bytesRead);
 	}
+	if (bytesRead != -1){
+		HttpRequest httpRequest = HttpRequest(completeClientRequest);
+		httpRequest.displayRequest();
+		HttpResponse httpResponse;
+		std::string response = httpResponse.getResponse((*this), httpRequest);
+		write(_pollFd[client_index].fd, response.c_str(), response.size());
+		coloredLog("Response sent", "[" + toString(client_index) + "]", BLUE);
+	}
 	std::cout << "A client has sent data" << std::endl;
+
 	return bytesRead;
+}
+
+
+void Server::displayVirtualServers() {
+	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
+	}
+}
+
+VirtualServer *Server::getVirtualServer(const std::string &serverName) {
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
+			return &_virtualServers[i];
+	}
+	return NULL;
 }

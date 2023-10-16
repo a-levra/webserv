@@ -1,23 +1,24 @@
 LIST_SRC	=\
-			config/ConfigContext.cpp	\
-			config/ConfigFactory.cpp	\
-			config/ConfigLexer.cpp		\
-			config/ConfigParser.cpp		\
-			\
-			\
-			server/Server.cpp	\
-			server/Socket.cpp	\
-			utils/readFileToString.cpp \
-			HttpRequest.cpp		\
-			\
-			\
-			utils/isDigitString.cpp	\
-			utils/split.cpp	\
-			utils/trim.cpp	\
-			\
-			\
-			virtualServer/Location.cpp		\
-			virtualServer/VirtualServer.cpp	\
-			\
-			\
-			main.cpp
+		config/ConfigLexer.cpp \
+		config/ConfigParser.cpp \
+		config/ConfigContext.cpp \
+		config/ConfigFactory.cpp \
+        server/Server.cpp \
+        server/Socket.cpp \
+        \
+        main.cpp \
+        \
+        HttpMessages/AHttpMessage.cpp \
+        HttpMessages/HttpRequest.cpp \
+        HttpMessages/HttpResponse.cpp \
+		\
+        virtualServer/VirtualServer.cpp \
+        virtualServer/Location.cpp \
+        \
+        utils/readFileToString.cpp \
+        utils/coloredLog.cpp \
+        utils/printBold.cpp \
+        utils/getDate.cpp \
+        utils/isDigitString.cpp	\
+        utils/split.cpp	\
+        utils/trim.cpp	\

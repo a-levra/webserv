@@ -37,6 +37,13 @@ void HttpResponse::build() {
 //	_rawMessage = response;
 }
 
+/*
+ * This function is called by the server when a request is received.
+ *  1) parse the host inside the request
+ *  2) get the virtual server corresponding to the host
+ *  3) get the location corresponding to the path and the host
+ *  4) build the response into _rawMessage and returns it
+ */
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	std::string host = request.getHeader("Host");
 	coloredLog("Host requested: ", host, PURPLE);

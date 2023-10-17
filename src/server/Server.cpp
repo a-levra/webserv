@@ -14,7 +14,6 @@ Server::Server(const std::vector<VirtualServer>& virtualServers) {
 	std::vector<VirtualServer>::const_iterator it;
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
 		Socket	serverSocket = Socket();
-		serverSocket.setReUse(true);
 		serverSocket.binding(it->getIP(), it->getPort());
 		serverSocket.listening();
 		_listenerSockets.push_back(serverSocket);

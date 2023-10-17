@@ -24,7 +24,6 @@ Socket::Socket(const std::string &ip_address, int port) {
 	if (this->_fd == -1)
 		throw std::runtime_error("Socket: socket failed");
 	std::memset(&this->_address, 0, sizeof(this->_address));
-	setReUse(true);
 	binding(ip_address, port);
 }
 
@@ -55,7 +54,6 @@ void Socket::binding(const std::string& ip_address, const int port) {
 }
 
 void	Socket::listening(void) {
-	//	TODO: secure
 	if (listen(_fd, SOMAXCONN) == -1)
 		throw std::runtime_error("Socket: listen failed");
 }
@@ -78,14 +76,6 @@ std::string Socket::getIP() const {
 
 struct pollfd Socket::getPollFd(const short events) const {
 	return ((struct pollfd){.fd = _fd, .events = events, .revents = 0});
-}
-
-void	Socket::setReUse(const int option) {
-	int reuse = option;
-	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) == -1)
-		throw std::runtime_error("Socket setReUse: setsockopt failed");
-	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)
-		throw std::runtime_error("Socket setReUse: setsockopt failed");
 }
 
 uint32_t	Socket::_convertIPToBinary(std::string ip_address)

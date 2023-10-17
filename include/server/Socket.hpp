@@ -24,8 +24,6 @@ class Socket
 		std::string		getIP(void) const;
 		struct pollfd	getPollFd(const short events) const;
 
-		void	setReUse(const int option);
-
 	private:
 		uint32_t	_convertIPToBinary(std::string ip_address);
 

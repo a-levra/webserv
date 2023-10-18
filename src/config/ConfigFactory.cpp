@@ -76,6 +76,6 @@ std::vector<std::string> ConfigFactory::_getServerNamesFromDirective(const std::
 		serverNamesNotSplitted = "";
 	else
 		serverNamesNotSplitted = it->second;
-	return (splitDelimiter(serverNamesNotSplitted, ' '));
+	return (splitWhiteSpace(serverNamesNotSplitted));
 }
 

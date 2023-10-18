@@ -39,7 +39,6 @@ add_executable(42_webserv
         src/utils/isDigitString.cpp
         src/utils/split.cpp
         src/utils/trim.cpp
-        src/HttpRequest.cpp
         src/virtualServer/VirtualServer.cpp
         src/virtualServer/Location.cpp
         src/utils/readFileToString.cpp

@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include "HttpMessages/HttpResponse.hpp"
 
 #define HTTP_VERSION "HTTP/1.1 "
@@ -16,27 +17,13 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 	return (*this);
 }
 
-void HttpResponse::build() {
-//	std::string response;
-//
-//	this->generateBody();
-//	this->setHeader("Date", getDate());
-//	this->setHeader("Server", "webserv");
-//	this->setHeader("Content-Length", toString(_body.length()));
-//	this->setStatusCode(200);
-//	this->setStatusMessage("OK");
-//
-//	response += HTTP_VERSION + toString(this->_statusCode) + "\r\n";
-//	std::map<std::string, std::string>::iterator it;
-//	for (it = _headers.begin(); it != _headers.end(); it++) {
-//		response += it->first + ": " + it->second + "\r\n";
-//	}
-//	response += "\r\n";
-//	response += getBody();
-//
-//	_rawMessage = response;
-}
-
+/*
+ * This function is called by the server when a request is received.
+ *  1) parse the host inside the request
+ *  2) get the virtual server corresponding to the host
+ *  3) get the location corresponding to the path and the host
+ *  4) build the response into _rawMessage and returns it
+ */
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	std::string host = request.getHeader("Host");
 	coloredLog("Host requested: ", host, PURPLE);
@@ -47,9 +34,13 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		return _rawMessage;
 	}
 	_path = request.getPath();
-//	Location *loc = vs->getLocation(_path); //todo check if loc is null
-//	loc->display();
-//	this->build(*loc, host);
+	Location *loc = vs->getLocation(_path);
+	if (loc == NULL){
+		buildErrorPage(404, server);
+		return _rawMessage;
+	}
+	loc->display();
+	this->build(*loc, host);
 	return _rawMessage;
 }
 
@@ -89,8 +80,10 @@ void HttpResponse::buildErrorPage(int i, Server &server) {
 	}
 	response += HTTP_VERSION + error + " " + errorName + "\r\n";
 	response += "Content-Type: text/html\r\n";
+	std::string body = "<html><body><h1>" + error + " " + errorName + "</h1></body></html>";
+	response += "Content-Length: " + toString(body.length()) + "\r\n";
 	response += "\r\n";
-	response += "<html><body><h1>" + error + " " + errorName + "</h1></body></html>";
+	response += body;
 	_rawMessage = response;
 }
 
@@ -118,7 +111,9 @@ void HttpResponse::build(Location &location, std::string host) {
 }
 
 void HttpResponse::generateBody(Location &location) {
-	_body = readFileToString("./assets/" + location.getRoot() + "/" + _path + "/index.html");
+	coloredLog("path = ", _path, YELLOW);
+	std::string index = getFirstValidIndex(location);
+	_body = readFileToString( location.getRoot() + "/" + _path + index );
 	if (_body.empty()){
 		this->setStatusCode(500);
 		this->setStatusMessage("Internal Server Error");
@@ -131,4 +126,21 @@ void HttpResponse::generateBody(Location &location) {
 		this->setBody(_body);
 		return ;
 	}
+}
+
+std::string HttpResponse::getFirstValidIndex(Location &location) {
+	std::vector<std::string> index = location.getIndex();
+	std::vector<std::string>::iterator it;
+	for (it = index.begin(); it != index.end(); it++) {
+		std::string pathToFile = location.getRoot() + "/" + _path;
+		pathToFile += *it;
+		if (fileExists(pathToFile))
+			return *it;
+	}
+	return "";
+}
+
+bool HttpResponse::fileExists(std::string pathToFile) {
+	struct stat buffer;
+	return (stat(pathToFile.c_str(), &buffer) == 0);
 }

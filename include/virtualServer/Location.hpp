@@ -38,6 +38,7 @@ class Location {
 		void	setErrorPage(const std::pair<std::vector<int>, std::string>& errorPage);
 		void	setReturn(const std::pair<int, std::string>& returnPage);
 
+		void display();
 	private:
 		// error page;
 		// root;

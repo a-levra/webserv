@@ -36,9 +36,13 @@ void VirtualServer::setLocations(const std::map<std::string, Location> &location
 	_locations = locations;
 }
 
-const std::vector<std::string>& VirtualServer::getServerName() const {
+std::vector<std::string> & VirtualServer::getServerName() {
+	if (_serverName.empty())
+		_serverName.push_back("");
 	return _serverName;
 }
+
+
 
 std::string VirtualServer::getIP() const {
 	return _ipAddress;

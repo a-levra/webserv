@@ -24,7 +24,7 @@ class VirtualServer {
 		void setIP(const std::string &ip);
 		void setPort(int port);
 		void setLocations(const std::map<std::string, Location> &locations);
-		const std::vector<std::string>& getServerName() const;
+		std::vector<std::string> & getServerName();
 		std::string getIP() const;
 		short getPort() const;
 		std::map<std::string, Location> getLocations() const;

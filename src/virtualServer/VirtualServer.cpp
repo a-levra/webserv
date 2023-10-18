@@ -36,9 +36,13 @@ void VirtualServer::setLocations(const std::map<std::string, Location> &location
 	_locations = locations;
 }
 
-const std::vector<std::string>& VirtualServer::getServerName() const {
+std::vector<std::string> & VirtualServer::getServerName() {
+	if (_serverName.empty())
+		_serverName.push_back("");
 	return _serverName;
 }
+
+
 
 std::string VirtualServer::getIP() const {
 	return _ipAddress;
@@ -62,6 +66,11 @@ void VirtualServer::removeLocation(const std::string &name) {
 
 //example: name = /index.html
 Location * VirtualServer::getLocation(const std::string &name) {
+	coloredLog("Location requested : ", "\"" + name + "\"", YELLOW);
+	coloredLog("VirtualServer::getLocation ", "locations.size() = " + toString(_locations.size()), YELLOW);
+	for (std::map<std::string, Location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
+		coloredLog("VirtualServer::getLocation ", "it->first = " + it->first, YELLOW);
+	}
 	std::map<std::string, Location>::iterator res = _locations.find(name);
 	if (res == _locations.end())
 		return (NULL);

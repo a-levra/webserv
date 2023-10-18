@@ -17,7 +17,6 @@ static int	runServer(const std::string& configFile);
 int main(int argc, char **argv)
 {
 	Server	webserv = Server();
-	webserv.displayVirtualServers();
 	if (!isParsingFlag(argc, argv) && argc != 2) {
 		std::cerr << "Usage: ./webserv *.conf" << std::endl;
 		return EXIT_FAILURE;

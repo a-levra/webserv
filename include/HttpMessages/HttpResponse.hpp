@@ -18,6 +18,8 @@ class HttpResponse : public AHttpMessage {
 		void buildErrorPage(int i, Server &server);
 		void setHeader(std::string header, std::string content);
 		void generateBody(Location &location);
+		std::string getFirstValidIndex(Location &location);
+		bool fileExists(std::string pathToFile);
 };
 
 #endif

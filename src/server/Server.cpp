@@ -34,11 +34,12 @@ bool Server::loadVirtualServers(const std::vector<VirtualServer> &virtualServers
 }
 
 bool Server::listen() {
-	coloredLog("Start listenning...", "", GREEN);
+	coloredLog("Start listening...", "", GREEN);
 	for (size_t i = 0; i < _listenerSockets.size(); i++) {
 		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
 	}
 	while (true) {
+		coloredLog("Waiting for a request...", "", GREEN);
 		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1) {
 			std::cerr << "webserv: server.listen poll() failed" << std::endl;
 			return false;
@@ -122,6 +123,7 @@ void Server::_printVirtualServerError(const std::string& function,
 
 void Server::_check_revents_sockets(void) {
 	for (size_t i = 0; i < _pollFd.size(); i++) {
+		coloredLog("Checking revents for socket [" + toString(i) + "]", "", GREEN);
 		if ((_pollFd[i].revents & POLLIN) == 0)
 			continue;
 		if (i  < _listenerSockets.size()) {
@@ -177,10 +179,9 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		HttpResponse httpResponse;
 		std::string response = httpResponse.getResponse((*this), httpRequest);
 		write(_pollFd[client_index].fd, response.c_str(), response.size());
-		coloredLog("Response sent", "[" + toString(client_index) + "]", BLUE);
+		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
+		coloredLog("Response: ", "\"" + response + "\"", PURPLE);
 	}
-	std::cout << "A client has sent data" << std::endl;
-
 	return bytesRead;
 }
 

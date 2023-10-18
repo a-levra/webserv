@@ -158,3 +158,27 @@ void Location::setErrorPage(const std::pair<std::vector<int>, std::string> &erro
 void Location::setReturn(const std::pair<int, std::string> &returnPage) {
 	_return = returnPage;
 }
+
+void Location::display() {
+	coloredLog("Location : ", "", PURPLE);
+	coloredLog("URI : ", _URI, PURPLE);
+	coloredLog("root : ", _root, PURPLE);
+	coloredLog("client_max_body_size : ", toString(_clientMaxBodySize), PURPLE);
+	coloredLog("autoindex : ", toString(_autoIndex), PURPLE);
+	coloredLog("index : ", "", PURPLE);
+	for (size_t i = 0; i < _index.size(); i++) {
+		coloredLog("\t", _index[i], PURPLE);
+	}
+	coloredLog("allow_methods : ", "", PURPLE);
+	for (size_t i = 0; i < _allowMethods.size(); i++) {
+		coloredLog("\t", _allowMethods[i], PURPLE);
+	}
+	coloredLog("error_page : ", "", PURPLE);
+	for (size_t i = 0; i < _errorPage.first.size(); i++) {
+		coloredLog("\t", toString(_errorPage.first[i]), PURPLE);
+	}
+	coloredLog("\t", _errorPage.second, PURPLE);
+	coloredLog("return : ", "", PURPLE);
+	coloredLog("\t", toString(_return.first), PURPLE);
+	coloredLog("\t", _return.second, PURPLE);
+}

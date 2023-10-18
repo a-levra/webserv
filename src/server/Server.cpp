@@ -37,11 +37,12 @@ Server &Server::operator=(const Server &other) {
 }
 
 void Server::listen(void) {
-	coloredLog("Start listenning...", "", GREEN);
+	coloredLog("Start listening...", "", GREEN);
 	for (size_t i = 0; i < _listenerSockets.size(); i++) {
 		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
 	}
 	while (true) {
+		coloredLog("Waiting for a request...", "", GREEN);
 		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1)
 			throw std::runtime_error("Server listen: poll failed");
 		_check_revents_sockets();
@@ -50,6 +51,7 @@ void Server::listen(void) {
 
 void Server::_check_revents_sockets(void) {
 	for (size_t i = 0; i < _pollFd.size(); i++) {
+		coloredLog("Checking revents for socket [" + toString(i) + "]", "", GREEN);
 		if ((_pollFd[i].revents & POLLIN) == 0)
 			continue;
 		if (i  < _listenerSockets.size()) {

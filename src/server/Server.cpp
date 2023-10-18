@@ -102,10 +102,9 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		HttpResponse httpResponse;
 		std::string response = httpResponse.getResponse((*this), httpRequest);
 		write(_pollFd[client_index].fd, response.c_str(), response.size());
-		coloredLog("Response sent", "[" + toString(client_index) + "]", BLUE);
+		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
+		coloredLog("Response: ", "\"" + response + "\"", PURPLE);
 	}
-	std::cout << "A client has sent data" << std::endl;
-
 	return bytesRead;
 }
 

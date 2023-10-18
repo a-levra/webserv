@@ -5,30 +5,30 @@
 # include <arpa/inet.h>
 # include <poll.h>
 
-class Socket
-{
+class Socket {
 	public:
-		Socket(void);
-		Socket(const std::string& ip_address, int port);
+		Socket();
 		Socket(const Socket &other);
-		~Socket(void);
+		~Socket();
 
 		Socket &operator=(const Socket &other);
 
-		void			binding(const std::string& ip_address, const int port);
-		void			listening(void);
-		void			closeFD(void);
+		bool	initialize();
+		bool	binding(const std::string& IPAddress, unsigned short port);
+		bool	listening() const;
+		void	closeFD();
 
-		int				getFD(void) const;
-		int				getPort(void) const;
-		std::string		getIP(void) const;
-		struct pollfd	getPollFd(const short events) const;
+		int				getFD() const;
+		int				getPort() const;
+		std::string		getIP() const;
+		struct pollfd	getPollFd(short events) const;
 
 	private:
-		uint32_t	_convertIPToBinary(std::string ip_address);
+		bool				_calculateRawIPAddress();
 
 		struct sockaddr_in	_address;
-		std::string			_ip_adress;
+		std::string			_IPAddress;
+		uint32_t			_rawIPAddress;
 		int					_port;
 		int					_fd;
 

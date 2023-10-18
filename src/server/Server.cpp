@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
+#include <cerrno>
 
 #include "server/Server.hpp"
 #include "HttpMessages/AHttpMessage.hpp"
@@ -13,12 +14,37 @@ Server::Server() {}
 Server::Server(const std::vector<VirtualServer>& virtualServers) {
 	std::vector<VirtualServer>::const_iterator it;
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
-		Socket	serverSocket = Socket();
-		serverSocket.binding(it->getIP(), it->getPort());
-		serverSocket.listening();
-		_listenerSockets.push_back(serverSocket);
-		_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+		_createVirtualServerSocket(*it);
 	}
+}
+
+bool Server::_createVirtualServerSocket(const VirtualServer &virtualServer) {
+	Socket	serverSocket = Socket();
+
+	if (!serverSocket.initialize()) {
+		_printVirtualServerError("socket.initialize()", virtualServer);
+		return false;
+	}
+	if (!serverSocket.binding(virtualServer.getIP(), virtualServer.getPort())) {
+		serverSocket.closeFD();
+		_printVirtualServerError("socket.binding()", virtualServer);
+		return false;
+	}
+	if (!serverSocket.listening()) {
+		serverSocket.closeFD();
+		_printVirtualServerError("socket.listening()", virtualServer);
+		return false;
+	}
+	_listenerSockets.push_back(serverSocket);
+	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+	return true;
+}
+
+void Server::_printVirtualServerError(const std::string& function,
+									  const VirtualServer &virtualServer) {
+	std::cerr << "webserv: " << function << " to " << virtualServer.getIP() <<
+	":" << virtualServer.getPort() << " failed (" << errno << ": "
+	<< strerror(errno) << ")" << std::endl;
 }
 
 Server::Server(const Server &other) { *this = other; }

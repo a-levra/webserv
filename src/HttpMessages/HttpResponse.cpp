@@ -100,8 +100,10 @@ void HttpResponse::buildErrorPage(int i, Server &server) {
 	}
 	response += HTTP_VERSION + error + " " + errorName + "\r\n";
 	response += "Content-Type: text/html\r\n";
+	std::string body = "<html><body><h1>" + error + " " + errorName + "</h1></body></html>";
+	response += "Content-Length: " + toString(body.length()) + "\r\n";
 	response += "\r\n";
-	response += "<html><body><h1>" + error + " " + errorName + "</h1></body></html>";
+	response += body;
 	_rawMessage = response;
 }
 

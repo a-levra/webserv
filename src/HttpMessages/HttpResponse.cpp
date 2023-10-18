@@ -54,9 +54,13 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		return _rawMessage;
 	}
 	_path = request.getPath();
-//	Location *loc = vs->getLocation(_path); //todo check if loc is null
-//	loc->display();
-//	this->build(*loc, host);
+	Location *loc = vs->getLocation(_path);
+	if (loc == NULL){
+		buildErrorPage(404, server);
+		return _rawMessage;
+	}
+	loc->display();
+	this->build(*loc, host);
 	return _rawMessage;
 }
 

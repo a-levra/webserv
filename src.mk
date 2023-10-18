@@ -20,5 +20,6 @@ LIST_SRC	=\
         utils/printBold.cpp \
         utils/getDate.cpp \
         utils/isDigitString.cpp	\
+        utils/sleep.cpp	\
         utils/split.cpp	\
         utils/trim.cpp	\

@@ -47,14 +47,18 @@ static int runServer(const std::string& configFile) {
 
 	{
 		ConfigLexer	lexer = ConfigLexer(configFile);
-		if (!parseConfigFile(lexer)) {
+		if (!parseConfigFile(lexer))
+			return EXIT_FAILURE;
+		lexer.getMainContext().inheritDirectives();
+		webserv = Server();
+		if (!webserv.loadVirtualServers(ConfigFactory::createVirtualServers(
+				lexer.getMainContext()))) {
+			std::cerr << "webserv: failed to launch virtual servers" << std::endl;
 			return EXIT_FAILURE;
 		}
-		lexer.getMainContext().inheritDirectives();
-		webserv = Server(ConfigFactory::createVirtualServers(
-			lexer.getMainContext()));
 	}
-	webserv.listen();
+	if (!webserv.listen())
+		EXIT_FAILURE;
 	return EXIT_FAILURE;
 }
 

@@ -60,7 +60,7 @@ void	Socket::closeFD() {
 	close(_fd);
 }
 
-int Socket::getFD(void) const {
+int Socket::getFD() const {
 	return _fd;
 }
 

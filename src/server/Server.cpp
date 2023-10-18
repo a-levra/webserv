@@ -11,45 +11,9 @@
 
 Server::Server() {}
 
-Server::Server(const std::vector<VirtualServer>& virtualServers) {
-	std::vector<VirtualServer>::const_iterator it;
-	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
-		_createVirtualServerSocket(*it);
-	}
-}
-
-bool Server::_createVirtualServerSocket(const VirtualServer &virtualServer) {
-	Socket	serverSocket = Socket();
-
-	if (!serverSocket.initialize()) {
-		_printVirtualServerError("socket.initialize()", virtualServer);
-		return false;
-	}
-	if (!serverSocket.binding(virtualServer.getIP(), virtualServer.getPort())) {
-		serverSocket.closeFD();
-		_printVirtualServerError("socket.binding()", virtualServer);
-		return false;
-	}
-	if (!serverSocket.listening()) {
-		serverSocket.closeFD();
-		_printVirtualServerError("socket.listening()", virtualServer);
-		return false;
-	}
-	_listenerSockets.push_back(serverSocket);
-	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
-	return true;
-}
-
-void Server::_printVirtualServerError(const std::string& function,
-									  const VirtualServer &virtualServer) {
-	std::cerr << "webserv: " << function << " to " << virtualServer.getIP() <<
-	":" << virtualServer.getPort() << " failed (" << errno << ": "
-	<< strerror(errno) << ")" << std::endl;
-}
-
 Server::Server(const Server &other) { *this = other; }
 
-Server::~Server(void) {}
+Server::~Server() {}
 
 Server &Server::operator=(const Server &other) {
 	if (this == &other)
@@ -60,17 +24,101 @@ Server &Server::operator=(const Server &other) {
 	return (*this);
 }
 
-void Server::listen(void) {
+bool Server::loadVirtualServers(const std::vector<VirtualServer> &virtualServers) {
+	std::vector<VirtualServer>::const_iterator it;
+	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
+		if (!_createVirtualServer(*it))
+			return false;
+	}
+	return true;
+}
+
+bool Server::listen() {
 	coloredLog("Start listenning...", "", GREEN);
 	for (size_t i = 0; i < _listenerSockets.size(); i++) {
 		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
 	}
 	while (true) {
-		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1)
-			throw std::runtime_error("Server listen: poll failed");
+		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1) {
+			std::cerr << "webserv: server.listen poll() failed" << std::endl;
+			return false;
+		}
 		_check_revents_sockets();
 	}
+	return true;
 }
+
+VirtualServer *Server::getVirtualServer(const std::string &serverName) {
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
+			return &_virtualServers[i];
+	}
+	return NULL;
+}
+
+void Server::displayVirtualServers() {
+	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
+	}
+}
+
+bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
+	Socket	serverSocket = Socket();
+
+	if (!_tryInitializeSocket(serverSocket, virtualServer))
+		return false;
+	if (!_tryBindSocket(serverSocket, virtualServer)) {
+		serverSocket.closeFD();
+		return false;
+	}
+	if (!_tryListenSocket(serverSocket, virtualServer)) {
+		serverSocket.closeFD();
+	}
+	_listenerSockets.push_back(serverSocket);
+	_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+	_virtualServers.push_back(virtualServer);
+	return true;
+}
+
+bool Server::_tryInitializeSocket(Socket &socket, const VirtualServer& virtualServer) {
+	for (int i = 0; i < 5; i++) {
+		if (socket.initialize())
+			return true;
+		_printVirtualServerError("socket.initialize()", virtualServer);
+		ftSleep(500);
+	}
+	return false;
+}
+
+bool Server::_tryBindSocket(Socket &socket, const VirtualServer &virtualServer) {
+	for (int i = 0; i < 5; i++) {
+		if (socket.binding(virtualServer.getIP(), virtualServer.getPort()))
+			return true;
+		_printVirtualServerError("socket.binding()", virtualServer);
+		ftSleep(500);
+	}
+	return false;
+}
+
+bool Server::_tryListenSocket(Socket &socket, const VirtualServer &virtualServer) {
+	for (int i = 0; i < 5; i++) {
+		if (socket.listening())
+			return true;
+		_printVirtualServerError("socket.listening()", virtualServer);
+		ftSleep(500);
+	}
+	return false;
+}
+
+void Server::_printVirtualServerError(const std::string& function,
+									  const VirtualServer &virtualServer) {
+	std::cerr << "webserv: " << function << " to " << virtualServer.getIP() <<
+	":" << virtualServer.getPort() << " failed (" << errno << ": "
+	<< strerror(errno) << ")" << std::endl;
+}
+
+
 
 void Server::_check_revents_sockets(void) {
 	for (size_t i = 0; i < _pollFd.size(); i++) {
@@ -84,16 +132,19 @@ void Server::_check_revents_sockets(void) {
 	}
 }
 
-void Server::_accept_new_client(struct pollfd listener) {
+bool Server::_accept_new_client(struct pollfd listener) {
 	int newSocket = accept(listener.fd, NULL, NULL);
-	if (newSocket == -1)
-		throw std::runtime_error("Server listen: accept failed");
+	if (newSocket == -1) {
+		std::cerr << "webserv: server.listen accept() failed" << std::endl;
+		return false;
+	}
 	struct pollfd newPoll;
 	newPoll.fd = newSocket;
 	newPoll.events = POLLIN;
 	newPoll.revents = 0;
 	_pollFd.push_back(newPoll);
 	std::cout << "A new client is connected" << std::endl;
+	return true;
 }
 
 ssize_t	Server::_read_persistent_connection(size_t client_index) {
@@ -133,18 +184,3 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	return bytesRead;
 }
 
-
-void Server::displayVirtualServers() {
-	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
-	}
-}
-
-VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
-			return &_virtualServers[i];
-	}
-	return NULL;
-}

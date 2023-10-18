@@ -45,7 +45,7 @@ VirtualServer ConfigFactory::_createVirtualServer(const Context& serverContext) 
 
 	if (listenIt != directives.end()) {
 		std::vector<std::string>	ipAddress = splitDelimiter(listenIt->second, ':');
-		server.setIP(ipAddress[0]);
+		server.setIPAddress(ipAddress[0]);
 		server.setPort(std::atoi(ipAddress[1].c_str()));
 		server.setServerName(_getServerNamesFromDirective(directives));
 	}

@@ -16,7 +16,6 @@ static int	runServer(const std::string& configFile);
 
 int main(int argc, char **argv)
 {
-	Server	webserv = Server();
 	if (!isParsingFlag(argc, argv) && argc != 2) {
 		std::cerr << "Usage: ./webserv *.conf" << std::endl;
 		return EXIT_FAILURE;
@@ -50,14 +49,13 @@ static int runServer(const std::string& configFile) {
 			return EXIT_FAILURE;
 		lexer.getMainContext().inheritDirectives();
 		webserv = Server();
-		if (!webserv.loadVirtualServers(ConfigFactory::createVirtualServers(
+		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
 				lexer.getMainContext()))) {
 			std::cerr << "webserv: failed to launch virtual servers" << std::endl;
 			return EXIT_FAILURE;
 		}
 	}
-	if (!webserv.listen())
-		EXIT_FAILURE;
+	webserv.listen();
 	return EXIT_FAILURE;
 }
 

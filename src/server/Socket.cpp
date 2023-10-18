@@ -9,6 +9,7 @@
 #include <string>
 
 #include "server/Socket.hpp"
+#include "utils/utils.hpp"
 
 Socket::Socket() { }
 
@@ -37,7 +38,10 @@ bool Socket::initialize() {
 }
 
 bool Socket::binding(const std::string& IPAddress, const unsigned short port) {
-	_IPAddress = IPAddress;
+	if (IPAddress == LOCALHOST)
+		_IPAddress = LOOPBACK_IP;
+	else
+		_IPAddress = IPAddress;
 	_port = port;
 	_address.sin_family = AF_INET;
 	_address.sin_port = htons(port);
@@ -64,12 +68,16 @@ int Socket::getFD() const {
 	return _fd;
 }
 
-int Socket::getPort() const {
+unsigned short Socket::getPort() const {
 	return _port;
 }
 
-std::string Socket::getIP() const {
+std::string Socket::getIPAddress() const {
 	return _IPAddress;
+}
+
+std::string Socket::getIPAndPort() const {
+	return _IPAddress + ":" + toString(_port);
 }
 
 struct pollfd Socket::getPollFd(const short events) const {
@@ -84,10 +92,6 @@ bool	Socket::_calculateRawIPAddress()
 	char* endPtr;
 
 	_rawIPAddress = 0;
-	if (_IPAddress == "localhost") {
-		_rawIPAddress = INADDR_LOOPBACK;
-		return true;
-	}
 	for (int i = 0; i < 4; i++) {
 		std::string str_byte = tmpIPAddress.substr(0, tmpIPAddress.find('.'));
 		if (str_byte.length() == 0)

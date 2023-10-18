@@ -5,6 +5,10 @@
 # include <arpa/inet.h>
 # include <poll.h>
 
+# define UNSPECIFIED_ADDRESS "0.0.0.0"
+# define LOCALHOST "localhost"
+# define LOOPBACK_IP "127.0.0.1"
+
 class Socket {
 	public:
 		Socket();
@@ -19,8 +23,9 @@ class Socket {
 		void	closeFD();
 
 		int				getFD() const;
-		int				getPort() const;
-		std::string		getIP() const;
+		unsigned short	getPort() const;
+		std::string		getIPAddress() const;
+		std::string 	getIPAndPort() const;
 		struct pollfd	getPollFd(short events) const;
 
 	private:
@@ -29,7 +34,7 @@ class Socket {
 		struct sockaddr_in	_address;
 		std::string			_IPAddress;
 		uint32_t			_rawIPAddress;
-		int					_port;
+		unsigned short		_port;
 		int					_fd;
 
 };

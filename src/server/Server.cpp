@@ -19,6 +19,7 @@ Server::Server(const std::vector<VirtualServer>& virtualServers) {
 		serverSocket.listening();
 		_listenerSockets.push_back(serverSocket);
 		_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
+		_virtualServers.push_back(*it);
 	}
 }
 

@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include "HttpMessages/HttpResponse.hpp"
 
 #define HTTP_VERSION "HTTP/1.1 "
@@ -14,27 +15,6 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 		AHttpMessage::operator=(other);
 	}
 	return (*this);
-}
-
-void HttpResponse::build() {
-//	std::string response;
-//
-//	this->generateBody();
-//	this->setHeader("Date", getDate());
-//	this->setHeader("Server", "webserv");
-//	this->setHeader("Content-Length", toString(_body.length()));
-//	this->setStatusCode(200);
-//	this->setStatusMessage("OK");
-//
-//	response += HTTP_VERSION + toString(this->_statusCode) + "\r\n";
-//	std::map<std::string, std::string>::iterator it;
-//	for (it = _headers.begin(); it != _headers.end(); it++) {
-//		response += it->first + ": " + it->second + "\r\n";
-//	}
-//	response += "\r\n";
-//	response += getBody();
-//
-//	_rawMessage = response;
 }
 
 /*
@@ -131,7 +111,9 @@ void HttpResponse::build(Location &location, std::string host) {
 }
 
 void HttpResponse::generateBody(Location &location) {
-	_body = readFileToString("./assets/" + location.getRoot() + "/" + _path + "/index.html");
+	coloredLog("path = ", _path, YELLOW);
+	std::string index = getFirstValidIndex(location);
+	_body = readFileToString( location.getRoot() + "/" + _path + index );
 	if (_body.empty()){
 		this->setStatusCode(500);
 		this->setStatusMessage("Internal Server Error");
@@ -144,4 +126,21 @@ void HttpResponse::generateBody(Location &location) {
 		this->setBody(_body);
 		return ;
 	}
+}
+
+std::string HttpResponse::getFirstValidIndex(Location &location) {
+	std::vector<std::string> index = location.getIndex();
+	std::vector<std::string>::iterator it;
+	for (it = index.begin(); it != index.end(); it++) {
+		std::string pathToFile = location.getRoot() + "/" + _path;
+		pathToFile += *it;
+		if (fileExists(pathToFile))
+			return *it;
+	}
+	return "";
+}
+
+bool HttpResponse::fileExists(std::string pathToFile) {
+	struct stat buffer;
+	return (stat(pathToFile.c_str(), &buffer) == 0);
 }

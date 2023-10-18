@@ -19,8 +19,9 @@ public:
 	static std::vector<VirtualServer>	createVirtualServers(const Context& mainContext);
 
 private:
-	static VirtualServer	_createVirtualServer(const Context& serverContext);
-	static Location			_createLocation(const Context& locationContext);
+	static VirtualServer			_createVirtualServer(const Context& serverContext);
+	static Location					_createLocation(const Context& locationContext);
+	static std::vector<std::string> _getServerNamesFromDirective(const std::map<std::string, std::string> &directives);
 };
 
 #endif

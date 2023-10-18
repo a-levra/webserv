@@ -47,6 +47,7 @@ VirtualServer ConfigFactory::_createVirtualServer(const Context& serverContext) 
 		std::vector<std::string>	ipAddress = splitDelimiter(listenIt->second, ':');
 		server.setIP(ipAddress[0]);
 		server.setPort(std::atoi(ipAddress[1].c_str()));
+		server.setServerName(_getServerNamesFromDirective(directives));
 	}
 	std::vector<Context>::const_iterator it;
 	for (it = locations.begin(); it != locations.end(); it++) {
@@ -66,5 +67,15 @@ Location ConfigFactory::_createLocation(const Context &locationContext) {
 		location.addDirective(it->first, it->second);
 	}
 	return location;
+}
+
+std::vector<std::string> ConfigFactory::_getServerNamesFromDirective(const std::map<std::string, std::string> &directives) {
+	std::map<std::string, std::string>::const_iterator it = directives.find("server_name");
+	std::string serverNamesNotSplitted;
+	if (it == directives.end())
+		serverNamesNotSplitted = "";
+	else
+		serverNamesNotSplitted = it->second;
+	return (splitDelimiter(serverNamesNotSplitted, ' '));
 }
 

@@ -20,19 +20,21 @@ class VirtualServer {
 
 		//getters and setters
 		Location * getLocation(const std::string &name);
+		std::vector<std::string> & getServerName();
+		std::string getIPAddress() const;
+		unsigned short getPort() const;
+		std::string getIPAndPort() const;
+		std::map<std::string, Location> getLocations() const;
+
 		void setServerName(const std::vector<std::string>& serverName);
-		void setIP(const std::string &ip);
+		void setIPAddress(const std::string &ip);
 		void setPort(int port);
 		void setLocations(const std::map<std::string, Location> &locations);
-		std::vector<std::string> & getServerName();
-		std::string getIP() const;
-		short getPort() const;
-		std::map<std::string, Location> getLocations() const;
 
 		void display();
 	private:
 		std::string _ipAddress;
-		int			_port;
+		unsigned short _port;
 		std::vector<std::string> _serverName;
 		std::map<std::string, Location> _locations;
 };

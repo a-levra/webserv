@@ -48,7 +48,6 @@ static int runServer(const std::string& configFile) {
 		if (!parseConfigFile(lexer))
 			return EXIT_FAILURE;
 		lexer.getMainContext().inheritDirectives();
-		webserv = Server();
 		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
 				lexer.getMainContext()))) {
 			std::cerr << "webserv: failed to launch virtual servers" << std::endl;

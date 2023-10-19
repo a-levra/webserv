@@ -98,16 +98,10 @@ bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
 }
 
 bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short port) {
-	std::string tempIPAddress;
-
-	if (IPAddress == LOCALHOST)
-		tempIPAddress = LOOPBACK_IP;
-	else
-		tempIPAddress = IPAddress;
 	std::vector<Socket>::const_iterator it;
 	for (it = _listenerSockets.begin(); it != _listenerSockets.end(); it++) {
 		if ((it->getIPAddress() == UNSPECIFIED_ADDRESS && it->getPort() == port)
-			|| (it->getIPAddress() == tempIPAddress && it->getPort() == port))
+			|| (it->getIPAddress() == IPAddress && it->getPort() == port))
 			return true;
 	}
 	return false;

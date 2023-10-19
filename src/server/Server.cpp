@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
+#include <cerrno>
 
 #include "server/Server.hpp"
 #include "HttpMessages/AHttpMessage.hpp"
@@ -10,22 +11,14 @@
 
 Server::Server() {}
 
-Server::Server(const std::vector<VirtualServer>& virtualServers) {
-	std::vector<VirtualServer>::const_iterator it;
-	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
-		Socket	serverSocket = Socket();
-		serverSocket.setReUse(true);
-		serverSocket.binding(it->getIP(), it->getPort());
-		serverSocket.listening();
-		_listenerSockets.push_back(serverSocket);
-		_pollFd.push_back(serverSocket.getPollFd(POLLIN | POLLHUP));
-		_virtualServers.push_back(*it);
-	}
-}
-
 Server::Server(const Server &other) { *this = other; }
 
-Server::~Server(void) {}
+Server::~Server() {
+	std::vector<struct pollfd>::iterator it;
+	for (it = _pollFd.begin(); it != _pollFd.end(); it++) {
+		close(it->fd);
+	}
+}
 
 Server &Server::operator=(const Server &other) {
 	if (this == &other)
@@ -33,20 +26,107 @@ Server &Server::operator=(const Server &other) {
 	_listenerSockets = other._listenerSockets;
 	_pollFd = other._pollFd;
 	_virtualServers = other._virtualServers;
-	return (*this);
+	return *this;
 }
 
-void Server::listen(void) {
+bool Server::addVirtualServers(const std::vector<VirtualServer> &virtualServers) {
+	std::vector<VirtualServer>::const_iterator it;
+	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
+		if (it->getIPAddress() == UNSPECIFIED_ADDRESS && !_createVirtualServer(*it))
+			return false;
+	}
+	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
+		if (it->getIPAddress() != UNSPECIFIED_ADDRESS && !_createVirtualServer(*it))
+			return false;
+	}
+	return true;
+}
+
+bool Server::listen() {
 	coloredLog("Start listening...", "", GREEN);
 	for (size_t i = 0; i < _listenerSockets.size(); i++) {
-		std::cout << _listenerSockets[i].getIP() << ":" << _listenerSockets[i].getPort() << std::endl;
+		if (!_tryListenSocket(_listenerSockets[i])) {
+			return false;
+		}
+		std::cout << _listenerSockets[i].getIPAndPort() << std::endl;
 	}
 	while (true) {
 		coloredLog("Waiting for a request...", "", GREEN);
-		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1)
-			throw std::runtime_error("Server listen: poll failed");
+		if (poll(_pollFd.data(), _pollFd.size(), -1) == -1) {
+			_printError("server.listen poll() failed");
+			return false;
+		}
 		_check_revents_sockets();
 	}
+	return true;
+}
+
+VirtualServer *Server::getVirtualServer(const std::string &serverName) {
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
+			return &_virtualServers[i];
+	}
+	return NULL;
+}
+
+void Server::displayVirtualServers() {
+	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
+	for (size_t i = 0; i < _virtualServers.size(); i++) {
+		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
+	}
+}
+
+bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
+	if (_existListenerSocket(virtualServer.getIPAddress(), virtualServer.getPort())) {
+		_virtualServers.push_back(virtualServer);
+		return true;
+	}
+	Socket	serverSocket = Socket();
+	if (!serverSocket.initialize()) {
+		_printError("socket.initialize() failed");
+		return false;
+	}
+	if (!_tryBindSocket(serverSocket, virtualServer.getIPAddress(),
+						virtualServer.getPort())) {
+		serverSocket.closeFD();
+		return false;
+	}
+	_listenerSockets.push_back(serverSocket);
+	_pollFd.push_back(serverSocket.getPollFd(POLLIN));
+	_virtualServers.push_back(virtualServer);
+	return true;
+}
+
+bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short port) {
+	std::vector<Socket>::const_iterator it;
+	for (it = _listenerSockets.begin(); it != _listenerSockets.end(); it++) {
+		if ((it->getIPAddress() == UNSPECIFIED_ADDRESS && it->getPort() == port)
+			|| (it->getIPAddress() == IPAddress && it->getPort() == port))
+			return true;
+	}
+	return false;
+}
+
+bool Server::_tryBindSocket(Socket &socket, const std::string& IPAddress,
+							unsigned short port) {
+	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
+		if (socket.binding(IPAddress, port))
+			return true;
+		_printError("socket.binding() to " + IPAddress + ":"
+					+ toString(port) + " failed");
+		ftSleep(PERSISTENCE_SLEEP_MS);
+	}
+	return false;
+}
+
+bool Server::_tryListenSocket(Socket &socket) {
+	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
+		if (socket.listening())
+			return true;
+		_printError("socket.listening() to " + socket.getIPAndPort() + " failed");
+		ftSleep(PERSISTENCE_SLEEP_MS);
+	}
+	return false;
 }
 
 void Server::_check_revents_sockets(void) {
@@ -62,16 +142,19 @@ void Server::_check_revents_sockets(void) {
 	}
 }
 
-void Server::_accept_new_client(struct pollfd listener) {
+bool Server::_accept_new_client(struct pollfd listener) {
 	int newSocket = accept(listener.fd, NULL, NULL);
-	if (newSocket == -1)
-		throw std::runtime_error("Server listen: accept failed");
+	if (newSocket == -1) {
+		_printError("server.listen accept() failed");
+		return false;
+	}
 	struct pollfd newPoll;
 	newPoll.fd = newSocket;
 	newPoll.events = POLLIN;
 	newPoll.revents = 0;
 	_pollFd.push_back(newPoll);
 	std::cout << "A new client is connected" << std::endl;
+	return true;
 }
 
 ssize_t	Server::_read_persistent_connection(size_t client_index) {
@@ -110,18 +193,7 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	return bytesRead;
 }
 
-
-void Server::displayVirtualServers() {
-	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
-	}
-}
-
-VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
-			return &_virtualServers[i];
-	}
-	return NULL;
+void Server::_printError(const std::string &error) {
+	std::cerr << "webserver: " << error << " ("
+			  << errno << ": " << strerror(errno) << ")" << std::endl;
 }

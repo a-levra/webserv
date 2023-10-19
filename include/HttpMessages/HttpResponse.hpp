@@ -11,15 +11,14 @@ class HttpResponse : public AHttpMessage {
 		virtual ~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &other);
-		void build();
 		void build(Location &location, std::string host);
 
 		std::string getResponse(Server &server, HttpRequest &request);
 		void buildErrorPage(int i, Server &server);
 		void setHeader(std::string header, std::string content);
 		void generateBody(Location &location);
-		std::string getFirstValidIndex(Location &location);
-		bool fileExists(std::string pathToFile);
+		const std::string * getFirstValidIndex(const Location &location) const;
+		bool fileExists(const std::string &pathToFile) const;
 };
 
 #endif

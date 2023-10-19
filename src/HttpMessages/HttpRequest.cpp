@@ -7,12 +7,11 @@
 
 HttpRequest::HttpRequest(void) {}
 
-HttpRequest::HttpRequest(std::string raw) : AHttpMessage(raw){
+HttpRequest::HttpRequest(const std::string &raw) : AHttpMessage(raw) {
 	this->parse();
 }
 
-HttpRequest::HttpRequest(const HttpRequest &other) : AHttpMessage(other)
-{ *this = other; }
+HttpRequest::HttpRequest(const HttpRequest &other) : AHttpMessage(other) { *this = other; }
 
 HttpRequest::~HttpRequest(void) {}
 
@@ -28,18 +27,6 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_statusMessage = other._statusMessage;
 	}
 	return (*this);
-}
-
-void HttpRequest::build(void) {
-	std::string request;
-	request += _version + " " + toString(_statusCode) + " " + _statusMessage + "\r\n";
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-		request += it->first + ": " + it->second + "\r\n";
-	}
-	request += "\r\n";
-	request += _body;
-	_rawMessage = request;
 }
 
 bool HttpRequest::checkDoubleSpaces() {
@@ -66,8 +53,9 @@ bool HttpRequest::parse() {
 			break;
 		}
 	}
+	_body = _rawMessage;
+	_validity = checkValidity();
 	return success;
-//	parseBody();
 }
 
 bool HttpRequest::parseMethod() {
@@ -76,15 +64,15 @@ bool HttpRequest::parseMethod() {
 	size_t spacePos = _rawMessage.substr(0, MAX_METHOD_LENGTH + 1).find(' ');
 	if (spacePos <= MAX_METHOD_LENGTH)
 		_method = _rawMessage.substr(0, spacePos);
-	else{
+	else {
 		coloredLog("Method too long: ", _method, RED);
 		return false;
 	}
 
 	if (_method != "GET" &&
 		_method != "POST" &&
-		_method != "DELETE"){
-		std::cerr << "Method not supported : \'" << _method << "\'"<<std::endl;
+		_method != "DELETE") {
+		std::cerr << "Method not supported : \'" << _method << "\'" << std::endl;
 		return false;
 	}
 	_rawMessage = _rawMessage.substr(spacePos + 1);

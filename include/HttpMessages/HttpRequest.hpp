@@ -12,7 +12,7 @@ enum REQUEST_VALIDITY {
 class HttpRequest: public AHttpMessage{
 	public:
 		HttpRequest();
-		HttpRequest(std::string raw);
+		HttpRequest(const std::string &raw);
 		HttpRequest(const HttpRequest &other);
 		virtual ~HttpRequest();
 
@@ -25,8 +25,7 @@ class HttpRequest: public AHttpMessage{
 		bool parseHeader(const std::string &line);
 		bool checkPathValidity(size_t spacePos);
 		bool checkDoubleSpaces();
-		void build(void);
-
+		enum REQUEST_VALIDITY checkValidity();
 		const std::string &getPath();
 		const REQUEST_VALIDITY & getValidity() const;
 	private:

@@ -51,7 +51,6 @@ void Server::listen(void) {
 
 void Server::_check_revents_sockets(void) {
 	for (size_t i = 0; i < _pollFd.size(); i++) {
-		coloredLog("Checking revents for socket [" + toString(i) + "]", "", GREEN);
 		if ((_pollFd[i].revents & POLLIN) == 0)
 			continue;
 		if (i  < _listenerSockets.size()) {
@@ -82,11 +81,7 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	completeClientRequest = "";
 	ssize_t bytesRead = (ssize_t)(sizeof(buffer));
 	while (bytesRead >= (ssize_t)(sizeof(buffer))) {
-		coloredLog("Reading request", "", YELLOW);
 		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
-		coloredLog("Bytes read: ", toString(bytesRead), YELLOW);
-		coloredLog("Request: ", buffer, PURPLE);
-		coloredLog("End of request", "", YELLOW);
 		if (bytesRead == -1)
 			break;
 		completeClientRequest.append(buffer, bytesRead);
@@ -105,7 +100,6 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		std::string response = httpResponse.getResponse((*this), httpRequest);
 		write(_pollFd[client_index].fd, response.c_str(), response.size());
 		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
-		coloredLog("Response: ", "\"" + response + "\"", PURPLE);
 	}
 	return bytesRead;
 }

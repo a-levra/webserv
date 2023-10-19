@@ -1,17 +1,17 @@
 #include "HttpMessages/HttpRequest.hpp"
 
 #include <iostream>
+#include <stdlib.h>
 
 #define MAX_METHOD_LENGTH 6 // "DELETE" is the longest (supported) method
 
 HttpRequest::HttpRequest(void) {}
 
-HttpRequest::HttpRequest(std::string raw) : AHttpMessage(raw){
+HttpRequest::HttpRequest(const std::string &raw) : AHttpMessage(raw) {
 	this->parse();
 }
 
-HttpRequest::HttpRequest(const HttpRequest &other) : AHttpMessage(other)
-{ *this = other; }
+HttpRequest::HttpRequest(const HttpRequest &other) : AHttpMessage(other) { *this = other; }
 
 HttpRequest::~HttpRequest(void) {}
 
@@ -27,18 +27,6 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_statusMessage = other._statusMessage;
 	}
 	return (*this);
-}
-
-void HttpRequest::build(void) {
-	std::string request;
-	request += _version + " " + toString(_statusCode) + " " + _statusMessage + "\r\n";
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-		request += it->first + ": " + it->second + "\r\n";
-	}
-	request += "\r\n";
-	request += _body;
-	_rawMessage = request;
 }
 
 bool HttpRequest::checkDoubleSpaces() {
@@ -65,8 +53,9 @@ bool HttpRequest::parse() {
 			break;
 		}
 	}
+	_body = _rawMessage;
+	_validity = checkValidity();
 	return success;
-//	parseBody();
 }
 
 bool HttpRequest::parseMethod() {
@@ -75,15 +64,15 @@ bool HttpRequest::parseMethod() {
 	size_t spacePos = _rawMessage.substr(0, MAX_METHOD_LENGTH + 1).find(' ');
 	if (spacePos <= MAX_METHOD_LENGTH)
 		_method = _rawMessage.substr(0, spacePos);
-	else{
+	else {
 		coloredLog("Method too long: ", _method, RED);
 		return false;
 	}
 
 	if (_method != "GET" &&
 		_method != "POST" &&
-		_method != "DELETE"){
-		std::cerr << "Method not supported : \'" << _method << "\'"<<std::endl;
+		_method != "DELETE") {
+		std::cerr << "Method not supported : \'" << _method << "\'" << std::endl;
 		return false;
 	}
 	_rawMessage = _rawMessage.substr(spacePos + 1);
@@ -157,4 +146,39 @@ bool HttpRequest::parseHeader(const std::string &line) {
 
 const std::string &HttpRequest::getPath() {
 	return _path;
+}
+
+enum REQUEST_VALIDITY HttpRequest::checkValidity() {
+	if (_method.empty() || _path.empty() || _version.empty())
+		return NOT_COMPLETE;
+	if (_method != "GET" && _method != "POST" && _method != "DELETE")
+		return INVALID;
+	if (_version != "HTTP/1.1")
+		return INVALID;
+	if (_headers.find("Host") == _headers.end())
+		return INVALID;
+	if (_headers.find("Content-Length") != _headers.end() && _body.empty())
+		return NOT_COMPLETE;
+	if (_headers.find("Content-Length") == _headers.end() && !_body.empty())
+		return INVALID;
+	if (_headers.find("Content-Type") == _headers.end() && !_body.empty())
+		return INVALID;
+	if (_headers.find("Content-Type") != _headers.end() && _body.empty())
+		return NOT_COMPLETE;
+	if (_headers.find("Content-Length") != _headers.end() && !_body.empty()) {
+		if (_headers["Content-Length"].size() > 10)
+			return INVALID;
+		for (size_t i = 0; i < _headers["Content-Length"].size(); i++) {
+			if (!isdigit(_headers["Content-Length"][i]))
+				return INVALID;
+		}
+		if (std::strtod(_headers["Content-Length"].c_str(), 0) != _body.size())
+			return NOT_COMPLETE;
+	}
+
+	return VALID_and_COMPLETE;
+}
+
+const REQUEST_VALIDITY & HttpRequest::getValidity() const {
+	return _validity;
 }

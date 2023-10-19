@@ -27,7 +27,6 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	std::string host = request.getHeader("Host");
 	coloredLog("Host requested: ", host, PURPLE);
-	server.displayVirtualServers();
 	VirtualServer *vs  = server.getVirtualServer(host);
 	if (vs == NULL){
 		buildErrorPage(404, server);
@@ -39,7 +38,6 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		buildErrorPage(404, server);
 		return _rawMessage;
 	}
-	loc->display();
 	this->build(*loc, host);
 	return _rawMessage;
 }
@@ -92,7 +90,7 @@ void HttpResponse::setHeader(std::string header, std::string content) {
 }
 
 void HttpResponse::build(Location &location, std::string host) {
-	(void) host;
+	(void) host; //todo: use host to get the right server name
 	std::string response;
 	this->generateBody(location);
 	this->setHeader("Date", getDate());
@@ -111,9 +109,14 @@ void HttpResponse::build(Location &location, std::string host) {
 }
 
 void HttpResponse::generateBody(Location &location) {
-	coloredLog("path = ", _path, YELLOW);
-	std::string index = getFirstValidIndex(location);
-	_body = readFileToString( location.getRoot() + "/" + _path + index );
+	const std::string *index = getFirstValidIndex(location);
+	if (index == NULL){
+		this->setStatusCode(500);
+		this->setStatusMessage("Internal Server Error");
+		this->setBody("Internal Server Error");
+		return ;
+	}
+	_body = readFileToString( location.getRoot() + "/" + _path + *index );
 	if (_body.empty()){
 		this->setStatusCode(500);
 		this->setStatusMessage("Internal Server Error");
@@ -128,19 +131,21 @@ void HttpResponse::generateBody(Location &location) {
 	}
 }
 
-std::string HttpResponse::getFirstValidIndex(Location &location) {
-	std::vector<std::string> index = location.getIndex();
-	std::vector<std::string>::iterator it;
+const std::string * HttpResponse::getFirstValidIndex(const Location &location) const {
+	const std::vector<std::string> &index = location.getIndex();
+	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
 		std::string pathToFile = location.getRoot() + "/" + _path;
 		pathToFile += *it;
-		if (fileExists(pathToFile))
-			return *it;
+		if (fileExists(pathToFile)){
+			coloredLog("Index found: ", pathToFile, GREEN);
+			return &(*it);
+		}
 	}
-	return "";
+	return NULL;
 }
 
-bool HttpResponse::fileExists(std::string pathToFile) {
+bool HttpResponse::fileExists(const std::string &pathToFile) const {
 	struct stat buffer;
 	return (stat(pathToFile.c_str(), &buffer) == 0);
 }

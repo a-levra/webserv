@@ -26,7 +26,7 @@ Server &Server::operator=(const Server &other) {
 	_listenerSockets = other._listenerSockets;
 	_pollFd = other._pollFd;
 	_virtualServers = other._virtualServers;
-	return (*this);
+	return *this;
 }
 
 bool Server::addVirtualServers(const std::vector<VirtualServer> &virtualServers) {
@@ -115,22 +115,22 @@ bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short p
 
 bool Server::_tryBindSocket(Socket &socket, const std::string& IPAddress,
 							unsigned short port) {
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
 		if (socket.binding(IPAddress, port))
 			return true;
 		_printError("socket.binding() to " + IPAddress + ":"
 					+ toString(port) + " failed");
-		ftSleep(500);
+		ftSleep(PERSISTENCE_SLEEP_MS);
 	}
 	return false;
 }
 
 bool Server::_tryListenSocket(Socket &socket) {
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
 		if (socket.listening())
 			return true;
 		_printError("socket.listening() to " + socket.getIPAndPort() + " failed");
-		ftSleep(500);
+		ftSleep(PERSISTENCE_SLEEP_MS);
 	}
 	return false;
 }

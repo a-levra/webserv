@@ -17,7 +17,7 @@ Socket::Socket(const Socket &other) {
 	*this = other;
 }
 
-Socket::~Socket(void) { }
+Socket::~Socket() { }
 
 Socket &Socket::operator=(const Socket &other) {
 	if (this == &other)

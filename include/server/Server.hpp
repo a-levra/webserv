@@ -7,6 +7,9 @@
 # include "Socket.hpp"
 # include "virtualServer/VirtualServer.hpp"
 
+# define PERSISTENCE_TRIALS 5
+# define PERSISTENCE_SLEEP_MS 500
+
 class Server {
     public:
 		Server();

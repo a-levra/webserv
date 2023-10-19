@@ -1,6 +1,7 @@
 #include "HttpMessages/HttpRequest.hpp"
 
 #include <iostream>
+#include <stdlib.h>
 
 #define MAX_METHOD_LENGTH 6 // "DELETE" is the longest (supported) method
 
@@ -157,4 +158,39 @@ bool HttpRequest::parseHeader(const std::string &line) {
 
 const std::string &HttpRequest::getPath() {
 	return _path;
+}
+
+enum REQUEST_VALIDITY HttpRequest::checkValidity() {
+	if (_method.empty() || _path.empty() || _version.empty())
+		return NOT_COMPLETE;
+	if (_method != "GET" && _method != "POST" && _method != "DELETE")
+		return INVALID;
+	if (_version != "HTTP/1.1")
+		return INVALID;
+	if (_headers.find("Host") == _headers.end())
+		return INVALID;
+	if (_headers.find("Content-Length") != _headers.end() && _body.empty())
+		return NOT_COMPLETE;
+	if (_headers.find("Content-Length") == _headers.end() && !_body.empty())
+		return INVALID;
+	if (_headers.find("Content-Type") == _headers.end() && !_body.empty())
+		return INVALID;
+	if (_headers.find("Content-Type") != _headers.end() && _body.empty())
+		return NOT_COMPLETE;
+	if (_headers.find("Content-Length") != _headers.end() && !_body.empty()) {
+		if (_headers["Content-Length"].size() > 10)
+			return INVALID;
+		for (size_t i = 0; i < _headers["Content-Length"].size(); i++) {
+			if (!isdigit(_headers["Content-Length"][i]))
+				return INVALID;
+		}
+		if (std::strtod(_headers["Content-Length"].c_str(), 0) != _body.size())
+			return NOT_COMPLETE;
+	}
+
+	return VALID_and_COMPLETE;
+}
+
+const REQUEST_VALIDITY & HttpRequest::getValidity() const {
+	return _validity;
 }

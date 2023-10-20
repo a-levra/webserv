@@ -182,3 +182,13 @@ void Location::display() {
 	coloredLog("\t", toString(_return.first), PURPLE);
 	coloredLog("\t", _return.second, PURPLE);
 }
+
+bool	Location::isAllowedMethod(const std::string& method) const{
+	coloredLog("isAllowedMethod : ", method, PURPLE);
+	for (size_t i = 0; i <  _allowMethods.size(); i++) {
+		coloredLog("\t", _allowMethods[i], PURPLE);
+		if (_allowMethods[i] == method)
+			return true;
+	}
+	return false;
+}

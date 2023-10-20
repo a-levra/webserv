@@ -38,4 +38,7 @@ std::vector<std::string> splitWhiteSpace(const std::string &s);
 std::string &trim(std::string &s);
 std::string &ltrim(std::string &s);
 std::string &rtrim(std::string &s);
+
+bool fileExists(const std::string &pathToFile);
+
 #endif //UTILS_HPP

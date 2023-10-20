@@ -19,6 +19,7 @@ LIST_SRC	=\
         utils/sleep.cpp				\
         utils/split.cpp				\
         utils/trim.cpp				\
+        utils/fileExist.cpp				\
         \
         virtualServer/Location.cpp 		\
         virtualServer/VirtualServer.cpp	\

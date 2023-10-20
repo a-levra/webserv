@@ -18,7 +18,10 @@ class HttpResponse : public AHttpMessage {
 		void setHeader(std::string header, std::string content);
 		void generateBody(Location &location);
 		const std::string * getFirstValidIndex(const Location &location) const;
-		bool fileExists(const std::string &pathToFile) const;
+		void GenerateErrorBody();
+		void buildGet(Location &location);
+		void buildPost(Location &location, const HttpRequest &request);
+		void getFileFromPostAndSaveIt(HttpRequest request);
 };
 
 #endif

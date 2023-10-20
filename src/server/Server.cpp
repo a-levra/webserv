@@ -63,8 +63,10 @@ bool Server::listen() {
 
 VirtualServer *Server::getVirtualServer(const std::string &serverName) {
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
-			return &_virtualServers[i];
+		for (size_t j = 0; j < _virtualServers[i].getServerName().size(); j++) {
+			if (_virtualServers[i].getServerName()[j] == serverName)
+				return &_virtualServers[i];
+		}
 	}
 	return NULL;
 }
@@ -182,7 +184,8 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		HttpResponse httpResponse;
 		std::string response = httpResponse.getResponse((*this), httpRequest);
 		write(_pollFd[client_index].fd, response.c_str(), response.size());
-		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
+		coloredLog("Response sent", "[" + toString(client_index) + "]", BLUE);
+		coloredLog("Response: ", response, BLUE);
 	}
 	return bytesRead;
 }

@@ -152,28 +152,45 @@ void Server::_check_revents_sockets(void) {
 }
 
 bool Server::_accept_new_client(struct pollfd listener) {
-	struct sockaddr_in	clientAddress;
-	socklen_t clientAddressLen = sizeof(clientAddress);
+//	struct sockaddr_in	clientAddress;
+//	socklen_t clientAddressLen = sizeof(clientAddress);
+//	struct sockaddr_in	serverAddress;
+//	socklen_t serverAddressLen = sizeof(serverAddressLen);
+//
+//	int clientFD = accept(listener.fd,
+//						  (struct sockaddr*) &clientAddress, &clientAddressLen);
+//	if (clientFD == -1) {
+//		_printError("server.listen accept() failed");
+//		return false;
+//	}
+//	// TODO: secure
+//
+//	getsockname(clientFD, (struct sockaddr*)&serverAddress, &serverAddressLen);
+////	char serverIP[INET_ADDRSTRLEN];
+////	std::cout << inet_ntop(AF_INET, &(serverAddress.sin_addr.s_addr), serverIP, INET_ADDRSTRLEN) << std::endl;
+////	std::cout << "here" << serverIP << std::endl;
+//	std::cout << Server::ft_inet_ntoa(serverAddress.sin_addr.s_addr) << std::endl;
+//
+//	_clients.push_back(Client(clientFD, clientAddress, serverAddress));
+//	_pollFd.push_back((struct pollfd) {.fd = clientFD, .events = POLLIN, .revents = 0});
+//	std::cout << "A new client is connected" << std::endl;
+	int 				clientFD;
 	struct sockaddr_in	serverAddress;
-	socklen_t serverAddressLen = sizeof(serverAddressLen);
+	struct sockaddr_in	clientAddress;
+	socklen_t			serverAddressLength = sizeof(serverAddress);
+	socklen_t			clientAddressLength = sizeof(clientAddressLength);
 
-	int clientFD = accept(listener.fd,
-						  (struct sockaddr*)&clientAddress, &clientAddressLen);
+//	serverAddressLength = sizeof(serverAddress);
+	clientFD = accept(listener.fd, (struct sockaddr*) &clientAddress, &clientAddressLength);
 	if (clientFD == -1) {
 		_printError("server.listen accept() failed");
 		return false;
 	}
-	// TODO: secure
+	getsockname(clientFD, (struct sockaddr*) &serverAddress, &serverAddressLength);
+	std::cout << ft_inet_ntoa(serverAddress.sin_addr.s_addr) << std::endl;
+	std::cout << ft_inet_ntoa(clientAddress.sin_addr.s_addr) << std::endl;
+//	socketAddress.second = ntohs(serverAddress.sin_port);
 
-	getsockname(clientFD, (struct sockaddr*)&serverAddress, &serverAddressLen);
-//	char serverIP[INET_ADDRSTRLEN];
-//	std::cout << inet_ntop(AF_INET, &(serverAddress.sin_addr.s_addr), serverIP, INET_ADDRSTRLEN) << std::endl;
-//	std::cout << "here" << serverIP << std::endl;
-	std::cout << Server::ft_inet_ntoa(serverAddress.sin_addr.s_addr) << std::endl;
-
-	_clients.push_back(Client(clientFD, clientAddress, serverAddress));
-	_pollFd.push_back((struct pollfd) {.fd = clientFD, .events = POLLIN, .revents = 0});
-	std::cout << "A new client is connected" << std::endl;
 	return true;
 }
 

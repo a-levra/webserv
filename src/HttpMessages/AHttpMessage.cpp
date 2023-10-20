@@ -31,6 +31,11 @@ void AHttpMessage::setRawRequest(std::string string) {
 	_rawMessage = string;
 }
 
+void AHttpMessage::appendRawRequest(const std::string &rawRequest) {
+	std::string tmp = rawRequest;
+	_rawMessage += tmp;
+}
+
 void AHttpMessage::display(std::string message) {
 	std::cout << "\"" << message << "\"" << std::endl;
 }

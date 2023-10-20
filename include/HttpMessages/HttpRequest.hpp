@@ -11,6 +11,7 @@ enum REQUEST_VALIDITY {
 
 class HttpRequest: public AHttpMessage{
 	public:
+
 		HttpRequest();
 		HttpRequest(const std::string &raw);
 		HttpRequest(const HttpRequest &other);
@@ -30,6 +31,7 @@ class HttpRequest: public AHttpMessage{
 		const REQUEST_VALIDITY & getValidity() const;
 	private:
 		enum REQUEST_VALIDITY _validity;
+		std::string _pendingRawMessage;
 };
 
 #endif

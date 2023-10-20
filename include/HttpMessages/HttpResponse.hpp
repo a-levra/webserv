@@ -11,10 +11,10 @@ class HttpResponse : public AHttpMessage {
 		virtual ~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &other);
-		void build(Location &location, std::string host);
+		void build(Location &location, std::string host, const HttpRequest &request);
 
 		std::string getResponse(Server &server, HttpRequest &request);
-		void buildErrorPage(int i, Server &server);
+		void buildErrorPage(int i);
 		void setHeader(std::string header, std::string content);
 		void generateBody(Location &location);
 		const std::string * getFirstValidIndex(const Location &location) const;

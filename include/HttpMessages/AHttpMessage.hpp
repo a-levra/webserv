@@ -18,11 +18,13 @@ class AHttpMessage {
 		void setStatusCode(int i);
 		void setStatusMessage(std::string statusMessage);
 		void setHeaders(std::string header, std::string content);
-		std::string getHeader(std::string header);
+		std::string * getHeader(const std::string &header);
 		void setBody(std::string body);
-//		virtual void build() =0;
+		const std::string & getBody() const;
 		std::string getRawRequest();
 		void setBodyFromFile(std::string path);
+		void appendBody(const std::string &message);
+		const std::string & getMethod() const;
 
 	protected:
 		std::string _method;

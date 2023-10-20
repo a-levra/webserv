@@ -46,4 +46,5 @@ add_executable(42_webserv
         include/config/ConfigFactory.hpp
         src/config/ConfigFactory.cpp
         src/utils/sleep.cpp
+        src/utils/fileExist.cpp
 )

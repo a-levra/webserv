@@ -1,5 +1,7 @@
-#include <sys/stat.h>
+#include <fstream>
+
 #include "HttpMessages/HttpResponse.hpp"
+#include "utils/utils.hpp"
 
 #define HTTP_VERSION "HTTP/1.1 "
 
@@ -25,20 +27,25 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  *  4) build the response into _rawMessage and returns it
  */
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
-	std::string host = request.getHeader("Host");
-	coloredLog("Host requested: ", host, PURPLE);
-	VirtualServer *vs  = server.getVirtualServer(host);
+	const std::string *host = request.getHeader("Host");
+	coloredLog("Host requested: ", *host, PURPLE);
+	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL){
-		buildErrorPage(404, server);
+		coloredLog("Virtual server not found: ", *host, RED);
+		buildErrorPage(404);
 		return _rawMessage;
 	}
+	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_path = request.getPath();
 	Location *loc = vs->getLocation(_path);
+	coloredLog("Location requested: ", _path, PURPLE);
 	if (loc == NULL){
-		buildErrorPage(404, server);
+		coloredLog("Location not found: ", _path, RED);
+		buildErrorPage(404);
 		return _rawMessage;
 	}
-	this->build(*loc, host);
+	coloredLog("Location found: ", _path, GREEN);
+	this->build(*loc, *host, request);
 	return _rawMessage;
 }
 
@@ -138,12 +145,13 @@ void HttpResponse::buildErrorPage(int i) {
 			errorName = "Unknown Error";
 			break;
 	}
+	setStatusMessage(errorName);
 	response += HTTP_VERSION + error + " " + errorName + "\r\n";
 	response += "Content-Type: text/html\r\n";
-	std::string body = "<html><body><h1>" + error + " " + errorName + "</h1></body></html>";
-	response += "Content-Length: " + toString(body.length()) + "\r\n";
+	this->GenerateErrorBody();
+	response += "Content-Length: " + toString(_body.length()) + "\r\n";
 	response += "\r\n";
-	response += body;
+	response += _body;
 	_rawMessage = response;
 }
 
@@ -155,19 +163,37 @@ const std::string * HttpResponse::getFirstValidIndex(const Location &location) c
 	const std::vector<std::string> &index = location.getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + "/" + _path;
-		pathToFile += *it;
+		std::string pathToFile = location.getRoot() + _path + "/" + *it;
+		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
+	coloredLog("No index found: ", _path, RED);
 	return NULL;
 }
 
-bool HttpResponse::fileExists(const std::string &pathToFile) const {
-	struct stat buffer;
-	return (stat(pathToFile.c_str(), &buffer) == 0);
+void HttpResponse::GenerateErrorBody() {
+	coloredLog("Error page generated: ", "", RED);
+	coloredLog("Error code: ", toString(_statusCode), RED);
+	coloredLog("Error message: ", _statusMessage, RED);
+	this->setBody("    <style>\n"
+				  "        body {\n"
+				  "            background-color: #111;\n"
+				  "            color: #fff;\n"
+				  "            font-family: Arial, sans-serif;\n"
+				  "            display: flex;\n"
+				  "            justify-content: center;\n"
+				  "            align-items: center;\n"
+				  "            height: 100vh;\n"
+				  "            margin: 0;\n"
+				  "        }\n"
+				  "        </style>\n");
+	this->appendBody("<html><body><h1>\n" + toString(_statusCode) + " " + _statusMessage + "\n</h1></body></html>");
+
+}
+
 void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
 	coloredLog("Building POST response: ", "", BLUE);
 	std::string *boundary = request.getHeader("Content-Type");

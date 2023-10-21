@@ -192,13 +192,8 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 		return false;
 	}
 	enum REQUEST_VALIDITY validity = client.checkRequestValidity();
-	if (validity == INVALID || validity == VALID_and_COMPLETE) {
-		std::cout << "Validity: " <<(validity == VALID_and_COMPLETE) << std::endl;
-		HttpRequest test("GET / HTTP/1.1\r\n");
-		test.parse();
-		std::cout << "Validity: " <<(test.checkValidity() == INVALID) << std::endl;
+	if (validity == INVALID || validity == VALID_and_COMPLETE)
 		_sendClientRequest(client);
-	}
 	return true;
 }
 

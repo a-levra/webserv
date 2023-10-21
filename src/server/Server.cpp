@@ -10,21 +10,26 @@
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
 
+bool Server::exit = false;
+
 Server::Server() {}
 
 Server::Server(const Server &other) { *this = other; }
 
 Server::~Server() {
-	std::vector<struct pollfd>::iterator it;
-	for (it = _pollFd.begin(); it != _pollFd.end(); it++) {
-		close(it->fd);
-	}
+	std::vector<Socket>::iterator socketIt;
+	for (socketIt = _listeners.begin(); socketIt != _listeners.end();
+		 socketIt++)
+		socketIt->disconnect();
+	std::vector<Client>::iterator clientIt;
+	for (clientIt = _clients.begin(); clientIt != _clients.end(); clientIt++)
+		clientIt->disconnect();
 }
 
 Server &Server::operator=(const Server &other) {
 	if (this == &other)
 		return *this;
-	_listenerSockets = other._listenerSockets;
+	_listeners = other._listeners;
 	_pollFd = other._pollFd;
 	_virtualServers = other._virtualServers;
 	return *this;
@@ -45,19 +50,19 @@ bool Server::addVirtualServers(const std::vector<VirtualServer> &virtualServers)
 
 bool Server::listen() {
 	coloredLog("Start listening...", "", GREEN);
-	for (size_t i = 0; i < _listenerSockets.size(); i++) {
-		if (!_tryListenSocket(_listenerSockets[i])) {
+	for (size_t i = 0; i < _listeners.size(); i++) {
+		if (!_tryListenSocket(_listeners[i])) {
 			return false;
 		}
-		std::cout << _listenerSockets[i].getIPAndPort() << std::endl;
+		std::cout << _listeners[i].getIPAndPort() << std::endl;
 	}
-	while (true) {
+	while (!exit) {
 		coloredLog("Waiting for a request...", "", GREEN);
-		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1) {
+		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1 && !exit) {
 			_printError("server.listen poll() failed");
 			return false;
 		}
-		_check_revents_sockets();
+		_handleSockets();
 	}
 	return true;
 }
@@ -89,10 +94,10 @@ bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
 	}
 	if (!_tryBindSocket(serverSocket, virtualServer.getIPAddress(),
 						virtualServer.getPort())) {
-		serverSocket.closeFD();
+		serverSocket.disconnect();
 		return false;
 	}
-	_listenerSockets.push_back(serverSocket);
+	_listeners.push_back(serverSocket);
 	_pollFd.push_back(serverSocket.getPollFd(POLLIN));
 	_virtualServers.push_back(virtualServer);
 	return true;
@@ -100,7 +105,7 @@ bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
 
 bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short port) {
 	std::vector<Socket>::const_iterator it;
-	for (it = _listenerSockets.begin(); it != _listenerSockets.end(); it++) {
+	for (it = _listeners.begin(); it != _listeners.end(); it++) {
 		if ((it->getIPAddress() == UNSPECIFIED_ADDRESS && it->getPort() == port)
 			|| (it->getIPAddress() == IPAddress && it->getPort() == port))
 			return true;
@@ -130,128 +135,97 @@ bool Server::_tryListenSocket(Socket &socket) {
 	return false;
 }
 
-void Server::_check_revents_sockets(void) {
-	for (size_t i = 0; i < _pollFd.size(); i++) {
-		Client* client = _getClientFromFD(_pollFd[i].fd);
-		if (client != NULL && client->getMSSinceLastActivity() > PERSISTENCE_SLEEP_MS) {
-			std::cout << "A client socket has been timeout" << std::endl;
-			close(_pollFd[i].fd);
+void Server::_handleSockets() {
+	for (size_t i = 0; i < _pollFd.size();) {
+		bool isDisconnect = false;
+		if (i >= _listeners.size()) {
+			isDisconnect = !_handleClient(_pollFd[i], i - _listeners.size());
+		}
+		else if ((_pollFd[i].revents & POLLIN) == 1 && i < _listeners.size()) {
+			_acceptNewClient(_pollFd[i]);
+		}
+		if (isDisconnect)
 			_pollFd.erase(_pollFd.begin() + i);
-			_clients.erase(_clients.begin() + (i - _listenerSockets.size()));
-			i--;
-			continue;
-		}
-		if ((_pollFd[i].revents & POLLIN) == 0)
-			continue;
-		if (i  < _listenerSockets.size()) {
-			_accept_new_client(_pollFd[i]);
-		} else if (_read_persistent_connection(i) == 0) {
-			i--;
-		}
+		else
+			i++;
 	}
 }
 
-bool Server::_accept_new_client(struct pollfd listener) {
-//	struct sockaddr_in	clientAddress;
-//	socklen_t clientAddressLen = sizeof(clientAddress);
-//	struct sockaddr_in	serverAddress;
-//	socklen_t serverAddressLen = sizeof(serverAddressLen);
-//
-//	int clientFD = accept(listener.fd,
-//						  (struct sockaddr*) &clientAddress, &clientAddressLen);
-//	if (clientFD == -1) {
-//		_printError("server.listen accept() failed");
-//		return false;
-//	}
-//	// TODO: secure
-//
-//	getsockname(clientFD, (struct sockaddr*)&serverAddress, &serverAddressLen);
-////	char serverIP[INET_ADDRSTRLEN];
-////	std::cout << inet_ntop(AF_INET, &(serverAddress.sin_addr.s_addr), serverIP, INET_ADDRSTRLEN) << std::endl;
-////	std::cout << "here" << serverIP << std::endl;
-//	std::cout << Server::ft_inet_ntoa(serverAddress.sin_addr.s_addr) << std::endl;
-//
-//	_clients.push_back(Client(clientFD, clientAddress, serverAddress));
-//	_pollFd.push_back((struct pollfd) {.fd = clientFD, .events = POLLIN, .revents = 0});
-//	std::cout << "A new client is connected" << std::endl;
-	int 				clientFD;
+bool Server::_acceptNewClient(struct pollfd listener) {
 	struct sockaddr_in	serverAddress;
 	struct sockaddr_in	clientAddress;
 	socklen_t			serverAddressLength = sizeof(serverAddress);
 	socklen_t			clientAddressLength = sizeof(clientAddressLength);
 
-//	serverAddressLength = sizeof(serverAddress);
-	clientFD = accept(listener.fd, (struct sockaddr*) &clientAddress, &clientAddressLength);
-	if (clientFD == -1) {
+	int clientSocket = accept(listener.fd, (struct sockaddr*) &clientAddress,
+							  &clientAddressLength);
+	if (clientSocket == -1) {
 		_printError("server.listen accept() failed");
 		return false;
 	}
-	getsockname(clientFD, (struct sockaddr*) &serverAddress, &serverAddressLength);
-	std::cout << ft_inet_ntoa(serverAddress.sin_addr.s_addr) << std::endl;
-	std::cout << ft_inet_ntoa(clientAddress.sin_addr.s_addr) << std::endl;
-//	socketAddress.second = ntohs(serverAddress.sin_port);
-
+	if (getsockname(clientSocket, (struct sockaddr*) &serverAddress,
+					&serverAddressLength) == -1) {
+		_printError("server.listen getsockname() failed");
+		close(clientSocket);
+		return false;
+	}
+	Client client(clientSocket, clientAddress, serverAddress);
+	_clients.push_back(client);
+	_pollFd.push_back((struct pollfd) {.fd = clientSocket, .events = POLLIN, .revents = 0});
+	std::cout << "A new client is connected" << std::endl;
 	return true;
 }
 
-ssize_t	Server::_read_persistent_connection(size_t client_index) {
-	Client* client = _getClientFromFD(_pollFd[client_index].fd);
+bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
+	std::vector<Client>::iterator	clientIt = _clients.begin() + clientIndex;
+	Client& client = *clientIt;
+	if (client.getMSSinceLastActivity() >= CLIENT_TIMEOUT_MS) {
+		client.disconnect();
+		_clients.erase(clientIt);
+		return false;
+	}
+	if ((pollSocket.revents & POLLIN) == 0)
+		return true;
+	if (!_readClientRequest(client)) {
+		client.disconnect();
+		_clients.erase(clientIt);
+		return false;
+	}
+	enum REQUEST_VALIDITY validity = client.checkRequestValidity();
+	if (validity == INVALID || validity == VALID_and_COMPLETE) {
+		std::cout << "Validity: " <<(validity == VALID_and_COMPLETE) << std::endl;
+		HttpRequest test("GET / HTTP/1.1\r\n");
+		test.parse();
+		std::cout << "Validity: " <<(test.checkValidity() == INVALID) << std::endl;
+		_sendClientRequest(client);
+	}
+	return true;
+}
 
-	coloredLog("Request received :", "", BLUE);
-	char buffer[10];
-	memset(buffer, 0, sizeof(buffer));
-	std::string completeClientRequest;
-	completeClientRequest = "";
-	ssize_t bytesRead = (ssize_t)(sizeof(buffer));
-//	while (bytesRead >= (ssize_t)(sizeof(buffer))) {
-		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
-//		if (bytesRead == -1)
-//			break;
-		std::string tmp;
-		tmp.append(buffer, bytesRead);
-		client->appendRawRequest(tmp);
-//	}
+bool Server::_readClientRequest(Client &client) {
+	char buffer[1024];
+	std::string	strRequest;
+
+	ssize_t bytesRead = recv(client.getFD(), buffer, sizeof(buffer), 0);
+	if (bytesRead == -1)
+		return true;
 	if (bytesRead == 0)
-	{
-		std::cout << "A client socket has been close" << std::endl;
-		close(_pollFd[client_index].fd);
-		_pollFd.erase(_pollFd.begin() + client_index);
-		return bytesRead;
-	}
-	if (client->checkRequestValidity() != NOT_COMPLETE){
-//		HttpRequest httpRequest = HttpRequest(completeClientRequest);
-		HttpRequest httpRequest = client->getRequest();
+		return false;
+	strRequest.append(buffer, bytesRead);
+	client.appendRawRequest(strRequest);
+	return true;
+}
+
+void Server::_sendClientRequest(Client &client) {
+	HttpRequest httpRequest = client.getRequest();
 //		httpRequest.displayRequest();
-		HttpResponse httpResponse;
-		std::string response = httpResponse.getResponse((*this), httpRequest);
-		write(_pollFd[client_index].fd, response.c_str(), response.size());
-		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
-	}
-	return bytesRead;
+	HttpResponse httpResponse;
+	std::string response = httpResponse.getResponse((*this), httpRequest);
+	send(client.getFD(), response.c_str(), response.size(), 0);
+//	coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
 }
 
 void Server::_printError(const std::string &error) {
 	std::cerr << "webserver: " << error << " ("
 			  << errno << ": " << strerror(errno) << ")" << std::endl;
-}
-
-Client*	Server::_getClientFromFD(int fd) {
-	std::vector<Client>::iterator it;
-	for (it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->getFD() == fd)
-			return &(*it);
-	}
-	return NULL;
-}
-
-
-std::string Server::ft_inet_ntoa(uint32_t s_addr) {
-	std::stringstream	ip;
-
-	s_addr = ntohl(s_addr);
-	ip << ((s_addr & 0xff000000) >> 24)
-	   << '.' << ((s_addr & 0xff0000) >> 16)
-	   << '.' << ((s_addr & 0xff00) >> 8)
-	   << '.' << (s_addr & 0xff);
-	return (ip.str());
 }

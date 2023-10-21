@@ -60,8 +60,8 @@ bool Socket::listening() const {
 	return true;
 }
 
-void	Socket::closeFD() {
-	close(_fd);
+int Socket::disconnect() const {
+	return (close(_fd));
 }
 
 int Socket::getFD() const {
@@ -82,6 +82,17 @@ std::string Socket::getIPAndPort() const {
 
 struct pollfd Socket::getPollFd(const short events) const {
 	return ((struct pollfd){.fd = _fd, .events = events, .revents = 0});
+}
+
+std::string	Socket::networkToStr(uint32_t s_addr) {
+	std::stringstream	ip;
+
+	s_addr = ntohl(s_addr);
+	ip << ((s_addr & 0xff000000) >> 24)
+	   << '.' << ((s_addr & 0xff0000) >> 16)
+	   << '.' << ((s_addr & 0xff00) >> 8)
+	   << '.' << (s_addr & 0xff);
+	return (ip.str());
 }
 
 bool	Socket::_calculateRawIPAddress()
@@ -109,3 +120,4 @@ bool	Socket::_calculateRawIPAddress()
 	_rawIPAddress = result;
 	return true;
 }
+

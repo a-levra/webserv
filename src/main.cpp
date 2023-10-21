@@ -1,18 +1,16 @@
-#include <cstdlib>
-#include <unistd.h> //DEBUG
-#include <cstdio> //DEBUG
-
-#include <string>
 #include "server/Server.hpp"
 #include "config/ConfigLexer.hpp"
 #include "config/ConfigFactory.hpp"
 #include "config/ConfigParser.hpp"
+
+#include <csignal>
 #include <iostream>
 
 static bool	isParsingFlag(int argc, char *argv[]);
 static bool parseConfigFile(const ConfigLexer& lexer);
 static int 	testConfigFile(const std::string& configFile);
 static int	runServer(const std::string& configFile);
+static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
@@ -40,24 +38,6 @@ static int	testConfigFile(const std::string& configFile) {
 	return EXIT_SUCCESS;
 }
 
-static int runServer(const std::string& configFile) {
-	Server			webserv;
-
-	{
-		ConfigLexer	lexer = ConfigLexer(configFile);
-		if (!parseConfigFile(lexer))
-			return EXIT_FAILURE;
-		lexer.getMainContext().inheritDirectives();
-		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
-				lexer.getMainContext()))) {
-			std::cerr << "webserv: failed to launch virtual servers" << std::endl;
-			return EXIT_FAILURE;
-		}
-	}
-	webserv.listen();
-	return EXIT_FAILURE;
-}
-
 static bool parseConfigFile(const ConfigLexer& lexer) {
 	ConfigParser parser;
 
@@ -71,4 +51,29 @@ static bool parseConfigFile(const ConfigLexer& lexer) {
 		return false;
 	}
 	return true;
+}
+
+static int runServer(const std::string& configFile) {
+	Server			webserv;
+
+	signal(SIGINT, &handleSignal);
+	{
+		ConfigLexer	lexer = ConfigLexer(configFile);
+		if (!parseConfigFile(lexer))
+			return EXIT_FAILURE;
+		lexer.getMainContext().inheritDirectives();
+		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
+				lexer.getMainContext()))) {
+			std::cerr << "webserv: failed to launch virtual servers" << std::endl;
+			return EXIT_FAILURE;
+		}
+	}
+	if (!webserv.listen())
+		return EXIT_FAILURE;
+	return EXIT_SUCCESS;
+}
+
+static void handleSignal(int signum) {
+	static_cast<void>(signum);
+	Server::exit = true;
 }

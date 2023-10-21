@@ -20,13 +20,15 @@ class Socket {
 		bool	initialize();
 		bool	binding(const std::string& IPAddress, unsigned short port);
 		bool	listening() const;
-		void	closeFD();
+		int 	disconnect() const;
 
 		int				getFD() const;
 		unsigned short	getPort() const;
 		std::string		getIPAddress() const;
 		std::string 	getIPAndPort() const;
 		struct pollfd	getPollFd(short events) const;
+
+		static std::string networkToStr(in_addr_t s_addr);
 
 	private:
 		bool				_calculateRawIPAddress();

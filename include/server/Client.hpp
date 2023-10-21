@@ -24,11 +24,12 @@ public:
 	int 		getFD();
 	time_t		getMSSinceLastActivity();
 
-private:
-	static std::string _rawIPAddressToStrIPAddress(uint32_t rawIPAddress);
-	static unsigned short	_rawPortToPort(uint16_t rawPort);
+	int 		disconnect() const;
 
+private:
 	HttpRequest			_request;
+	// TODO: remove
+	std::string			_rawRequest;
 	struct sockaddr_in	_address;
 	struct sockaddr_in	_entryAddress;
 	std::string 		_IPAddress;

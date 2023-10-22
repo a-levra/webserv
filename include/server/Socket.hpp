@@ -1,9 +1,10 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-# include <string>
 # include <arpa/inet.h>
 # include <poll.h>
+
+# include <string>
 
 # define UNSPECIFIED_ADDRESS "0.0.0.0"
 # define LOCALHOST "localhost"
@@ -12,6 +13,7 @@
 class Socket {
 	public:
 		Socket();
+		Socket(int fd, struct sockaddr_in address);
 		Socket(const Socket &other);
 		~Socket();
 

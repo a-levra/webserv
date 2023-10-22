@@ -11,13 +11,10 @@ Client::Client() {
 
 Client::Client(int fd, struct sockaddr_in address,
 			   struct sockaddr_in entryAddress) {
-	_address = address;
+	_socket = Socket(fd, address);
 	_entryAddress = entryAddress;
-	_IPAddress = Socket::networkToStr(address.sin_addr.s_addr);
 	_entryIPAddress = Socket::networkToStr(entryAddress.sin_addr.s_addr);
 	_lastActivity = std::time(NULL);
-	_fd = fd;
-	_port = ntohs(address.sin_port);
 	_entryPort = ntohs(entryAddress.sin_port);
 }
 
@@ -34,13 +31,10 @@ Client &Client::operator=(const Client &other)
 	if (this == &other)
 		return *this;
 	_request = other._request;
-	_address = other._address;
+	_socket = other._socket;
 	_entryAddress = other._entryAddress;
-	_IPAddress = other._IPAddress;
 	_entryIPAddress = other._entryIPAddress;
 	_lastActivity = other._lastActivity;
-	_fd = other._fd;
-	_port = other._port;
 	_entryPort = other._entryPort;
 	return *this;
 }
@@ -63,7 +57,7 @@ HttpRequest Client::getRequest() {
 }
 
 int Client::getFD() {
-	return _fd;
+	return _socket.getFD();
 }
 
 time_t Client::getMSSinceLastActivity() {
@@ -71,5 +65,5 @@ time_t Client::getMSSinceLastActivity() {
 }
 
 int Client::disconnect() const {
-	return (close(_fd));
+	return _socket.disconnect();
 }

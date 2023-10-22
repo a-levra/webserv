@@ -1,15 +1,14 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include "HttpMessages/HttpRequest.hpp"
-
 # include <arpa/inet.h>
 
-// TODO : remove
-class Server;
+# include "server/Socket.hpp"
+# include "HttpMessages/HttpRequest.hpp"
 
-class Client
-{
+
+
+class Client {
 public:
 	Client();
 	Client(int fd, struct sockaddr_in address, struct sockaddr_in entryAddress);
@@ -28,16 +27,13 @@ public:
 
 private:
 	HttpRequest			_request;
+	Socket				_socket;
 	// TODO: remove
-	std::string			_rawRequest;
-	struct sockaddr_in	_address;
-	struct sockaddr_in	_entryAddress;
-	std::string 		_IPAddress;
-	std::string 		_entryIPAddress;
-	time_t				_lastActivity;
-	int					_fd;
-	unsigned short		_port;
-	unsigned short		_entryPort;
+  	std::string			_rawRequest;
+  	std::string 		_entryIPAddress;
+  	struct sockaddr_in	_entryAddress;
+  	time_t				_lastActivity;
+  	unsigned short		_entryPort;
 };
 
 #endif

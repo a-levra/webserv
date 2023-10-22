@@ -13,6 +13,14 @@
 
 Socket::Socket() { }
 
+Socket::Socket(int fd, struct sockaddr_in address) {
+	_fd = fd;
+	_address = address;
+	_rawIPAddress = ntohl(address.sin_addr.s_addr);
+	_IPAddress = networkToStr(address.sin_addr.s_addr);
+	_port = ntohs(address.sin_port);
+}
+
 Socket::Socket(const Socket &other) {
 	*this = other;
 }
@@ -30,10 +38,10 @@ Socket &Socket::operator=(const Socket &other) {
 }
 
 bool Socket::initialize() {
-	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (this->_fd == -1)
+	_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_fd == -1)
 		return false;
-	std::memset(&this->_address, 0, sizeof(this->_address));
+	std::memset(&_address, 0, sizeof(_address));
 	return true;
 }
 
@@ -61,7 +69,7 @@ bool Socket::listening() const {
 }
 
 int Socket::disconnect() const {
-	return (close(_fd));
+	return close(_fd);
 }
 
 int Socket::getFD() const {

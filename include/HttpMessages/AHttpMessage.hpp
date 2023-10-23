@@ -12,7 +12,6 @@ class AHttpMessage {
 		virtual ~AHttpMessage();
 		AHttpMessage &operator=(const AHttpMessage &other);
 		void setRawRequest(std::string string);
-		void appendRawRequest(const std::string& rawRequest);
 		void displayRequest();
 
 		void setVersion();

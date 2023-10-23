@@ -1,18 +1,16 @@
-#include <cstdlib>
-#include <unistd.h> //DEBUG
-#include <cstdio> //DEBUG
-
-#include <string>
 #include "server/Server.hpp"
 #include "config/ConfigLexer.hpp"
 #include "config/ConfigFactory.hpp"
 #include "config/ConfigParser.hpp"
+
+#include <csignal>
 #include <iostream>
 
 static bool	isParsingFlag(int argc, char *argv[]);
 static int 	testConfigFile(const std::string& configFile);
 static bool parseConfigFile(const ConfigLexer& lexer);
 static int	runServer(const std::string& configFile);
+static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
@@ -57,6 +55,7 @@ static bool parseConfigFile(const ConfigLexer& lexer) {
 static int runServer(const std::string& configFile) {
 	Server			webserv;
 
+	signal(SIGINT, &handleSignal);
 	{
 		ConfigLexer	lexer = ConfigLexer(configFile);
 		if (!parseConfigFile(lexer))
@@ -68,6 +67,12 @@ static int runServer(const std::string& configFile) {
 			return EXIT_FAILURE;
 		}
 	}
-	webserv.listen();
-	return EXIT_FAILURE;
+	if (!webserv.listen())
+		return EXIT_FAILURE;
+	return EXIT_SUCCESS;
+}
+
+static void handleSignal(int signum) {
+	static_cast<void>(signum);
+	Server::exit = true;
 }

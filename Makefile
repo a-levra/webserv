@@ -59,6 +59,10 @@ fclean: clean
 re:				fclean
 				$(MAKE) all
 
+.PHONY: run
+run:			all
+				./webserv resources/webserv.conf
+
 .PHONY: build_image
 build_image: Dockerfile
 	docker build -t webserv .

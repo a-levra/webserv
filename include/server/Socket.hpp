@@ -1,9 +1,10 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-# include <string>
 # include <arpa/inet.h>
 # include <poll.h>
+
+# include <string>
 
 # define UNSPECIFIED_ADDRESS "0.0.0.0"
 # define LOCALHOST "localhost"
@@ -12,6 +13,7 @@
 class Socket {
 	public:
 		Socket();
+		Socket(int fd, struct sockaddr_in address);
 		Socket(const Socket &other);
 		~Socket();
 
@@ -20,13 +22,15 @@ class Socket {
 		bool	initialize();
 		bool	binding(const std::string& IPAddress, unsigned short port);
 		bool	listening() const;
-		void	closeFD();
+		int 	disconnect() const;
 
 		int				getFD() const;
 		unsigned short	getPort() const;
 		std::string		getIPAddress() const;
 		std::string 	getIPAndPort() const;
 		struct pollfd	getPollFd(short events) const;
+
+		static std::string networkToStr(in_addr_t s_addr);
 
 	private:
 		bool				_calculateRawIPAddress();

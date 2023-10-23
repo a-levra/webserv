@@ -8,6 +8,7 @@ LIST_SRC	=\
         HttpMessages/HttpRequest.cpp	\
         HttpMessages/HttpResponse.cpp	\
         \
+        server/Client.cpp	\
         server/Server.cpp	\
         server/Socket.cpp	\
         \

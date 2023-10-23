@@ -68,9 +68,14 @@ bool Server::listen() {
 }
 
 VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
-			return &_virtualServers[i];
+	std::vector<VirtualServer>::iterator itHosts;
+	for (itHosts = _virtualServers.begin(); itHosts != _virtualServers.end(); itHosts++) {
+		std::vector<std::string> serverNames = itHosts->getServerName();
+		std::vector<std::string>::iterator itHostNames;
+		for (itHostNames = serverNames.begin(); itHostNames != serverNames.end(); itHostNames++) {
+			if (*itHostNames == serverName)
+				return &(*itHosts);
+		}
 	}
 	return NULL;
 }
@@ -213,11 +218,11 @@ bool Server::_readClientRequest(Client &client) {
 
 void Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
-//		httpRequest.displayRequest();
+	httpRequest.displayRequest();
 	HttpResponse httpResponse;
 	std::string response = httpResponse.getResponse((*this), httpRequest);
 	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
-//	coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
+	coloredLog("Response: ", response, BLUE);
 }
 
 void Server::_printError(const std::string &error) {

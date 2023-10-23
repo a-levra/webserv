@@ -7,8 +7,8 @@
 #include <iostream>
 
 static bool	isParsingFlag(int argc, char *argv[]);
-static bool parseConfigFile(const ConfigLexer& lexer);
 static int 	testConfigFile(const std::string& configFile);
+static bool parseConfigFile(const ConfigLexer& lexer);
 static int	runServer(const std::string& configFile);
 static void handleSignal(int signum);
 
@@ -24,7 +24,6 @@ int main(int argc, char **argv)
 		return runServer(argv[1]);
 	return EXIT_FAILURE;
 }
-
 
 static bool	isParsingFlag(int argc, char *argv[]) {
 	return (argc == 3 && std::string(argv[1]) == "-t");

@@ -52,7 +52,6 @@ std::string VirtualServer::getIPAndPort() const {
 
 //example: name = /index.html
 Location * VirtualServer::getLocation(const std::string &name) {
-	coloredLog("Location requested : ", "\"" + name + "\"", YELLOW);
 	std::map<std::string, Location>::iterator res = _locations.find(name);
 	if (res == _locations.end())
 		return (NULL);

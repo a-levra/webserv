@@ -30,8 +30,11 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 }
 
 bool HttpRequest::checkDoubleSpaces() {
-	size_t pos = _rawMessage.find("  ");
-	if (pos != std::string::npos)
+	size_t BodyPos = _rawMessage.find("/r/n/r/n");
+	size_t DoubleSpacePos = _rawMessage.find("  ");
+	if (DoubleSpacePos != std::string::npos &&
+		BodyPos != std::string::npos &&
+		DoubleSpacePos < BodyPos)
 		return false;
 	return true;
 }

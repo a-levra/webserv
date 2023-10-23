@@ -182,3 +182,14 @@ void Location::display() {
 	coloredLog("\t", toString(_return.first), PURPLE);
 	coloredLog("\t", _return.second, PURPLE);
 }
+
+bool	Location::isAllowedMethod(const std::string& method) const{
+	coloredLog("isAllowedMethod : ", method, PURPLE);
+
+	std::vector<std::string>::const_iterator it;
+	for (it = _allowMethods.begin(); it != _allowMethods.end(); it++) {
+		if (*it == method)
+			return true;
+	}
+	return true;
+}

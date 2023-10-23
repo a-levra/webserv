@@ -50,8 +50,8 @@ void AHttpMessage::displayRequest() {
 	for (it = _headers.begin(); it != _headers.end(); it++) {
 		printBoldThenThin("\t" + it->first + ": ", it->second);
 	}
-	printBoldThenThin("Body: ", _body);
-	printBoldThenThin("Raw request: ", _rawMessage);
+//	printBoldThenThin("Body: ", _body);
+//	printBoldThenThin("Raw request: ", _rawMessage);
 }
 
 void AHttpMessage::setVersion() {
@@ -83,11 +83,24 @@ void AHttpMessage::setBodyFromFile(std::string path) {
 	setBody(readFileToString(path));
 }
 
-std::string AHttpMessage::getHeader(std::string header) {
+std::string * AHttpMessage::getHeader(const std::string &header)  {
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
 		if (it->first == header)
-			return it->second;
+			return &(it->second);
 	}
-	return "";
+	return NULL;
 }
+
+void AHttpMessage::appendBody(const std::string &message) {
+	_body += message;
+}
+
+const std::string & AHttpMessage::getMethod() const {
+	return _method;
+}
+
+const std::string &AHttpMessage::getBody() const {
+	return _body;
+}
+

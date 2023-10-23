@@ -39,20 +39,21 @@ Client &Client::operator=(const Client &other)
 	return *this;
 }
 
-void Client::appendRawRequest(const std::string &rawRequest) {
-	_lastActivity = std::time(NULL);
-//	_request.appendRawRequest(rawRequest);
-	_rawRequest.append(rawRequest);
-}
-
 enum REQUEST_VALIDITY Client::checkRequestValidity() {
 	_request = HttpRequest(_rawRequest);
 	_request.parse();
 	return _request.checkValidity();
 }
 
+void Client::appendRawRequest(const std::string &rawRequest) {
+	_rawRequest.append(rawRequest);
+}
+
+void Client::setRawRequest(const std::string &rawRequest) {
+	_rawRequest = rawRequest;
+}
+
 HttpRequest Client::getRequest() {
-	_rawRequest = "";
 	return _request;
 }
 
@@ -62,6 +63,11 @@ int Client::getFD() {
 
 time_t Client::getMSSinceLastActivity() {
 	return ((std::time(NULL) - _lastActivity) * 1000);
+}
+
+time_t Client::updateLastActivity() {
+	_lastActivity = std::time(NULL);
+	return _lastActivity;
 }
 
 int Client::disconnect() const {

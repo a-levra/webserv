@@ -213,6 +213,7 @@ bool Server::_readClientRequest(Client &client) {
 		return false;
 	strRequest.append(buffer, bytesRead);
 	client.appendRawRequest(strRequest);
+	client.updateLastActivity();
 	return true;
 }
 
@@ -222,6 +223,7 @@ void Server::_sendClientRequest(Client &client) {
 	HttpResponse httpResponse;
 	std::string response = httpResponse.getResponse((*this), httpRequest);
 	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
+	client.setRawRequest("");
 	coloredLog("Response: ", response, BLUE);
 }
 

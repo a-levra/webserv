@@ -17,12 +17,13 @@ public:
 
 	Client &operator=(const Client &other);
 
+  	REQUEST_VALIDITY checkRequestValidity();
 	void	appendRawRequest(const std::string& rawRequest);
-	REQUEST_VALIDITY checkRequestValidity();
+	void	setRawRequest(const std::string& rawRequest);
 	HttpRequest	getRequest();
 	int 		getFD();
 	time_t		getMSSinceLastActivity();
-
+	time_t		updateLastActivity();
 	int 		disconnect() const;
 
 private:

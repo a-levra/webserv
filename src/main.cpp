@@ -10,8 +10,8 @@
 #include <iostream>
 
 static bool	isParsingFlag(int argc, char *argv[]);
-static bool parseConfigFile(const ConfigLexer& lexer);
 static int 	testConfigFile(const std::string& configFile);
+static bool parseConfigFile(const ConfigLexer& lexer);
 static int	runServer(const std::string& configFile);
 
 int main(int argc, char **argv)
@@ -27,7 +27,6 @@ int main(int argc, char **argv)
 	return EXIT_FAILURE;
 }
 
-
 static bool	isParsingFlag(int argc, char *argv[]) {
 	return (argc == 3 && std::string(argv[1]) == "-t");
 }
@@ -38,6 +37,21 @@ static int	testConfigFile(const std::string& configFile) {
 		return EXIT_FAILURE;
 	std::cout << "Syntax is ok" << std::endl;
 	return EXIT_SUCCESS;
+}
+
+static bool parseConfigFile(const ConfigLexer& lexer) {
+	ConfigParser parser;
+
+	if (lexer.getCodeError() != ConfigLexer::NO_ERROR) {
+		std::cerr << "Lexical Error: " <<  lexer.getError() << std::endl;
+		return false;
+	}
+	parser.parseConfigFile(lexer.getConstMainContext());
+	if (parser.getCodeError() != ConfigParser::NO_ERROR) {
+		std::cerr << "Syntax Error: " <<  parser.getError() << std::endl;
+		return false;
+	}
+	return true;
 }
 
 static int runServer(const std::string& configFile) {
@@ -56,19 +70,4 @@ static int runServer(const std::string& configFile) {
 	}
 	webserv.listen();
 	return EXIT_FAILURE;
-}
-
-static bool parseConfigFile(const ConfigLexer& lexer) {
-	ConfigParser parser;
-
-	if (lexer.getCodeError() != ConfigLexer::NO_ERROR) {
-		std::cerr << "Lexical Error: " <<  lexer.getError() << std::endl;
-		return false;
-	}
-	parser.parseConfigFile(lexer.getConstMainContext());
-	if (parser.getCodeError() != ConfigParser::NO_ERROR) {
-		std::cerr << "Syntax Error: " <<  parser.getError() << std::endl;
-		return false;
-	}
-	return true;
 }

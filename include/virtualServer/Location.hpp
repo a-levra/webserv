@@ -37,7 +37,7 @@ class Location {
 		void	setAllowMethods(const std::vector<std::string>& allowMethods);
 		void	setErrorPage(const std::pair<std::vector<int>, std::string>& errorPage);
 		void	setReturn(const std::pair<int, std::string>& returnPage);
-
+		bool	isAllowedMethod(const std::string& method) const;
 		void display();
 	private:
 		// error page;

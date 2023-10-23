@@ -62,9 +62,14 @@ bool Server::listen() {
 }
 
 VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		if (_virtualServers[i].getServerName()[0] == serverName) //todo : ne check que le premier serverName..
-			return &_virtualServers[i];
+	std::vector<VirtualServer>::iterator itHosts;
+	for (itHosts = _virtualServers.begin(); itHosts != _virtualServers.end(); itHosts++) {
+		std::vector<std::string> serverNames = itHosts->getServerName();
+		std::vector<std::string>::iterator itHostNames;
+		for (itHostNames = serverNames.begin(); itHostNames != serverNames.end(); itHostNames++) {
+			if (*itHostNames == serverName)
+				return &(*itHosts);
+		}
 	}
 	return NULL;
 }
@@ -161,7 +166,6 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	char buffer[4096];
 	memset(buffer, 0, sizeof(buffer));
 	std::string completeClientRequest;
-	completeClientRequest = "";
 	ssize_t bytesRead = (ssize_t)(sizeof(buffer));
 	while (bytesRead >= (ssize_t)(sizeof(buffer))) {
 		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
@@ -169,8 +173,7 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 			break;
 		completeClientRequest.append(buffer, bytesRead);
 	}
-	if (bytesRead == 0)
-	{
+	if (bytesRead == 0){//EOF means the client has closed the connection
 		std::cout << "A client socket has been close" << std::endl;
 		close(_pollFd[client_index].fd);
 		_pollFd.erase(_pollFd.begin() + client_index);
@@ -182,7 +185,8 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 		HttpResponse httpResponse;
 		std::string response = httpResponse.getResponse((*this), httpRequest);
 		write(_pollFd[client_index].fd, response.c_str(), response.size());
-		coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
+		coloredLog("Response sent", "[" + toString(client_index) + "]", BLUE);
+		coloredLog("Response: ", response, BLUE);
 	}
 	return bytesRead;
 }

@@ -216,7 +216,7 @@ void Server::_sendClientRequest(Client &client) {
 //		httpRequest.displayRequest();
 	HttpResponse httpResponse;
 	std::string response = httpResponse.getResponse((*this), httpRequest);
-	send(client.getFD(), response.c_str(), response.size(), 0);
+	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 //	coloredLog("Response sent", "[" + toString(client_index) + "] :", BLUE);
 }
 

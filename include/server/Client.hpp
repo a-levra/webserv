@@ -28,7 +28,6 @@ public:
 private:
 	HttpRequest			_request;
 	Socket				_socket;
-	// TODO: remove
   	std::string			_rawRequest;
   	std::string 		_entryIPAddress;
   	struct sockaddr_in	_entryAddress;

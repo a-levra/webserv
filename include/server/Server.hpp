@@ -13,6 +13,8 @@
 
 # define CLIENT_TIMEOUT_MS 10000
 
+# define READ_BUFFER_SIZE 1024
+
 class Server {
     public:
 		Server();

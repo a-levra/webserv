@@ -203,7 +203,7 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 }
 
 bool Server::_readClientRequest(Client &client) {
-	char buffer[1024];
+	char buffer[READ_BUFFER_SIZE];
 	std::string	strRequest;
 
 	ssize_t bytesRead = recv(client.getFD(), buffer, sizeof(buffer), 0);

@@ -22,6 +22,10 @@ class HttpResponse : public AHttpMessage {
 		void buildGet(Location &location);
 		void buildPost(Location &location, const HttpRequest &request);
 		void getFileFromPostAndSaveIt(HttpRequest request);
+		void ExtractImgInsideBoudaries(const HttpRequest &request,
+									   std::string *boundary,
+									   std::string &filename,
+									   std::string &fileContent) const;
 };
 
 #endif

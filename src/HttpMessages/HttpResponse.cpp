@@ -196,16 +196,41 @@ void HttpResponse::GenerateErrorBody() {
 
 void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
 	coloredLog("Building POST response: ", "", BLUE);
+
 	std::string *boundary = request.getHeader("Content-Type");
+	std::string filename = "file";
+	std::string fileContent;
+	if (boundary == NULL || boundary->find("boundary=") == std::string::npos)
+		fileContent = request.getBody();
+	else{
+		try {
+			ExtractImgInsideBoudaries(request, boundary, filename, fileContent);
+		}
+		catch (std::exception &e) {
+			coloredLog("Error: ", e.what(), RED);
+			this->buildErrorPage(500);
+		}
+	}
+	createFile(filename, fileContent);
+}
+
+void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
+											 std::string *boundary,
+											 std::string &filename,
+											 std::string &fileContent) const {
+	coloredLog("Boundary found: ", *boundary, BLUE);
 	*boundary = boundary->substr(boundary->find("boundary=") + 9);
 	std::string body = request.getBody();
-	std::string filename = body.substr(body.find("filename=") + 10);
-	filename = filename.substr(0, filename.find("\r\n"));
-	std::string fileContent = body.substr(body.find(*boundary) + boundary->length() + 2);
-	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
-	std::ofstream file;
-	file.open(filename.c_str());
-	file << fileContent;
-	file.close();
 
+	filename = body.substr(body.find("filename=") + 9);
+	char delimiter = filename[0];
+	filename = filename.substr(1, filename.substr(1).find(delimiter));
+	coloredLog("File name: ", filename, BLUE);
+
+	fileContent = body.substr(body.find(*boundary) + boundary->length() + 2);
+	//trim all headers
+	fileContent = fileContent.substr(fileContent.find("\r\n\r\n") + 4);
+	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
+	if (fileContent.size() >= 2 && fileContent[fileContent.size() - 2] == '\r' && fileContent[fileContent.size() - 1] == '\n')
+		fileContent.erase(fileContent.size() - 2, 2);
 }

@@ -29,7 +29,6 @@ std::string toString(const T &value) {
 
 std::string getDate();
 bool isDigitString(const std::string &s);
-
 void ftSleep(unsigned int milliseconds);
 
 std::vector<std::string> splitDelimiter(const std::string &s, char delimiter);
@@ -40,5 +39,7 @@ std::string &ltrim(std::string &s);
 std::string &rtrim(std::string &s);
 
 bool fileExists(const std::string &pathToFile);
+void createFile(const std::string &filename, const std::string &fileContent);
+void appendFile(const std::string &filename, const std::string &fileContent);
 
 #endif //UTILS_HPP

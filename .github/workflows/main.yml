@@ -1,0 +1,19 @@
+name: main
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        
+    steps:
+    - uses: actions/checkout@v3
+    - name: make
+      run: make

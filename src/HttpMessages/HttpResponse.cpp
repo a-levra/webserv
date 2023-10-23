@@ -86,14 +86,19 @@ void HttpResponse::buildGet(Location &location) {
 
 void HttpResponse::generateBody(Location &location) {
 
-	const std::string *index = getFirstValidIndex(location);
-
-	if (index == NULL){
-		coloredLog("No index valid: ", _path, RED);
-		this->buildErrorPage(500);
-		return ;
+	std::string file;
+	if (_file.empty()) {
+		const std::string *index = getFirstValidIndex(location);
+		if (index == NULL){
+			coloredLog("No index valid: ", _path, RED);
+			this->buildErrorPage(500);
+			return ;
+		}
+		file = *index;
 	}
-	_body = readFileToString( location.getRoot() + _path + "/" + *index );
+	else
+		file = _file;
+	_body = readFileToString(location.getRoot() + _path + "/" + file);
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;

@@ -35,6 +35,7 @@ class AHttpMessage {
 		std::string _rawMessage;
 		void display(std::string message);
 		int _statusCode;
+		std::string _file;
 		std::string _statusMessage;
 };
 

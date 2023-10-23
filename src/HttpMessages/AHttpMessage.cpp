@@ -23,6 +23,7 @@ AHttpMessage &AHttpMessage::operator=(const AHttpMessage &other) {
 		_headers = other._headers;
 		_body = other._body;
 		_rawMessage = other._rawMessage;
+		_file = other._file;
 	}
 	return (*this);
 }

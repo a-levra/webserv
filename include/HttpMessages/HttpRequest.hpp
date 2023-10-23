@@ -20,11 +20,11 @@ class HttpRequest: public AHttpMessage{
 		HttpRequest &operator=(const HttpRequest &other);
 		bool parse();
 		bool parseMethod();
-		bool parsePath();
+		bool parseURI();
 		bool parseVersion();
 		bool parseAllHeaders();
 		bool parseHeader(const std::string &line);
-		bool checkPathValidity(size_t spacePos);
+		bool checkPathValidity(std::string::size_type spacePos);
 		bool checkDoubleSpaces();
 		enum REQUEST_VALIDITY checkValidity();
 		const std::string &getPath();

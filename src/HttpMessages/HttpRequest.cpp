@@ -44,7 +44,7 @@ bool HttpRequest::parse() {
 	bool (HttpRequest::*parseFunctions[])() = {
 		&HttpRequest::checkDoubleSpaces,
 		&HttpRequest::parseMethod,
-		&HttpRequest::parsePath,
+		&HttpRequest::parseURI,
 		&HttpRequest::parseVersion,
 		&HttpRequest::parseAllHeaders};
 
@@ -82,16 +82,21 @@ bool HttpRequest::parseMethod() {
 	return true;
 }
 
-bool HttpRequest::parsePath() {
-	size_t spacePos = _rawMessage.find(' ');
+bool HttpRequest::parseURI() {
+	std::string::size_type spacePos = _rawMessage.find(' ');
 	if (spacePos == std::string::npos || !checkPathValidity(spacePos))
 		return false;
-	_path = _rawMessage.substr(0, spacePos);
+	std::string uri = _rawMessage.substr(0, spacePos);
+	std::string::size_type rSlashPos = uri.rfind('/');
+	if (rSlashPos == std::string::npos)
+		return false;
+	_path = uri.substr(0, rSlashPos + 1);
+	_file = uri.substr(rSlashPos + 1);
 	_rawMessage = _rawMessage.substr(spacePos + 1);
 	return true;
 }
 
-bool HttpRequest::checkPathValidity(size_t spacePos) {
+bool HttpRequest::checkPathValidity(std::string::size_type spacePos) {
 	//path must be alphanumeric and can contain only '/', '.' and '-'
 	//path cannot contain ".." or "//"
 	for (size_t i = 0; i < spacePos; i++) {

@@ -163,7 +163,6 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 	char buffer[4096];
 	memset(buffer, 0, sizeof(buffer));
 	std::string completeClientRequest;
-	completeClientRequest = "";
 	ssize_t bytesRead = (ssize_t)(sizeof(buffer));
 	while (bytesRead >= (ssize_t)(sizeof(buffer))) {
 		bytesRead = read(_pollFd[client_index].fd, buffer, sizeof(buffer));
@@ -171,8 +170,7 @@ ssize_t	Server::_read_persistent_connection(size_t client_index) {
 			break;
 		completeClientRequest.append(buffer, bytesRead);
 	}
-	if (bytesRead == 0)
-	{
+	if (bytesRead == 0){//EOF means the client has closed the connection
 		std::cout << "A client socket has been close" << std::endl;
 		close(_pollFd[client_index].fd);
 		_pollFd.erase(_pollFd.begin() + client_index);

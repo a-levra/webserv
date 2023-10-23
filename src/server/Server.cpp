@@ -62,10 +62,13 @@ bool Server::listen() {
 }
 
 VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		for (size_t j = 0; j < _virtualServers[i].getServerName().size(); j++) {
-			if (_virtualServers[i].getServerName()[j] == serverName)
-				return &_virtualServers[i];
+	std::vector<VirtualServer>::iterator itHosts;
+	for (itHosts = _virtualServers.begin(); itHosts != _virtualServers.end(); itHosts++) {
+		std::vector<std::string> serverNames = itHosts->getServerName();
+		std::vector<std::string>::iterator itHostNames;
+		for (itHostNames = serverNames.begin(); itHostNames != serverNames.end(); itHostNames++) {
+			if (*itHostNames == serverName)
+				return &(*itHosts);
 		}
 	}
 	return NULL;

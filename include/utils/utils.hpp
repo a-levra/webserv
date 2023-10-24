@@ -42,4 +42,5 @@ bool fileExists(const std::string &pathToFile);
 void createFile(const std::string &filename, const std::string &fileContent);
 void appendFile(const std::string &filename, const std::string &fileContent);
 
+std::vector<size_t> getPositionsOfWord(const std::string &word, const std::string &src);
 #endif //UTILS_HPP

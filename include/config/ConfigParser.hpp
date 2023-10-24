@@ -62,6 +62,7 @@ private:
 	bool	_parseRoot(const std::string& directiveContent);
 	bool	_parseReturn(const std::string& directiveContent);
 	bool	_parseServerName(const std::string& directiveContent);
+	bool	_parseCGIPath(const std::string& directiveContent);
 
 	typedef bool (ConfigParser::*directiveFunction)(const std::string& directiveContent);
 	typedef std::map<std::string, directiveFunction> directiveFunctionMap;

@@ -64,6 +64,8 @@ void Location::addDirective(const std::string &name, const std::string &content)
 		setClientMaxBodySize(std::atoi(content.c_str()));
 	else if (name == "autoindex")
 		setAutoIndex(content == "on");
+	else if (name == "cgi_path")
+		addCGIPath(content);
 }
 
 void Location::addIndexDirective(const std::string &content) {
@@ -93,6 +95,16 @@ void Location::addReturnDirective(const std::string &content) {
 	result.first = std::atoi(arguments[0].c_str());
 	result.second = arguments[1];
 	setReturn(result);
+}
+
+void Location::addCGIPath(const std::string &content) {
+	std::vector<std::string>	arguments = splitWhiteSpace(content);
+
+	std::vector<std::string>::const_iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		std::vector<std::string> extensionPath = splitDelimiter(*it, ':');
+		_cgiPath.insert(std::make_pair(extensionPath[0], extensionPath[1]));
+	}
 }
 
 std::string Location::getURI() const {
@@ -125,6 +137,10 @@ const std::pair<std::vector<int>, std::string> &Location::getErrorPage() const {
 
 const std::pair<int, std::string> &Location::getReturn() const {
 	return _return;
+}
+
+const std::map<std::string, std::string> &Location::getCGIPath() const {
+	return _cgiPath;
 }
 
 void Location::setURI(const std::string &URI) {
@@ -192,4 +208,8 @@ bool	Location::isAllowedMethod(const std::string& method) const{
 			return true;
 	}
 	return true;
+}
+
+bool Location::hasCGI() const {
+	return _cgiPath.size() > 0;
 }

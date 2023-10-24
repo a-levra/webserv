@@ -65,7 +65,7 @@ void Location::addDirective(const std::string &name, const std::string &content)
 	else if (name == "autoindex")
 		setAutoIndex(content == "on");
 	else if (name == "cgi_path")
-		addCGIPath(content);
+		addCGIPathDirective(content);
 }
 
 void Location::addIndexDirective(const std::string &content) {
@@ -97,7 +97,7 @@ void Location::addReturnDirective(const std::string &content) {
 	setReturn(result);
 }
 
-void Location::addCGIPath(const std::string &content) {
+void Location::addCGIPathDirective(const std::string &content) {
 	std::vector<std::string>	arguments = splitWhiteSpace(content);
 
 	std::vector<std::string>::const_iterator it;

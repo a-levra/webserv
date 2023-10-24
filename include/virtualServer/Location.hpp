@@ -20,7 +20,7 @@ class Location {
 		void	addAllowMethodsDirective(const std::string& content);
 		void	addErrorPageDirective(const std::string& content);
 		void	addReturnDirective(const std::string& content);
-		void	addCGIPath(const std::string& content);
+		void	addCGIPathDirective(const std::string& content);
 
 		std::string getURI() const;
 		std::string getRoot() const;

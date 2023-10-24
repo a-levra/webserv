@@ -1,4 +1,6 @@
 LIST_SRC	=\
+		cgi/CGI.cpp	\
+		\
 		config/ConfigContext.cpp	\
 		config/ConfigFactory.cpp	\
 		config/ConfigLexer.cpp		\

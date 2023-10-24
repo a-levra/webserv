@@ -147,7 +147,7 @@ bool HttpRequest::parseHeader(const std::string &line) {
 	return true;
 }
 
-const std::string &HttpRequest::getPath() {
+const std::string &HttpRequest::getPath() const {
 	return _path;
 }
 

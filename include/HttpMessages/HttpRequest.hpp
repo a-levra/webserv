@@ -27,7 +27,7 @@ class HttpRequest: public AHttpMessage{
 		bool checkPathValidity(size_t spacePos);
 		bool checkDoubleSpaces();
 		enum REQUEST_VALIDITY checkValidity();
-		const std::string &getPath();
+		const std::string &getPath() const;
 		const REQUEST_VALIDITY & getValidity() const;
 	private:
 		enum REQUEST_VALIDITY _validity;

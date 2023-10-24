@@ -25,6 +25,7 @@ class AHttpMessage {
 		void setBodyFromFile(std::string path);
 		void appendBody(const std::string &message);
 		const std::string & getMethod() const;
+		const std::map<std::string, std::string>& getHeaders() const;
 
 	protected:
 		std::string _method;

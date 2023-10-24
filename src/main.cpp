@@ -12,17 +12,43 @@ static bool parseConfigFile(const ConfigLexer& lexer);
 static int	runServer(const std::string& configFile);
 static void handleSignal(int signum);
 
+
+#include "cgi/CGI.hpp"
 int main(int argc, char **argv)
 {
-	if (!isParsingFlag(argc, argv) && argc != 2) {
-		std::cerr << "Usage: ./webserv *.conf" << std::endl;
-		return EXIT_FAILURE;
+	(void) argc; (void) argv;
+	(void) isParsingFlag; (void) testConfigFile; (void) parseConfigFile;
+	(void) runServer; (void) handleSignal;
+	HttpRequest request("GET /cgibin/truc/bidule/test.py/ HTTP/1.1\r\nHost: test\r\n\r\n");
+	Location location("/cgibin/");
+
+	location.setRoot("cgi-bin");
+	std::vector<std::string> indexes;
+	indexes.push_back("main.py");
+	location.setIndex(indexes);
+	request.parse();
+	std::cout << request.checkValidity() << std::endl;
+
+	CGI	cgi;
+
+	if (cgi.execute(request, location) == CGI::SUCCESSFUL) {
+		std::cout << "STDOUT:" << std::endl << cgi.getStdOut() << std::endl;
 	}
-	if (isParsingFlag(argc, argv))
-		return testConfigFile(argv[2]);
+	else if (cgi.getCodeError() == CGI::FAILED) {
+		std::cout << "STDERR:" << std::endl << cgi.getStdOut() << std::endl;
+	}
 	else
-		return runServer(argv[1]);
-	return EXIT_FAILURE;
+		std::cout << "Timeout..." << std::endl;
+
+//	if (!isParsingFlag(argc, argv) && argc != 2) {
+//		std::cerr << "Usage: ./webserv *.conf" << std::endl;
+//		return EXIT_FAILURE;
+//	}
+//	if (isParsingFlag(argc, argv))
+//		return testConfigFile(argv[2]);
+//	else
+//		return runServer(argv[1]);
+//	return EXIT_FAILURE;
 }
 
 static bool	isParsingFlag(int argc, char *argv[]) {

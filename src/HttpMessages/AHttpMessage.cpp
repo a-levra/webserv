@@ -87,6 +87,10 @@ std::string * AHttpMessage::getHeader(const std::string &header)  {
 	return NULL;
 }
 
+const std::map<std::string, std::string> &AHttpMessage::getHeaders() const {
+	return _headers;
+}
+
 void AHttpMessage::appendBody(const std::string &message) {
 	_body += message;
 }

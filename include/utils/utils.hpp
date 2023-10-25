@@ -32,6 +32,7 @@ bool isDigitString(const std::string &s);
 void ftSleep(unsigned int milliseconds);
 
 std::vector<std::string> splitDelimiter(const std::string &s, char delimiter);
+std::vector<std::string> splitDelimiter(const std::string& s, const std::string &delimiter);
 std::vector<std::string> splitWhiteSpace(const std::string &s);
 
 std::string &trim(std::string &s);

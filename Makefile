@@ -61,7 +61,7 @@ re:				fclean
 
 .PHONY: run
 run:			all
-				./webserv resources/webserv.conf
+				./webserv assets/webserv.conf
 
 .PHONY: build_image
 build_image: Dockerfile

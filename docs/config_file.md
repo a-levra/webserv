@@ -127,3 +127,17 @@ Default: autoindex off;
 Context: http, server, location
 ```
 
+### cgi_path
+Defines a location as accepting cgi.
+```
+location /cgi-bin/ {
+    root cgi-bin/;
+    cgi_path: .py:/usr/bin/python3 .php:/usr/bin/php;
+    index main.py;
+}
+```
+```
+Syntax: cgi_path extension:path
+Default: —
+Context: location
+```

@@ -65,6 +65,7 @@ private:
 	bool	_parseRoot(const std::string& directiveContent);
 	bool	_parseReturn(const std::string& directiveContent);
 	bool	_parseServerName(const std::string& directiveContent);
+	bool	_parseCGIPath(const std::string& directiveContent);
 
 	bool	_isEqualVirtualServersIP(const virtualServer& virtualServer1,
 									 const virtualServer& virtualServer2);

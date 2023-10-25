@@ -19,6 +19,7 @@ ConfigParser::ConfigParser(): _codeError(NO_ERROR) {
 	_directiveFunctions["listen"] = &ConfigParser::_parseListen;
 	_directiveFunctions["server_name"] = &ConfigParser::_parseServerName;
 	_directiveFunctions["return"] = &ConfigParser::_parseReturn;
+	_directiveFunctions["cgi_path"] = &ConfigParser::_parseCGIPath;
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
@@ -130,7 +131,7 @@ bool ConfigParser::_parseConflictingServerName() {
 bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations) {
 	std::vector<std::string> contexts;
 	std::vector<std::string> directives = splitWhiteSpace("error_page "
-		"root index allow_methods client_max_body_size autoindex return");
+		"root index allow_methods client_max_body_size autoindex return cgi_path");
 
 	std::vector<std::string> locationsURI;
 	std::vector<Context>::const_iterator	it;
@@ -322,6 +323,20 @@ bool ConfigParser::_parseReturn(const std::string &directiveContent) {
 	if (errno == ERANGE || *endPtr != '\0'
 		|| statusCode < 100 || statusCode > 599)
 		return false;
+	return true;
+}
+
+bool ConfigParser::_parseCGIPath(const std::string &directiveContent) {
+	std::vector<std::string> arguments = splitWhiteSpace(directiveContent);
+
+	if (arguments.empty())
+		return false;
+	std::vector<std::string>::const_iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		std::vector<std::string> extensionPath = splitDelimiter(*it, ':');
+		if (extensionPath.size() != 2)
+			return false;
+	}
 	return true;
 }
 

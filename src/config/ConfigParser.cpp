@@ -73,8 +73,8 @@ std::string ConfigParser::getError() const {
 bool ConfigParser::_parseHttpContext(const Context& context) {
 	std::vector<std::string> contexts;
 	contexts.push_back(std::string("server"));
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-		"index root allow_methods client_max_body_size autoindex");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_HTTP_CONTEXT);
 
 	if (!_parseAllowSubContexts(context, contexts))
 		return false;
@@ -93,9 +93,8 @@ bool ConfigParser::_parseHttpContext(const Context& context) {
 bool ConfigParser::_parseServersContext(const std::vector<Context> &servers) {
 	std::vector<std::string> contexts;
 	contexts.push_back(std::string("location"));
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-		"root index allow_methods client_max_body_size autoindex listen "
-		"server_name return");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_SERVER_CONTEXT);
 
 	std::vector<Context>::const_iterator	it;
 	for (it = servers.begin(); it != servers.end(); it++) {
@@ -135,8 +134,8 @@ bool ConfigParser::_parseConflictingServerName() {
 
 bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations) {
 	std::vector<std::string> contexts;
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-		"root index allow_methods client_max_body_size autoindex return cgi_path");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_LOCATION_CONTEXT);
 
 	std::vector<std::string> locationsURI;
 	std::vector<Context>::const_iterator	it;
@@ -237,7 +236,7 @@ bool ConfigParser::_parseClientMaxBodySize(const std::string &directiveContent) 
 	if (arguments.size() != 1)
 		return false;
 	std::strtol(arguments[0].c_str(), &endPtr, DECIMAL_BASE);
-	if (errno == ERANGE || *(endPtr) != 'm' || *(endPtr + 1) != '\0')
+	if (errno == ERANGE || *endPtr != 'm' || *(endPtr + 1) != '\0')
 		return false;
 	return true;
 }

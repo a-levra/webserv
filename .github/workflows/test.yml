@@ -23,5 +23,9 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install requests module
+        run: pip3 install requests
+
+
       - name: Test
         run: make test

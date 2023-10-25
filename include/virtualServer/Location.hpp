@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class Location {
 	public:
@@ -19,6 +20,7 @@ class Location {
 		void	addAllowMethodsDirective(const std::string& content);
 		void	addErrorPageDirective(const std::string& content);
 		void	addReturnDirective(const std::string& content);
+		void	addCGIPathDirective(const std::string& content);
 
 		std::string getURI() const;
 		std::string getRoot() const;
@@ -28,6 +30,7 @@ class Location {
 		const std::vector<std::string>& getAllowMethods() const;
 		const std::pair<std::vector<int>, std::string>& getErrorPage() const;
 		const std::pair<int, std::string>& getReturn() const;
+		const std::map<std::string, std::string>& getCGIPath() const;
 
 		void	setURI(const std::string& URI);
 		void	setRoot(const std::string& root);
@@ -38,6 +41,7 @@ class Location {
 		void	setErrorPage(const std::pair<std::vector<int>, std::string>& errorPage);
 		void	setReturn(const std::pair<int, std::string>& returnPage);
 		bool	isAllowedMethod(const std::string& method) const;
+		bool	hasCGI() const;
 		void display();
 	private:
 		// error page;
@@ -53,6 +57,7 @@ class Location {
 		std::vector<std::string> _allowMethods;
 		std::pair<std::vector<int>, std::string> _errorPage;
 		std::pair<int, std::string> _return;
+		std::map<std::string, std::string> _cgiPath;
 		size_t _clientMaxBodySize;
 		bool _autoIndex;
 };

@@ -1,9 +1,11 @@
 #include "virtualServer/VirtualServer.hpp"
+
 #include "virtualServer/Location.hpp"
 #include "utils/utils.hpp"
 
-VirtualServer::VirtualServer(): _ipAddress("localhost"), _port(80) {
-	_serverName.push_back("");
+VirtualServer::VirtualServer(): _ipAddress(DEFAULT_VIRTUAL_SERVER_IP_ADDRESS),
+								_port(DEFAULT_VIRTUAL_SERVER_PORT) {
+	_serverName.push_back(DEFAULT_VIRTUAL_SERVER_NAME);
 }
 
 VirtualServer::VirtualServer(const VirtualServer &other) { *this = other; }

@@ -4,9 +4,13 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "Location.hpp"
 
-class Location;
+#include "Location.hpp"
+#include "server/Socket.hpp"
+
+# define DEFAULT_VIRTUAL_SERVER_IP_ADDRESS UNSPECIFIED_ADDRESS
+# define DEFAULT_VIRTUAL_SERVER_PORT 80
+# define DEFAULT_VIRTUAL_SERVER_NAME ""
 
 class VirtualServer {
 	public:

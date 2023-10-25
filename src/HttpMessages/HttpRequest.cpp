@@ -173,11 +173,11 @@ void HttpRequest::parseBody(const std::string &body){
 		_errors.push_back(BODY_WITHOUT_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
 	}
-	if (std::strtod(_headers["Content-Length"].c_str(), 0) > _body.size()){
+	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) > _body.size()){
 		_errors.push_back(BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH);
 		_validity = INCOMPLETE_REQUEST;
 	}
-	if (std::strtod(_headers["Content-Length"].c_str(), 0) < _body.size()){
+	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) < _body.size()){
 		_errors.push_back(BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
 	}
@@ -226,7 +226,7 @@ void HttpRequest::logLexerValidity(HttpRequest::ERRORS validity) {
 					   "\nBody size : " +
 					   toString(_body.size()) +
 					   "\nContent-Length : " +
-					   _headers["Content-Length"], RED);
+					   _headers[CONTENT_LENGTH], RED);
 			break;
 	}
 }

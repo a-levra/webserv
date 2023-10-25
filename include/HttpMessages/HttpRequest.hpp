@@ -9,6 +9,7 @@
 #define DOUBLE_CLRF_SIZE 4
 //the shortest http request possible is : sizeof("GET / HTTP/1.1/r/n/r/n")
 #define SHORTEST_HTTP_REQUEST_POSSIBLE 18
+#define CONTENT_LENGTH "Content-Length"
 
 class HttpRequest: public AHttpMessage{
 	public:

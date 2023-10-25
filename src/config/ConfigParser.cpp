@@ -78,6 +78,11 @@ bool ConfigParser::_parseHttpContext(const Context& context) {
 
 	if (!_parseAllowSubContexts(context, contexts))
 		return false;
+	if (context.getConstSubContexts().empty()) {
+		_error = "no virtual server found";
+		_codeError = NO_VIRTUAL_SERVER_FOUND;
+		return false;
+	}
 	if (!_parseDirectives(context, directives))
 		return false;
 	if (!_parseServersContext(context.getConstSubContexts()))

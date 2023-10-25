@@ -18,8 +18,8 @@ HttpRequest::~HttpRequest(void) {}
 HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	if (this != &other) {
 		_method = other._method;
-		_path = other._path;
-		_version = other._version;
+		_requestUri = other._requestUri;
+		_httpVersion = other._httpVersion;
 		_headers = other._headers;
 		_body = other._body;
 		_rawMessage = other._rawMessage;
@@ -182,6 +182,6 @@ enum REQUEST_VALIDITY HttpRequest::checkValidity() {
 	return VALID_and_COMPLETE;
 }
 
-const REQUEST_VALIDITY & HttpRequest::getValidity() const {
-	return _validity;
+const std::string &HttpRequest::getRequestUri() {
+	return _requestUri;
 }

@@ -36,15 +36,15 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		return _rawMessage;
 	}
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
-	_path = request.getPath();
-	Location *loc = vs->getLocation(_path);
-	coloredLog("Location requested: ", _path, PURPLE);
+	_requestUri = request.getRequestUri();
+	Location *loc = vs->getLocation(_requestUri);
+	coloredLog("Location requested: ", _requestUri, PURPLE);
 	if (loc == NULL){
-		coloredLog("Location not found: ", _path, RED);
+		coloredLog("Location not found: ", _requestUri, RED);
 		buildErrorPage(404);
 		return _rawMessage;
 	}
-	coloredLog("Location found: ", _path, GREEN);
+	coloredLog("Location found: ", _requestUri, GREEN);
 	this->build(*loc, *host, request);
 	return _rawMessage;
 }
@@ -89,11 +89,11 @@ void HttpResponse::generateBody(Location &location) {
 	const std::string *index = getFirstValidIndex(location);
 
 	if (index == NULL){
-		coloredLog("No index valid: ", _path, RED);
+		coloredLog("No index valid: ", _requestUri, RED);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + _path + "/" + *index );
+	_body = readFileToString( location.getRoot() + _requestUri + "/" + *index );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -163,14 +163,14 @@ const std::string * HttpResponse::getFirstValidIndex(const Location &location) c
 	const std::vector<std::string> &index = location.getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + _path + "/" + *it;
+		std::string pathToFile = location.getRoot() + _requestUri + "/" + *it;
 		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
-	coloredLog("No index found: ", _path, RED);
+	coloredLog("No index found: ", _requestUri, RED);
 	return NULL;
 }
 

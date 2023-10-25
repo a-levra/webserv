@@ -1,16 +1,54 @@
 #ifndef HTTPREQUEST_HPP
 # define HTTPREQUEST_HPP
+
 #include "AHttpMessage.hpp"
 #include "utils/utils.hpp"
 
-enum REQUEST_VALIDITY {
-	VALID_and_COMPLETE,
-	INVALID,
-	NOT_COMPLETE
-};
+#define CLRF "/r/n"
+#define CLRF_SIZE 2
+#define DOUBLE_CLRF_SIZE 4
+//the shortest http request possible is : sizeof("GET / HTTP/1.1/r/n/r/n")
+#define SHORTEST_HTTP_REQUEST_POSSIBLE 18
 
 class HttpRequest: public AHttpMessage{
 	public:
+
+		enum REQUEST_VALIDITY {
+			NOT_PARSED_YET,
+			VALID_AND_COMPLETE_REQUEST,
+			INVALID_REQUEST,
+			INCOMPLETE_REQUEST,
+		};
+
+
+
+		enum LEXER_TOKENS{
+			METHOD,
+			REQUEST_URI,
+			HTTP_VERSION,
+			HEADERS,
+			BODY,
+		};
+
+		enum ERRORS{
+
+			/* lexer errors */
+			RAW_MESSAGE_TOO_SHORT,
+			NO_CLRF_FOUND,
+			NO_CLRFCLRF_FOUND,
+			REQUEST_LINE_INVALID,
+			ALL_LEXER_TOKENS_VALID,
+
+			/* parser errors */
+			UNSUPPORTED_METHOD,
+			REQUEST_URI_NOT_ALNUM,
+			REQUEST_URI_FORBIDDEN_SYNTAX,
+			INVALID_HTTP_VERSION,
+			NO_COLON_FOUND_IN_HEADER,
+			NO_VALUE_FOUND_FOR_HEADER,
+			BODY_WITHOUT_CONTENT_LENGTH,
+			BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH,
+		};
 
 		HttpRequest();
 		HttpRequest(const std::string &raw);
@@ -18,21 +56,24 @@ class HttpRequest: public AHttpMessage{
 		virtual ~HttpRequest();
 
 		HttpRequest &operator=(const HttpRequest &other);
-		bool parse();
-		bool parseMethod();
-		bool parsePath();
-		bool parseVersion();
-		bool parseAllHeaders();
+
+		REQUEST_VALIDITY checkValidity();
+		ERRORS autoLexer(std::map<enum LEXER_TOKENS, std::string> &lexerTokens);
+		REQUEST_VALIDITY autoParser(std::map<enum LEXER_TOKENS, std::string> &lexerTokens);
+		void parseRequestLine(std::string &method, std::string &requestUri, std::string &httpVersion);
+		void parseMethod(const std::string &method);
+		void parseHttpVersion(const std::string &httpVersion);
+		void parseHttpHeaders(const std::string &headers);
 		bool parseHeader(const std::string &line);
-		bool checkPathValidity(size_t spacePos);
-		bool checkDoubleSpaces();
-		enum REQUEST_VALIDITY checkValidity();
-		const std::string &getPath();
+		void parseBody(const std::string &body);
+		void parseRequestURI(const std::string &requestUri);
+
 		const std::string &getRequestUri();
 		const REQUEST_VALIDITY & getValidity() const;
 	private:
-		enum REQUEST_VALIDITY _validity;
-		std::string _pendingRawMessage;
+		REQUEST_VALIDITY _validity;
+		std::vector<ERRORS> _errors;
+		void logLexerValidity(ERRORS validity);
 };
 
 #endif

@@ -41,7 +41,7 @@ Client &Client::operator=(const Client &other)
 
 enum HttpRequest::REQUEST_VALIDITY Client::checkRequestValidity() {
 	_request = HttpRequest(_rawRequest);
-	return _request.checkValidity();;
+	return _request.checkValidity();
 }
 
 void Client::appendRawRequest(const std::string &rawRequest) {

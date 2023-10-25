@@ -4,7 +4,7 @@
 #include "AHttpMessage.hpp"
 #include "utils/utils.hpp"
 
-#define CRLF "/r/n"
+#define CRLF "\r\n"
 #define CRLF_SIZE 2
 #define DOUBLE_CRLF_SIZE 4
 //the shortest http request possible is : sizeof("GET / HTTP/1.1/r/n/r/n")
@@ -74,7 +74,8 @@ class HttpRequest: public AHttpMessage{
 	private:
 		REQUEST_VALIDITY _validity;
 		std::vector<ERRORS> _errors;
-		void logLexerValidity(ERRORS validity);
+		void logLexerParserError(HttpRequest::ERRORS validity);
+		void logErrors();
 };
 
 #endif

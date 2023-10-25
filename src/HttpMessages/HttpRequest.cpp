@@ -38,14 +38,16 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 
 	std::map<enum LEXER_TOKENS, std::string> lexerToken;
 	ERRORS lexerValidity = autoLexer(lexerToken);
-	logLexerValidity(lexerValidity);
+	logLexerParserError(lexerValidity);
 	if (lexerValidity != ALL_LEXER_TOKENS_VALID){
 		_errors.push_back(lexerValidity);
 		_validity = INCOMPLETE_REQUEST;
 		return _validity;
 	}
 
-	return (autoParser(lexerToken));
+	autoParser(lexerToken);
+	logErrors();
+	return (_validity);
 }
 
 enum HttpRequest::ERRORS HttpRequest::autoLexer
@@ -69,8 +71,9 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 		lexerTokens[METHOD] = requestLine[0];
 		lexerTokens[REQUEST_URI] = requestLine[1];
 		lexerTokens[HTTP_VERSION] = requestLine[2];
-		lexerTokens[HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos);
+		lexerTokens[HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
 		lexerTokens[BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
+		coloredLog("\"" + _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE) + "\"", "", YELLOW);
 		return (ALL_LEXER_TOKENS_VALID);
 	}
 	return (REQUEST_LINE_INVALID);
@@ -80,6 +83,8 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::autoParser(std::map<enum LEXER_TOKENS
 	parseRequestLine(lexerTokens[METHOD], lexerTokens[REQUEST_URI], lexerTokens[HTTP_VERSION]);
 	parseHttpHeaders(lexerTokens[HEADERS]);
 	parseBody(lexerTokens[BODY]);
+	if (_validity == NOT_PARSED_YET)
+		_validity = VALID_AND_COMPLETE_REQUEST;
 	return _validity;
 }
 
@@ -167,8 +172,10 @@ bool HttpRequest::parseHeader(const std::string &line) {
 }
 
 void HttpRequest::parseBody(const std::string &body){
-	if (body.empty() && _headers.find("Content-Length") != _headers.end())
+	if (body.empty() && std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) == 0){
+		_body = body;
 		return;
+	}
 	if (body.empty()){
 		_errors.push_back(BODY_WITHOUT_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
@@ -183,7 +190,7 @@ void HttpRequest::parseBody(const std::string &body){
 	}
 }
 
-void HttpRequest::logLexerValidity(HttpRequest::ERRORS validity) {
+void HttpRequest::logLexerParserError(HttpRequest::ERRORS validity) {
 	switch (validity) {
 		case RAW_MESSAGE_TOO_SHORT:
 			coloredLog("Raw message too short : ", _rawMessage, RED);
@@ -237,4 +244,12 @@ const std::string &HttpRequest::getRequestUri() {
 
 const HttpRequest::REQUEST_VALIDITY &HttpRequest::getValidity() const {
 	return _validity;
+}
+
+void HttpRequest::logErrors() {
+	std::vector<HttpRequest::ERRORS>::iterator it;
+	for (it = _errors.begin(); it != _errors.end(); it++) {
+		logLexerParserError(*it);
+	}
+	_errors.clear();
 }

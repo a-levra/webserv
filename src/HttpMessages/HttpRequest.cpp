@@ -57,8 +57,8 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 	std::string::size_type firstClrfPosition;
 	std::string::size_type doubleClrfPos;
 
-	firstClrfPosition = _rawMessage.find(CLRF);
-	doubleClrfPos = _rawMessage.find(CLRF CLRF);
+	firstClrfPosition = _rawMessage.find(CRLF);
+	doubleClrfPos = _rawMessage.find(CRLF CRLF);
 
 	if (firstClrfPosition == std::string::npos || doubleClrfPos == std::string::npos) {
 		return ((firstClrfPosition == std::string::npos ? NO_CLRF_FOUND : NO_CLRFCLRF_FOUND));
@@ -69,8 +69,8 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 		lexerTokens[METHOD] = requestLine[0];
 		lexerTokens[REQUEST_URI] = requestLine[1];
 		lexerTokens[HTTP_VERSION] = requestLine[2];
-		lexerTokens[HEADERS] = _rawMessage.substr(firstClrfPosition + CLRF_SIZE, doubleClrfPos);
-		lexerTokens[BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CLRF_SIZE);
+		lexerTokens[HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos);
+		lexerTokens[BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
 		return (ALL_LEXER_TOKENS_VALID);
 	}
 	return (REQUEST_LINE_INVALID);
@@ -137,7 +137,7 @@ void HttpRequest::parseHttpHeaders(const std::string &headers) {
 	if (headers.empty())
 		return;
 
-	std::vector<std::string> headersVector = splitDelimiter(headers, CLRF);
+	std::vector<std::string> headersVector = splitDelimiter(headers, CRLF);
 
 	std::vector<std::string>::iterator it;
 	for (it = headersVector.begin(); it != headersVector.end(); it++){
@@ -189,7 +189,7 @@ void HttpRequest::logLexerValidity(HttpRequest::ERRORS validity) {
 			coloredLog("Raw message too short : ", _rawMessage, RED);
 			break;
 		case NO_CLRF_FOUND:
-			coloredLog("No CLRF found in raw message : ", _rawMessage, RED);
+			coloredLog("No CRLF found in raw message : ", _rawMessage, RED);
 			break;
 		case NO_CLRFCLRF_FOUND:
 			coloredLog("No CLRFCLRF found in raw message : ", _rawMessage, RED);

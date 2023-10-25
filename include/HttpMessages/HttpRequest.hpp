@@ -4,9 +4,9 @@
 #include "AHttpMessage.hpp"
 #include "utils/utils.hpp"
 
-#define CLRF "/r/n"
-#define CLRF_SIZE 2
-#define DOUBLE_CLRF_SIZE 4
+#define CRLF "/r/n"
+#define CRLF_SIZE 2
+#define DOUBLE_CRLF_SIZE 4
 //the shortest http request possible is : sizeof("GET / HTTP/1.1/r/n/r/n")
 #define SHORTEST_HTTP_REQUEST_POSSIBLE 18
 #define CONTENT_LENGTH "Content-Length"

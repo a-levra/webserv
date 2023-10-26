@@ -10,13 +10,15 @@ class TestBenchmark(unittest.TestCase):
     def setUpClass(cls):
         cls.server_process = subprocess.Popen(
             ["./webserv", CONFIG_FILE],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cls.stdout, cls.stderr = cls.server_process.communicate()
         time.sleep(2)
 
     @classmethod
     def tearDownClass(cls):
         cls.server_process.terminate()
         cls.server_process.wait()
+        print(f"Server out: {cls.stdout}")
 
     @staticmethod
     def parse_availability(siege_content):

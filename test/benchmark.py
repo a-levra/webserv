@@ -32,10 +32,10 @@ class TestBenchmark(unittest.TestCase):
     def parse_availability(siege_content):
         lines = siege_content.split('\n')
         availability_line = next(
-            (line for line in lines if "availability" in line), None)
+            (line for line in lines if "availability" in line.lower()), None)
         if availability_line is None:
             return None
-        availability = availability_line.split(":")[-1].strip(",").strip()
+        availability = availability_line.split(":")[-1].strip(",%").strip()
         return float(availability)
 
     def test_single_page(self):

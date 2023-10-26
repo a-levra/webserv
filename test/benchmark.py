@@ -20,6 +20,7 @@ class TestBenchmark(unittest.TestCase):
         print("terminate serv", flush=True)
         cls.server_process.terminate()
         cls.server_process.wait()
+        print("server is down", flush=True)
         # print(f"Server out: {cls.stdout}")
 
     @staticmethod

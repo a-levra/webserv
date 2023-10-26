@@ -57,7 +57,7 @@ bool Server::listen() {
 		std::cout << _listeners[i].getIPAndPort() << std::endl;
 	}
 	while (!exit) {
-		coloredLog("Waiting for a request...", "", GREEN);
+//		coloredLog("Waiting for a request...", "", GREEN);
 		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1 && !exit) {
 			_printError("server.listen poll() failed");
 			return false;
@@ -81,7 +81,7 @@ VirtualServer *Server::getVirtualServer(const std::string &serverName) {
 }
 
 void Server::displayVirtualServers() {
-	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
+//	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
 		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
 	}
@@ -177,7 +177,7 @@ bool Server::_acceptNewClient(struct pollfd listener) {
 	Client client(clientSocket, clientAddress, serverAddress);
 	_clients.push_back(client);
 	_pollFd.push_back((struct pollfd) {.fd = clientSocket, .events = POLLIN, .revents = 0});
-	std::cout << "A new client is connected" << std::endl;
+//	std::cout << "A new client is connected" << std::endl;
 	return true;
 }
 

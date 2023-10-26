@@ -10,10 +10,9 @@ class TestBenchmark(unittest.TestCase):
     def setUpClass(cls):
         print("start serv", flush=True)
         cls.server_process = subprocess.Popen(
-            ["./webserv", CONFIG_FILE],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print("communicate serv", flush=True)
-        cls.stdout, cls.stderr = cls.server_process.communicate()
+            ["./webserv", CONFIG_FILE])
+        # print("communicate serv", flush=True)
+        # cls.stdout, cls.stderr = cls.server_process.communicate()
         time.sleep(2)
 
     @classmethod

@@ -10,8 +10,8 @@ class TestBenchmark(unittest.TestCase):
     def setUpClass(cls):
         cls.server_process = subprocess.Popen(
             ["./webserv", CONFIG_FILE],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        cls.stdout, cls.stderr = cls.server_process.communicate()
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
         time.sleep(2)
 
     @classmethod
@@ -35,7 +35,9 @@ class TestBenchmark(unittest.TestCase):
             ["siege", "-b", "-t30s", "http://localhost:9000/"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = siege_process.communicate()
+        print("Wait siege")
         siege_process.wait()
+        print("Finish wait siege")
         self.assertEqual(siege_process.returncode, 0)
         # print(stdout)
         # print(stderr)

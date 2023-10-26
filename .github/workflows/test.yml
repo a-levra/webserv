@@ -27,22 +27,15 @@ jobs:
         run: pip3 install requests
 
 
-      - name: Test
+      - name: Tests
         run: make test
 
-      - name: Benchmark Linux
+      - name: Benchmark
         run: |
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
             sudo apt-get install -y siege
-            siege --version
-            make benchmark
-          fi
-
-      - name: Benchmark Macos
-        run: |
-          if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
             sudo sysctl -w net.inet.tcp.msl=1000
             brew install siege
-            siege --version
-            make benchmark
           fi
+          make benchmark

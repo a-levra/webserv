@@ -30,10 +30,18 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Benchmark
+      - name: Benchmark Linux
         run: |
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
             sudo apt-get install -y siege
+            siege --version
+            make benchmark
+          fi
+
+      - name: Benchmark Macos
+        run: |
+          if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+            sudo brew install siege
             siege --version
             make benchmark
           fi

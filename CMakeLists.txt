@@ -50,4 +50,6 @@ add_executable(42_webserv
         src/utils/createFile.cpp
         src/server/Client.cpp
         include/server/Client.hpp
+        src/logger/Logger.cpp
+        include/logger/logging.hpp
 )

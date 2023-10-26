@@ -51,6 +51,8 @@ class TestBenchmark(unittest.TestCase):
         print(f"OUT : {stdout}")
         print(f"ERR : {stderr}")
         availability = self.parse_availability(stdout.decode())
+        if availability is None:
+            availability = self.parse_availability(stderr.decode())
         print(f"Availability: {availability}", flush=True)
         if availability is None:
             self.fail("Fail parse availability")

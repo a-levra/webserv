@@ -3,8 +3,6 @@
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
 
-#define HTTP_VERSION "HTTP/1.1 "
-
 HttpResponse::HttpResponse(void) {}
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other)
@@ -74,12 +72,12 @@ void HttpResponse::buildGet(Location &location) {
 	this->setHeader("Server", "webserv");
 	this->setHeader("Content-Length", toString(_body.length()));
 
-	response += HTTP_VERSION + toString(this->_statusCode) + "\r\n";
+	response += HTTP_VERSION  " " + toString(this->_statusCode) + CRLF;
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
-		response += it->first + ": " + it->second + "\r\n";
+		response += it->first + ": " + it->second + CRLF;
 	}
-	response += "\r\n";
+	response += CRLF;
 	response += _body;
 	_rawMessage = response;
 }
@@ -146,11 +144,11 @@ void HttpResponse::buildErrorPage(int i) {
 			break;
 	}
 	setStatusMessage(errorName);
-	response += HTTP_VERSION + error + " " + errorName + "\r\n";
-	response += "Content-Type: text/html\r\n";
+	response += HTTP_VERSION " " + error + " " + errorName + CRLF;
+	response += "Content-Type: text/html" CRLF;
 	this->GenerateErrorBody();
-	response += "Content-Length: " + toString(_body.length()) + "\r\n";
-	response += "\r\n";
+	response += "Content-Length: " + toString(_body.length()) + CRLF;
+	response += CRLF;
 	response += _body;
 	_rawMessage = response;
 }
@@ -229,7 +227,7 @@ void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
 
 	fileContent = body.substr(body.find(*boundary) + boundary->length() + 2);
 	//trim all headers
-	fileContent = fileContent.substr(fileContent.find("\r\n\r\n") + 4);
+	fileContent = fileContent.substr(fileContent.find(CRLF CRLF) + 4);
 	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
 	if (fileContent.size() >= 2 && fileContent[fileContent.size() - 2] == '\r' && fileContent[fileContent.size() - 1] == '\n')
 		fileContent.erase(fileContent.size() - 2, 2);

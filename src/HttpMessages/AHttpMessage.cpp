@@ -50,7 +50,7 @@ void AHttpMessage::displayRequest() {
 }
 
 void AHttpMessage::setVersion() {
-	this->_httpVersion = "HTTP/1.1";
+	this->_httpVersion = HTTP_VERSION;
 }
 
 void AHttpMessage::setStatusCode(int code) {

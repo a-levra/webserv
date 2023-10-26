@@ -68,11 +68,11 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 
 	std::vector<std::string> requestLine = splitWhiteSpace(_rawMessage.substr(0, firstClrfPosition));
 	if (requestLine.size() == 3) {
-		lexerTokens[METHOD] = requestLine[0];
-		lexerTokens[REQUEST_URI] = requestLine[1];
-		lexerTokens[HTTP_VERSION] = requestLine[2];
-		lexerTokens[HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
-		lexerTokens[BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
+		lexerTokens[TOK_METHOD] = requestLine[0];
+		lexerTokens[TOK_REQUEST_URI] = requestLine[1];
+		lexerTokens[TOK_HTTP_VERSION] = requestLine[2];
+		lexerTokens[TOK_HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
+		lexerTokens[TOK_BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
 		coloredLog("\"" + _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE) + "\"", "", YELLOW);
 		return (ALL_LEXER_TOKENS_VALID);
 	}
@@ -80,9 +80,9 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 }
 
 HttpRequest::REQUEST_VALIDITY HttpRequest::autoParser(std::map<enum LEXER_TOKENS, std::string> &lexerTokens) {
-	parseRequestLine(lexerTokens[METHOD], lexerTokens[REQUEST_URI], lexerTokens[HTTP_VERSION]);
-	parseHttpHeaders(lexerTokens[HEADERS]);
-	parseBody(lexerTokens[BODY]);
+	parseRequestLine(lexerTokens[TOK_METHOD], lexerTokens[TOK_REQUEST_URI], lexerTokens[TOK_HTTP_VERSION]);
+	parseHttpHeaders(lexerTokens[TOK_HEADERS]);
+	parseBody(lexerTokens[TOK_BODY]);
 	if (_validity == NOT_PARSED_YET)
 		_validity = VALID_AND_COMPLETE_REQUEST;
 	return _validity;
@@ -131,7 +131,7 @@ void HttpRequest::parseRequestURI(const std::string &requestUri) {
 }
 
 void HttpRequest::parseHttpVersion(const std::string &httpVersion) {
-	if (httpVersion != "HTTP/1.1"){
+	if (httpVersion != HTTP_VERSION){
 		_validity = INVALID_REQUEST;
 		_errors.push_back(INVALID_HTTP_VERSION);
 	}

@@ -24,11 +24,11 @@ class HttpRequest: public AHttpMessage{
 
 
 		enum LEXER_TOKENS{
-			METHOD,
-			REQUEST_URI,
-			HTTP_VERSION,
-			HEADERS,
-			BODY,
+			TOK_METHOD,
+			TOK_REQUEST_URI,
+			TOK_HTTP_VERSION,
+			TOK_HEADERS,
+			TOK_BODY,
 		};
 
 		enum ERRORS{

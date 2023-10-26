@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#define HTTP_VERSION "HTTP/1.1"
+
 class AHttpMessage {
 	public:
 		AHttpMessage();

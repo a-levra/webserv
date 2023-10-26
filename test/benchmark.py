@@ -18,7 +18,7 @@ class TestBenchmark(unittest.TestCase):
     def tearDownClass(cls):
         cls.server_process.terminate()
         cls.server_process.wait()
-        print(f"Server out: {cls.stdout}")
+        # print(f"Server out: {cls.stdout}")
 
     @staticmethod
     def parse_availability(siege_content):
@@ -37,9 +37,10 @@ class TestBenchmark(unittest.TestCase):
         stdout, stderr = siege_process.communicate()
         siege_process.wait()
         self.assertEqual(siege_process.returncode, 0)
-        print(stdout)
-        print(stderr)
+        # print(stdout)
+        # print(stderr)
         availability = self.parse_availability(stdout.decode())
+        print(f"Availability: {availability}")
         if availability is None:
             self.fail("Fail parse availability")
         self.assertGreaterEqual(availability, 95)

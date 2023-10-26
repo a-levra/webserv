@@ -8,14 +8,17 @@ CONFIG_FILE = "test/conf/comments.conf"
 class TestBenchmark(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        print("start serv")
         cls.server_process = subprocess.Popen(
             ["./webserv", CONFIG_FILE],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("communicate serv")
         cls.stdout, cls.stderr = cls.server_process.communicate()
         time.sleep(2)
 
     @classmethod
     def tearDownClass(cls):
+        print("terminate serv")
         cls.server_process.terminate()
         cls.server_process.wait()
         # print(f"Server out: {cls.stdout}")
@@ -31,6 +34,7 @@ class TestBenchmark(unittest.TestCase):
         return float(availability)
 
     def test_single_page(self):
+        print("start test")
         siege_process = subprocess.Popen(
             ["siege", "-b", "-t30s", "http://localhost:9000/"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)

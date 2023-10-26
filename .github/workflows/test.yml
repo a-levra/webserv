@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-22.04, macos-12]
 
     steps:
       - uses: actions/checkout@v4
@@ -32,9 +32,9 @@ jobs:
 
       - name: Benchmark
         run: |
-          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
+          if [[ ${{ matrix.os }} == 'ubuntu-22.04' ]]; then
             sudo apt-get install -y siege
-          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+          elif [[ ${{ matrix.os }} == 'macos-12' ]]; then
             sudo sysctl -w net.inet.tcp.msl=1000
             brew install siege
           fi

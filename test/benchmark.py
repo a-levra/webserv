@@ -12,7 +12,6 @@ MINIMUM_AVAILABILITY_RATE = 95
 class TestBenchmark(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        print("start serv", flush=True)
         cls.server_process = subprocess.Popen(
             ["./webserv", CONFIG_FILE],
             stdout=subprocess.DEVNULL,
@@ -45,7 +44,8 @@ class TestBenchmark(unittest.TestCase):
         if availability is None:
             availability = self.parse_availability(stderr.decode())
         current_method_name = inspect.currentframe().f_code.co_name
-        print(f"{current_method_name} availability: {availability}%", flush=True)
+        print(f"{current_method_name} availability: {availability}%",
+              flush=True)
         if availability is None:
             self.fail("Fail parse availability")
         self.assertGreaterEqual(availability, MINIMUM_AVAILABILITY_RATE)

@@ -27,13 +27,13 @@ jobs:
         run: pip3 install requests
 
 
-#      - name: Test
-#        run: make test
+      - name: Test
+        run: make test
 
       - name: Benchmark
         run: |
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
-            sudo apt-get update && sudo apt-get install -y g++ make curl telnet siege
+            sudo apt-get install -y siege
             siege --version
             make benchmark
           fi

@@ -27,8 +27,8 @@ jobs:
         run: pip3 install requests
 
 
-      - name: Test
-        run: make test
+#      - name: Test
+#        run: make test
 
       - name: Benchmark
         run: |

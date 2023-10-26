@@ -10,7 +10,7 @@ class TestBenchmark(unittest.TestCase):
     def setUpClass(cls):
         print("start serv", flush=True)
         cls.server_process = subprocess.Popen(
-            ["./webserv", CONFIG_FILE])
+            ["./webserv", CONFIG_FILE], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # print("communicate serv", flush=True)
         # cls.stdout, cls.stderr = cls.server_process.communicate()
         time.sleep(2)
@@ -42,8 +42,8 @@ class TestBenchmark(unittest.TestCase):
         siege_process.wait()
         print("Finish wait siege", flush=True)
         self.assertEqual(siege_process.returncode, 0)
-        print(stdout)
-        print(stderr)
+        # print(stdout)
+        # print(stderr)
         availability = self.parse_availability(stdout.decode())
         print(f"Availability: {availability}", flush=True)
         if availability is None:

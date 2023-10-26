@@ -36,14 +36,15 @@ void AHttpMessage::display(std::string message) {
 }
 
 void AHttpMessage::displayRequest() {
-	printBoldThenThin("Method: ", _method);
-	printBoldThenThin("Path: ", _path);
-	printBoldThenThin("Version: ", _version);
-	printBoldThenThin("Headers:", "");
+//	printBoldThenThin("Method: ", _method);
+//	printBoldThenThin("Path: ", _path);
+//	printBoldThenThin("Version: ", _version);
+//	printBoldThenThin("Headers:", "");
 
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
-		printBoldThenThin("\t" + it->first + ": ", it->second);
+		;
+//		printBoldThenThin("\t" + it->first + ": ", it->second);
 	}
 //	printBoldThenThin("Body: ", _body);
 //	printBoldThenThin("Raw request: ", _rawMessage);

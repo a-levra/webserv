@@ -41,6 +41,7 @@ jobs:
       - name: Benchmark Macos
         run: |
           if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+            sudo sysctl -w net.inet.tcp.msl=1000
             brew install siege
             siege --version
             make benchmark

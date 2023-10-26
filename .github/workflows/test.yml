@@ -35,6 +35,5 @@ jobs:
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
             sudo apt-get update && sudo apt-get install -y g++ make curl telnet siege
             siege --version
-            sudo make re
-            sudo make benchmark
+            make benchmark
           fi

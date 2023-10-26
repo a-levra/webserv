@@ -38,4 +38,3 @@ jobs:
             sudo make re
             sudo make benchmark
           fi
-        shell: bash

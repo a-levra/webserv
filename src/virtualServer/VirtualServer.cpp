@@ -1,5 +1,6 @@
-#include "virtualServer/VirtualServer.hpp"
+#include <cstring>
 
+#include "virtualServer/VirtualServer.hpp"
 #include "virtualServer/Location.hpp"
 #include "utils/utils.hpp"
 
@@ -53,11 +54,26 @@ std::string VirtualServer::getIPAndPort() const {
 }
 
 //example: name = /index.html
-Location * VirtualServer::getLocation(const std::string &name) {
-	std::map<std::string, Location>::iterator res = _locations.find(name);
-	if (res == _locations.end())
-		return (NULL);
-	return &(res->second);
+
+Location * VirtualServer::getLocation(const std::string &URI) {
+	std::map<std::string, Location>::iterator res = _locations.find(URI);
+	if (res != _locations.end())
+		return &(res->second);
+
+	size_t score = 0;
+	size_t bestScore = 0;
+	Location *bestLocation = NULL;
+	for (res = _locations.begin(); res != _locations.end(); res++) {
+		coloredLog("comparing loc: ", res->first, YELLOW);
+		coloredLog("with URI: ", URI, YELLOW);
+		score = (strncmp(res->first.c_str(), URI.c_str(), (size_t)res->first.length()) == 0 ? (size_t)res->first.length():0);
+		coloredLog("score: ", toString(score), YELLOW);
+		if (score > bestScore){
+			bestScore = score;
+			bestLocation = 	&(res->second);
+		}
+	}
+	return bestLocation;
 }
 
 void VirtualServer::setServerName(const std::vector<std::string>& serverName) {

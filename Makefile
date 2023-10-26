@@ -69,6 +69,10 @@ run:			all
 test:			all
 				$(PYTHON3) -m unittest discover -s $(DIR_TEST) -p "test_*.py"
 
+.PHONY: benchmark
+benchmark:		all
+				$(PYTHON3) -m unittest discover -s $(DIR_TEST) -p "bench*.py"
+
 .PHONY: build_image
 build_image: Dockerfile
 	docker build -t webserv .

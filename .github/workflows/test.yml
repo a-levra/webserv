@@ -36,6 +36,6 @@ jobs:
             sudo apt-get update
             sudo apt-get install siege
             siege --version
-            make benchmark
+            sudo make benchmark
           fi
         shell: bash

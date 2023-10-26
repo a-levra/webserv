@@ -33,7 +33,9 @@ jobs:
       - name: Benchmark
         run: |
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
-            sudo apt update && sudo apt install siege;
-            siege --version;
-            make benchmark;
+            sudo apt-get update
+            sudo apt-get install siege
+            siege --version
+            make benchmark
           fi
+        shell: bash

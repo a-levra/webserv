@@ -39,9 +39,8 @@ Client &Client::operator=(const Client &other)
 	return *this;
 }
 
-enum REQUEST_VALIDITY Client::checkRequestValidity() {
+enum HttpRequest::REQUEST_VALIDITY Client::checkRequestValidity() {
 	_request = HttpRequest(_rawRequest);
-	_request.parse();
 	return _request.checkValidity();
 }
 

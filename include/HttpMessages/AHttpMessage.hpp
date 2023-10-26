@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#define HTTP_VERSION "HTTP/1.1"
+
 class AHttpMessage {
 	public:
 		AHttpMessage();
@@ -28,8 +30,8 @@ class AHttpMessage {
 
 	protected:
 		std::string _method;
-		std::string _path;
-		std::string _version;
+		std::string _requestUri;
+		std::string _httpVersion;
 		std::map<std::string, std::string> _headers;
 		std::string _body;
 		std::string _rawMessage;

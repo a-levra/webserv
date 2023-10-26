@@ -32,6 +32,7 @@ bool isDigitString(const std::string &s);
 void ftSleep(unsigned int milliseconds);
 
 std::vector<std::string> splitDelimiter(const std::string &s, char delimiter);
+std::vector<std::string> splitDelimiter(const std::string& s, const std::string &delimiter);
 std::vector<std::string> splitWhiteSpace(const std::string &s);
 
 std::string &trim(std::string &s);
@@ -42,4 +43,5 @@ bool fileExists(const std::string &pathToFile);
 void createFile(const std::string &filename, const std::string &fileContent);
 void appendFile(const std::string &filename, const std::string &fileContent);
 
+std::vector<size_t> getPositionsOfWord(const std::string &word, const std::string &src);
 #endif //UTILS_HPP

@@ -3,8 +3,6 @@
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
 
-#define HTTP_VERSION "HTTP/1.1 "
-
 HttpResponse::HttpResponse(void) {}
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other)
@@ -28,6 +26,11 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  */
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	const std::string *host = request.getHeader("Host");
+	if (host == NULL) {
+		coloredLog("Host not found: ", "", RED);
+		buildErrorPage(400);
+		return _rawMessage;
+	}
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL){
@@ -36,15 +39,15 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		return _rawMessage;
 	}
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
-	_path = request.getPath();
-	Location *loc = vs->getLocation(_path);
-	coloredLog("Location requested: ", _path, PURPLE);
+	_requestUri = request.getRequestUri();
+	Location *loc = vs->getLocation(_requestUri);
+	coloredLog("Location requested: ", _requestUri, PURPLE);
 	if (loc == NULL){
-		coloredLog("Location not found: ", _path, RED);
+		coloredLog("Location not found: ", _requestUri, RED);
 		buildErrorPage(404);
 		return _rawMessage;
 	}
-	coloredLog("Location found: ", _path, GREEN);
+	coloredLog("Location found: ", _requestUri, GREEN);
 	this->build(*loc, *host, request);
 	return _rawMessage;
 }
@@ -74,12 +77,12 @@ void HttpResponse::buildGet(Location &location) {
 	this->setHeader("Server", "webserv");
 	this->setHeader("Content-Length", toString(_body.length()));
 
-	response += HTTP_VERSION + toString(this->_statusCode) + "\r\n";
+	response += HTTP_VERSION  " " + toString(this->_statusCode) + CRLF;
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
-		response += it->first + ": " + it->second + "\r\n";
+		response += it->first + ": " + it->second + CRLF;
 	}
-	response += "\r\n";
+	response += CRLF;
 	response += _body;
 	_rawMessage = response;
 }
@@ -89,11 +92,11 @@ void HttpResponse::generateBody(Location &location) {
 	const std::string *index = getFirstValidIndex(location);
 
 	if (index == NULL){
-		coloredLog("No index valid: ", _path, RED);
+		coloredLog("No index valid: ", _requestUri, RED);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + _path + "/" + *index );
+	_body = readFileToString( location.getRoot() + _requestUri + "/" + *index );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -146,11 +149,11 @@ void HttpResponse::buildErrorPage(int i) {
 			break;
 	}
 	setStatusMessage(errorName);
-	response += HTTP_VERSION + error + " " + errorName + "\r\n";
-	response += "Content-Type: text/html\r\n";
+	response += HTTP_VERSION " " + error + " " + errorName + CRLF;
+	response += "Content-Type: text/html" CRLF;
 	this->GenerateErrorBody();
-	response += "Content-Length: " + toString(_body.length()) + "\r\n";
-	response += "\r\n";
+	response += "Content-Length: " + toString(_body.length()) + CRLF;
+	response += CRLF;
 	response += _body;
 	_rawMessage = response;
 }
@@ -163,14 +166,14 @@ const std::string * HttpResponse::getFirstValidIndex(const Location &location) c
 	const std::vector<std::string> &index = location.getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + _path + "/" + *it;
+		std::string pathToFile = location.getRoot() + _requestUri + "/" + *it;
 		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
-	coloredLog("No index found: ", _path, RED);
+	coloredLog("No index found: ", _requestUri, RED);
 	return NULL;
 }
 
@@ -229,7 +232,7 @@ void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
 
 	fileContent = body.substr(body.find(*boundary) + boundary->length() + 2);
 	//trim all headers
-	fileContent = fileContent.substr(fileContent.find("\r\n\r\n") + 4);
+	fileContent = fileContent.substr(fileContent.find(CRLF CRLF) + 4);
 	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
 	if (fileContent.size() >= 2 && fileContent[fileContent.size() - 2] == '\r' && fileContent[fileContent.size() - 1] == '\n')
 		fileContent.erase(fileContent.size() - 2, 2);

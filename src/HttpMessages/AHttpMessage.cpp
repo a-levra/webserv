@@ -18,8 +18,8 @@ AHttpMessage::~AHttpMessage(void) {}
 AHttpMessage &AHttpMessage::operator=(const AHttpMessage &other) {
 	if (this != &other) {
 		_method = other._method;
-		_path = other._path;
-		_version = other._version;
+		_requestUri = other._requestUri;
+		_httpVersion = other._httpVersion;
 		_headers = other._headers;
 		_body = other._body;
 		_rawMessage = other._rawMessage;
@@ -37,8 +37,8 @@ void AHttpMessage::display(std::string message) {
 
 void AHttpMessage::displayRequest() {
 	printBoldThenThin("Method: ", _method);
-	printBoldThenThin("Path: ", _path);
-	printBoldThenThin("Version: ", _version);
+	printBoldThenThin("Path: ", _requestUri);
+	printBoldThenThin("Version: ", _httpVersion);
 	printBoldThenThin("Headers:", "");
 
 	std::map<std::string, std::string>::iterator it;
@@ -50,7 +50,7 @@ void AHttpMessage::displayRequest() {
 }
 
 void AHttpMessage::setVersion() {
-	this->_version = "HTTP/1.1";
+	this->_httpVersion = HTTP_VERSION;
 }
 
 void AHttpMessage::setStatusCode(int code) {

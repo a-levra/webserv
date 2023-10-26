@@ -35,15 +35,15 @@ class TestBenchmark(unittest.TestCase):
     def test_single_page(self):
         print("start test", flush=True)
         siege_process = subprocess.Popen(
-            ["siege", "-b", "-t30s", "http://localhost:9000/"],
+            ["siege", "-b", "-t30s", "http://127.0.0.1:9000/"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = siege_process.communicate()
         print("Wait siege", flush=True)
         siege_process.wait()
         print("Finish wait siege", flush=True)
         self.assertEqual(siege_process.returncode, 0)
-        # print(stdout)
-        # print(stderr)
+        print(stdout)
+        print(stderr)
         availability = self.parse_availability(stdout.decode())
         print(f"Availability: {availability}", flush=True)
         if availability is None:

@@ -1,14 +1,15 @@
 #include "config/ConfigParser.hpp"
-#include "config/ConfigLexer.hpp"
-#include "utils/utils.hpp"
 
 #include <limits>
 #include <algorithm>
 #include <cerrno>
 
 #include "virtualServer/VirtualServer.hpp"
+#include "config/ConfigLexer.hpp"
+#include "server/Socket.hpp"
+#include "utils/utils.hpp"
 
-ConfigParser::ConfigParser(void): _codeError(NO_ERROR) {
+ConfigParser::ConfigParser(): _codeError(NO_ERROR) {
 	_directiveFunctions["error_page"] = &ConfigParser::_parseErrorPage;
 	_directiveFunctions["root"] = &ConfigParser::_parseRoot;
 	_directiveFunctions["index"] = &ConfigParser::_parseIndex;
@@ -18,6 +19,7 @@ ConfigParser::ConfigParser(void): _codeError(NO_ERROR) {
 	_directiveFunctions["listen"] = &ConfigParser::_parseListen;
 	_directiveFunctions["server_name"] = &ConfigParser::_parseServerName;
 	_directiveFunctions["return"] = &ConfigParser::_parseReturn;
+	_directiveFunctions["cgi_path"] = &ConfigParser::_parseCGIPath;
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
@@ -25,16 +27,17 @@ ConfigParser::ConfigParser(const ConfigParser &other)
 	*this = other;
 }
 
-ConfigParser::~ConfigParser(void)
-{
+ConfigParser::~ConfigParser() { }
 
-}
-
-ConfigParser &ConfigParser::operator=(const ConfigParser &other)
+ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 {
 	if (this == &other)
-		return (*this);
-	return (*this);
+		return *this;
+	_directiveFunctions = other._directiveFunctions;
+	_parsedVirtualServers = other._parsedVirtualServers;
+	_codeError = other._codeError;
+	_error = other._error;
+	return *this;
 }
 
 bool ConfigParser::parseConfigFile(const Context& mainContext) {
@@ -70,13 +73,16 @@ std::string ConfigParser::getError() const {
 bool ConfigParser::_parseHttpContext(const Context& context) {
 	std::vector<std::string> contexts;
 	contexts.push_back(std::string("server"));
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-														  "index root "
-														  "allow_methods "
-														  "client_max_body_size "
-														  "autoindex ");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_HTTP_CONTEXT);
+
 	if (!_parseAllowSubContexts(context, contexts))
 		return false;
+	if (context.getConstSubContexts().empty()) {
+		_error = "no virtual server found";
+		_codeError = NO_VIRTUAL_SERVER_FOUND;
+		return false;
+	}
 	if (!_parseDirectives(context, directives))
 		return false;
 	if (!_parseServersContext(context.getConstSubContexts()))
@@ -87,17 +93,20 @@ bool ConfigParser::_parseHttpContext(const Context& context) {
 bool ConfigParser::_parseServersContext(const std::vector<Context> &servers) {
 	std::vector<std::string> contexts;
 	contexts.push_back(std::string("location"));
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-														  "root index "
-														  "allow_methods "
-														  "client_max_body_size "
-														  "autoindex listen "
-														  "server_name return ");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_SERVER_CONTEXT);
+
 	std::vector<Context>::const_iterator	it;
 	for (it = servers.begin(); it != servers.end(); it++) {
+		struct virtualServer server;
+		server.ip = DEFAULT_VIRTUAL_SERVER_IP_ADDRESS;
+		server.port = DEFAULT_VIRTUAL_SERVER_PORT;
+		_parsedVirtualServers.push_back(server);
 		if (!_parseAllowSubContexts(*it, contexts))
 			return false;
 		if (!_parseDirectives(*it, directives))
+			return false;
+		if (!_parseConflictingServerName())
 			return false;
 		if (!_parseLocationsContext(it->getConstSubContexts()))
 			return false;
@@ -105,13 +114,29 @@ bool ConfigParser::_parseServersContext(const std::vector<Context> &servers) {
 	return true;
 }
 
+bool ConfigParser::_parseConflictingServerName() {
+	const virtualServer& lastVirtualServer = \
+		_parsedVirtualServers[_parsedVirtualServers.size() -1];
+
+	std::vector<virtualServer>::const_iterator it;
+	for (it = _parsedVirtualServers.begin(); it != _parsedVirtualServers.end() - 1; it++) {
+		if (_isEqualVirtualServersIP(lastVirtualServer, *it)
+			&& _hasSameServerName(lastVirtualServer.serverName, it->serverName)) {
+			_codeError = CONFLICTING_SERVER_NAME;
+			_error = "conflicting server name on "
+					+ lastVirtualServer.ip + ":"
+					+ toString(lastVirtualServer.port);
+			return false;
+		}
+	}
+	return true;
+}
+
 bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations) {
 	std::vector<std::string> contexts;
-	std::vector<std::string> directives = splitWhiteSpace("error_page "
-														  "root index "
-														  "allow_methods "
-														  "client_max_body_size "
-														  "autoindex return ");
+	std::vector<std::string> directives = splitWhiteSpace(\
+		AUTHORIZED_DIRECTIVES_IN_LOCATION_CONTEXT);
+
 	std::vector<std::string> locationsURI;
 	std::vector<Context>::const_iterator	it;
 	for (it = locations.begin(); it != locations.end(); it++) {
@@ -129,8 +154,7 @@ bool ConfigParser::_parseLocationsContext(const std::vector<Context> &locations)
 			_error = "duplicate location \"" + arguments[0] + "\"";
 			return false;
 		}
-		else
-			locationsURI.push_back(arguments[0]);
+		locationsURI.push_back(arguments[0]);
 	}
 	return true;
 }
@@ -184,8 +208,6 @@ bool	ConfigParser::_parseDirectives(const Context& context,
 	return true;
 }
 
-// Directive
-
 bool ConfigParser::_parseAllowMethods(const std::string &directiveContent) {
 	std::vector<std::string> arguments = splitWhiteSpace(directiveContent);
 	std::vector<std::string>::iterator it;
@@ -214,7 +236,7 @@ bool ConfigParser::_parseClientMaxBodySize(const std::string &directiveContent) 
 	if (arguments.size() != 1)
 		return false;
 	std::strtol(arguments[0].c_str(), &endPtr, DECIMAL_BASE);
-	if (errno == ERANGE || *(endPtr) != 'm' || *(endPtr + 1) != '\0')
+	if (errno == ERANGE || *endPtr != 'm' || *(endPtr + 1) != '\0')
 		return false;
 	return true;
 }
@@ -254,7 +276,12 @@ bool ConfigParser::_parseListen(const std::string &directiveContent) {
 		 || port < std::numeric_limits<u_int16_t>::min()
 		 || port > std::numeric_limits<u_int16_t>::max())
 		 return false;
-	return (arguments[0] == "localhost" || _parseIPAddress(arguments[0]));
+	if (arguments[0] != "localhost" && !_parseIPAddress(arguments[0]))
+		return false;
+	_parsedVirtualServers[_parsedVirtualServers.size() - 1].ip = arguments[0];
+	_parsedVirtualServers[_parsedVirtualServers.size() - 1].port = \
+		static_cast<unsigned short>(port);
+	return true;
 }
 
 bool ConfigParser::_parseIPAddress(const std::string &ipAddress) {
@@ -283,7 +310,10 @@ bool ConfigParser::_parseRoot(const std::string &directiveContent) {
 bool ConfigParser::_parseServerName(const std::string &directiveContent) {
 	std::vector<std::string> arguments = splitWhiteSpace(directiveContent);
 
-	return (!arguments.empty());
+	if (arguments.empty())
+		return false;
+	_parsedVirtualServers[_parsedVirtualServers.size() - 1].serverName = arguments;
+	return true;
 }
 
 bool ConfigParser::_parseReturn(const std::string &directiveContent) {
@@ -298,4 +328,41 @@ bool ConfigParser::_parseReturn(const std::string &directiveContent) {
 		|| statusCode < 100 || statusCode > 599)
 		return false;
 	return true;
+}
+
+bool ConfigParser::_parseCGIPath(const std::string &directiveContent) {
+	std::vector<std::string> arguments = splitWhiteSpace(directiveContent);
+
+	if (arguments.empty())
+		return false;
+	std::vector<std::string>::const_iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		std::vector<std::string> extensionPath = splitDelimiter(*it, ':');
+		if (extensionPath.size() != 2)
+			return false;
+	}
+	return true;
+}
+
+bool ConfigParser::_isEqualVirtualServersIP(const virtualServer& virtualServer1,
+									   const virtualServer& virtualServer2) {
+	return (virtualServer1.port == virtualServer2.port
+	&& (virtualServer1.ip == virtualServer2.ip
+		|| virtualServer1.ip == UNSPECIFIED_ADDRESS
+		|| virtualServer2.ip == UNSPECIFIED_ADDRESS
+		|| (virtualServer1.ip == LOCALHOST && virtualServer2.ip == LOOPBACK_IP)
+		|| (virtualServer1.ip == LOOPBACK_IP && virtualServer2.ip == LOCALHOST)));
+}
+
+bool ConfigParser::_hasSameServerName(const std::vector<std::string>&	serverName1,
+									  const std::vector<std::string>&	serverName2) {
+	if (serverName1.empty() && serverName2.empty())
+		return true;
+	std::vector<std::string>::const_iterator it;
+	for (it = serverName1.begin(); it != serverName1.end(); it++) {
+		if (std::find(serverName2.begin(), serverName2.end(), *it)
+			!= serverName2.end())
+			return true;
+	}
+	return false;
 }

@@ -41,7 +41,7 @@ jobs:
       - name: Benchmark Macos
         run: |
           if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
-            sudo brew install siege
+            brew install siege
             siege --version
             make benchmark
           fi

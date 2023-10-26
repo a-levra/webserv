@@ -1,6 +1,7 @@
 import unittest
 import subprocess
 import time
+import signal
 
 CONFIG_FILE = "test/conf/comments.conf"
 
@@ -10,7 +11,7 @@ class TestBenchmark(unittest.TestCase):
     def setUpClass(cls):
         print("start serv", flush=True)
         cls.server_process = subprocess.Popen(
-            ["./webserv", CONFIG_FILE], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ["./webserv", CONFIG_FILE])
         # print("communicate serv", flush=True)
         # cls.stdout, cls.stderr = cls.server_process.communicate()
         time.sleep(2)
@@ -19,6 +20,9 @@ class TestBenchmark(unittest.TestCase):
     def tearDownClass(cls):
         print("terminate serv", flush=True)
         cls.server_process.terminate()
+        print("terminate serv", flush=True)
+        cls.server_process.send_signal(signal.SIGINT)
+        print("terminate serv", flush=True)
         cls.server_process.wait()
         print("server is down", flush=True)
         # print(f"Server out: {cls.stdout}")

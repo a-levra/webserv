@@ -75,5 +75,6 @@ static int runServer(const std::string& configFile) {
 
 static void handleSignal(int signum) {
 	static_cast<void>(signum);
+	std::cout << "Signal trig" << std::endl;
 	Server::exit = true;
 }

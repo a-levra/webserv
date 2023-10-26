@@ -52,7 +52,7 @@ bool HttpRequest::parse() {
 	for (size_t i = 0; i < size; i++) {
 		if (!(this->*parseFunctions[i])()) {
 			success = false;
-			std::cout << "parse failed at " << i << std::endl;
+//			std::cout << "parse failed at " << i << std::endl;
 			break;
 		}
 	}

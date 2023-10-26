@@ -48,8 +48,8 @@ class TestBenchmark(unittest.TestCase):
         siege_process.wait()
         print("Finish wait siege", flush=True)
         self.assertEqual(siege_process.returncode, 0)
-        print(stdout)
-        print(stderr)
+        print(f"OUT : {stdout}")
+        print(f"ERR : {stderr}")
         availability = self.parse_availability(stdout.decode())
         print(f"Availability: {availability}", flush=True)
         if availability is None:

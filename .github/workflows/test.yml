@@ -33,6 +33,6 @@ jobs:
       - name: Benchmark
         run: |
           if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
-            apt install siege;
+            sudo apt install siege;
             make siege;
           fi

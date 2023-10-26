@@ -35,6 +35,8 @@ class TestBenchmark(unittest.TestCase):
         stdout, stderr = siege_process.communicate()
         siege_process.wait()
         self.assertEqual(siege_process.returncode, 0)
+        print(stdout)
+        print(stderr)
         availability = self.parse_availability(stdout.decode())
         if availability is None:
             self.fail("Fail parse availability")

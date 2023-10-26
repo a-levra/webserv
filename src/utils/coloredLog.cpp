@@ -3,6 +3,7 @@
 void coloredLog(std::string str1, std::string str2, colors color)
 {
 	(void) str1; (void) str2; (void) color;
+	//
 //	std::string colorCode;
 //	switch (color)
 //	{

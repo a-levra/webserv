@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Install requests module
+      - name: Set up Python Modules
         run: pip3 install requests
 
 

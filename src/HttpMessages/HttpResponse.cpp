@@ -41,13 +41,14 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_requestUri = request.getRequestUri();
 	Location *loc = vs->getLocation(_requestUri);
-	coloredLog("Location requested: ", _requestUri, PURPLE);
+	coloredLog("URI requested: ", _requestUri, PURPLE);
 	if (loc == NULL){
-		coloredLog("Location not found: ", _requestUri, RED);
+		coloredLog("Can't find a matching location for URI : ", _requestUri, RED);
 		buildErrorPage(404);
 		return _rawMessage;
 	}
-	coloredLog("Location found: ", _requestUri, GREEN);
+	coloredLog("Location best match: ", "", GREEN);
+	loc->display();
 	this->build(*loc, *host, request);
 	return _rawMessage;
 }
@@ -96,7 +97,7 @@ void HttpResponse::generateBody(Location &location) {
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + _requestUri + "/" + *index );
+	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *index );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -156,7 +157,7 @@ void HttpResponse::buildErrorPage(int i) {
 	response += CRLF;
 	response += _body;
 	_rawMessage = response;
-}
+				}
 
 void HttpResponse::setHeader(std::string header, std::string content) {
 	_headers[header] = content;
@@ -166,14 +167,14 @@ const std::string * HttpResponse::getFirstValidIndex(const Location &location) c
 	const std::vector<std::string> &index = location.getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + _requestUri + "/" + *it;
+		std::string pathToFile = location.getRoot() + location.getURI() + "/" + *it;
 		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
-	coloredLog("No index found: ", _requestUri, RED);
+	coloredLog("No index found: ", location.getURI(), RED);
 	return NULL;
 }
 

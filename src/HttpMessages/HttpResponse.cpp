@@ -26,6 +26,11 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  */
 std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	const std::string *host = request.getHeader("Host");
+	if (host == NULL) {
+		coloredLog("Host not found: ", "", RED);
+		buildErrorPage(400);
+		return _rawMessage;
+	}
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL){

@@ -9,6 +9,7 @@ LIST_SRC	=\
         HttpMessages/HttpResponse.cpp	\
         \
         logger/Logger.cpp	\
+        logger/logging.cpp	\
         \
         server/Client.cpp	\
         server/Server.cpp	\
@@ -28,4 +29,6 @@ LIST_SRC	=\
         virtualServer/Location.cpp 		\
         virtualServer/VirtualServer.cpp	\
         \
-        main.cpp
+        argument.cpp	\
+        main.cpp		\
+        options.cpp		\

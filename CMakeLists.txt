@@ -52,4 +52,8 @@ add_executable(42_webserv
         include/server/Client.hpp
         src/logger/Logger.cpp
         include/logger/logging.hpp
+        src/argument.cpp
+        src/options.cpp
+        include/options.hpp
+        src/logger/logging.cpp
 )

@@ -58,18 +58,21 @@ public:
 	const std::string&	getFile() const;
   	bool				hasFile() const;
 	bool				hasColor() const;
+	bool				hasDatetime() const;
 
 	void	setFile(const std::string& file);
 	void	setLevel(enum level level);
 	void	setHasColor(bool hasColor);
+	void	setHasDatetime(bool hasDatetime);
 
 private:
-	static std::string _getPrompt(enum level level);
-	void	_appendInLogFile(const std::string& line) const;
+	std::string _getPrompt(enum level level) const;
+	void		_appendInLogFile(const std::string& line) const;
 
 	std::string	_file;
 	bool		_hasFile;
 	bool		_hasColor;
+	bool		_hasDatetime;
   	enum level	_level;
 };
 

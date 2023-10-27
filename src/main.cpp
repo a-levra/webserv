@@ -1,39 +1,68 @@
+#include <csignal>
+#include <iostream>
+
+#include "options.hpp"
+#include "logger/logging.hpp"
 #include "server/Server.hpp"
 #include "config/ConfigLexer.hpp"
 #include "config/ConfigFactory.hpp"
 #include "config/ConfigParser.hpp"
 
-#include <csignal>
-#include <iostream>
-
-static bool	isParsingFlag(int argc, char *argv[]);
 static int 	testConfigFile(const std::string& configFile);
 static bool parseConfigFile(const ConfigLexer& lexer);
 static int	runServer(const std::string& configFile);
 static void handleSignal(int signum);
+static void	setLogOptions(const Options& options);
+static void printHelp();
 
 int main(int argc, char **argv)
 {
-	if (!isParsingFlag(argc, argv) && argc != 2) {
-		std::cerr << "Usage: ./webserv *.conf" << std::endl;
+	Options options;
+
+	if (!getOptions(argc, argv, options))
+		return EXIT_FAILURE;
+	setLogOptions(options);
+	if (options.help) {
+		printHelp();
+		return EXIT_SUCCESS;
+	}
+	if (options.configFile.empty()) {
+		logging::critical("configFile not found");
 		return EXIT_FAILURE;
 	}
-	if (isParsingFlag(argc, argv))
-		return testConfigFile(argv[2]);
+	if (options.syntax)
+		return testConfigFile(options.configFile);
 	else
-		return runServer(argv[1]);
-	return EXIT_FAILURE;
+		return runServer(options.configFile);
+	return EXIT_SUCCESS;
 }
 
-static bool	isParsingFlag(int argc, char *argv[]) {
-	return (argc == 3 && std::string(argv[1]) == "-t");
+static void printHelp() {
+	std::cout << "Webserv 1.0\n"
+	   "Usage: webserv [options] *.conf\n"
+	   "       webserv -c example.conf\n"
+	   "Options:\n"
+	   "  -h, --help                Show this help message.\n"
+	   "  -l, --log-level=LEVEL     Set the logging level (LEVEL between 0 and 4).\n"
+	   "                            DEBUG, INFO, WARNING, ERROR, CRITICAL\n"
+	   "  -f, --log-file=FILE       Specify the log file (FILE).\n"
+	   "  -c, --log-color           Enable colored logging output.\n"
+	   "  -s, --syntax              Check the syntax of the configuration file."
+	<< std::endl;
+}
+
+static void	setLogOptions(const Options& options) {
+	logging::setHasColor(options.logColor);
+	logging::setLevel(options.logLevel);
+	if (!options.logFile.empty())
+		logging::setFile(options.logFile);
 }
 
 static int	testConfigFile(const std::string& configFile) {
 	ConfigLexer	lexer(configFile);
 	if (!parseConfigFile(lexer))
 		return EXIT_FAILURE;
-	std::cout << "Syntax is ok" << std::endl;
+	logging::info("syntax is ok");
 	return EXIT_SUCCESS;
 }
 
@@ -41,12 +70,12 @@ static bool parseConfigFile(const ConfigLexer& lexer) {
 	ConfigParser parser;
 
 	if (lexer.getCodeError() != ConfigLexer::NO_ERROR) {
-		std::cerr << "Lexical Error: " <<  lexer.getError() << std::endl;
+		logging::error("lexical: " + lexer.getError());
 		return false;
 	}
 	parser.parseConfigFile(lexer.getConstMainContext());
 	if (parser.getCodeError() != ConfigParser::NO_ERROR) {
-		std::cerr << "Syntax Error: " <<  parser.getError() << std::endl;
+		logging::error("syntax: " + parser.getError());
 		return false;
 	}
 	return true;
@@ -63,7 +92,7 @@ static int runServer(const std::string& configFile) {
 		lexer.getMainContext().inheritDirectives();
 		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
 				lexer.getMainContext()))) {
-			std::cerr << "webserv: failed to launch virtual servers" << std::endl;
+			logging::critical("failed to launch virtual servers");
 			return EXIT_FAILURE;
 		}
 	}

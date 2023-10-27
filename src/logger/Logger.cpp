@@ -6,14 +6,14 @@
 
 #include "utils/utils.hpp"
 
-Logger::Logger() : _file(""), _hasFile(false),
-				   _hasColor(false), _level(WARNING) { }
+Logger::Logger() : _file(""), _hasFile(false), _hasColor(false),
+				   _hasDatetime(false), _level(WARNING) {}
 
 Logger::Logger(const Logger &other) {
 	*this = other;
 }
 
-Logger::~Logger() { }
+Logger::~Logger() {}
 
 Logger &Logger::operator=(const Logger &other) {
 	if (this == &other)
@@ -25,7 +25,7 @@ Logger &Logger::operator=(const Logger &other) {
 	return *this;
 }
 
-void Logger::log(enum Logger::level level, const std::string &message)  const {
+void Logger::log(enum Logger::level level, const std::string &message) const {
 	switch (level) {
 		case DEBUG: debug(message);
 			break;
@@ -116,6 +116,10 @@ bool Logger::hasColor() const {
 	return _hasColor;
 }
 
+bool Logger::hasDatetime() const {
+	return _hasDatetime;
+}
+
 void Logger::setFile(const std::string &file) {
 	_file = file;
 	_hasFile = true;
@@ -129,23 +133,31 @@ void Logger::setHasColor(bool hasColor) {
 	_hasColor = hasColor;
 }
 
-std::string Logger::_getPrompt(enum level level) {
-	std::time_t now = std::time(nullptr);
-	struct std::tm timeinfo;
-	char buffer[50];
+void Logger::setHasDatetime(bool hasDatetime) {
+	_hasDatetime = hasDatetime;
+}
 
-	localtime_r(&now, &timeinfo);
-	const char *format = "[%d/%b/%Y:%H:%M:%S %z]";
-	std::strftime(buffer, sizeof(buffer), format, &timeinfo);
+std::string Logger::_getPrompt(enum level level) const {
+	std::string datetime;
 
-	switch (level) {
-		case DEBUG: return std::string(buffer) + " - DEBUG -";
-		case INFO: return std::string(buffer) + " - INFO -";
-		case WARNING: return std::string(buffer) + " - WARNING ⚠\uFE0F -";
-		case ERROR: return std::string(buffer) + " - ERROR ⛔\uFE0F -";
-		case CRITICAL: return std::string(buffer) + " - CRITICAL ‼\uFE0F -";
+	if (_hasDatetime) {
+		std::time_t now = std::time(nullptr);
+		struct std::tm timeinfo;
+		char buffer[50];
+
+		localtime_r(&now, &timeinfo);
+		const char *format = "[%d/%b/%Y:%H:%M:%S %z] - ";
+		std::strftime(buffer, sizeof(buffer), format, &timeinfo);
+		datetime = std::string(buffer);
 	}
-	return std::string(buffer);
+	switch (level) {
+		case DEBUG: return datetime + "DEBUG -";
+		case INFO: return datetime + "INFO -";
+		case WARNING: return datetime + "WARNING -";
+		case ERROR: return datetime + "ERROR -";
+		case CRITICAL: return datetime + "CRITICAL -";
+	}
+	return datetime;
 }
 
 void Logger::_appendInLogFile(const std::string &line) const {

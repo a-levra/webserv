@@ -1,6 +1,7 @@
 #*******************************  VARIABLES  **********************************#
 
 NAME			=	webserv
+PYTHON3			=	python3
 
 # --------------- FILES --------------- #
 
@@ -11,6 +12,7 @@ include src.mk
 DIR_BUILD		=	.build/
 DIR_SRC 		=	src/
 DIR_INCLUDE		=	include/
+DIR_TEST		=	test/
 
 # ------------- SHORTCUTS ------------- #
 
@@ -62,6 +64,10 @@ re:				fclean
 .PHONY: run
 run:			all
 				./webserv resources/webserv.conf
+
+.PHONY: test
+test:			all
+				$(PYTHON3) -m unittest discover -s $(DIR_TEST) -p "test_*.py"
 
 .PHONY: build_image
 build_image: Dockerfile

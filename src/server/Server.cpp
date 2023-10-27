@@ -196,8 +196,8 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 		_clients.erase(clientIt);
 		return false;
 	}
-	enum REQUEST_VALIDITY validity = client.checkRequestValidity();
-	if (validity == INVALID || validity == VALID_and_COMPLETE)
+	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
+	if (validity == HttpRequest::INVALID_REQUEST || validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
 		_sendClientRequest(client);
 	return true;
 }

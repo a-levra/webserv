@@ -9,6 +9,13 @@
 #include <cstdlib>
 #include <map>
 
+#define AUTHORIZED_DIRECTIVES_IN_HTTP_CONTEXT "error_page index root \
+	allow_methods client_max_body_size autoindex"
+#define AUTHORIZED_DIRECTIVES_IN_SERVER_CONTEXT "error_page index root \
+	allow_methods client_max_body_size autoindex listen server_name return"
+#define AUTHORIZED_DIRECTIVES_IN_LOCATION_CONTEXT "error_page index root \
+	allow_methods client_max_body_size autoindex return cgi_path"
+
 class ConfigParser
 {
 public:
@@ -22,6 +29,7 @@ public:
 		DUPLICATE_LOCATION,
 		INVALID_ARGUMENTS,
 		CONFLICTING_SERVER_NAME,
+		NO_VIRTUAL_SERVER_FOUND,
 	};
 
 	struct virtualServer {

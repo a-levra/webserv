@@ -56,4 +56,5 @@ add_executable(42_webserv
         src/options.cpp
         include/options.hpp
         src/logger/logging.cpp
+        src/utils/getPositionsOfWord.cpp
 )

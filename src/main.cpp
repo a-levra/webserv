@@ -85,6 +85,7 @@ static int runServer(const std::string& configFile) {
 	Server			webserv;
 
 	signal(SIGINT, &handleSignal);
+    signal(SIGTERM, &handleSignal);
 	{
 		ConfigLexer	lexer = ConfigLexer(configFile);
 		if (!parseConfigFile(lexer))

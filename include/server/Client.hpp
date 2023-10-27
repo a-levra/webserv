@@ -17,7 +17,7 @@ public:
 
 	Client &operator=(const Client &other);
 
-  	REQUEST_VALIDITY checkRequestValidity();
+  	HttpRequest::REQUEST_VALIDITY checkRequestValidity();
 	void	appendRawRequest(const std::string& rawRequest);
 	void	setRawRequest(const std::string& rawRequest);
 	HttpRequest	getRequest();

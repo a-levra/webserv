@@ -197,6 +197,20 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 		return false;
 	}
 	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
+	switch (validity){
+		case HttpRequest::INVALID_REQUEST:
+			coloredLog("Invalid request","", RED);
+			break;
+		case HttpRequest::VALID_AND_COMPLETE_REQUEST:
+			coloredLog("Valid and complete request","", GREEN);
+			break;
+		case HttpRequest::INCOMPLETE_REQUEST:
+			coloredLog("Incomplete request","", YELLOW);
+			break;
+		case HttpRequest::NOT_PARSED_YET:
+			coloredLog("Not parsed yet","", YELLOW);
+			break;
+	}
 	if (validity == HttpRequest::INVALID_REQUEST || validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
 		_sendClientRequest(client);
 	return true;
@@ -220,8 +234,8 @@ bool Server::_readClientRequest(Client &client) {
 void Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
 	httpRequest.displayRequest();
-	HttpResponse httpResponse;
-	std::string response = httpResponse.getResponse((*this), httpRequest);
+	HttpResponse httpResponse(httpRequest);
+	std::string response = httpResponse.getResponse((*this));
 	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 	client.setRawRequest("");
 	coloredLog("Response: ", response, BLUE);

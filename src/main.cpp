@@ -89,6 +89,7 @@ static int runServer(const std::string& configFile) {
 		ConfigLexer	lexer = ConfigLexer(configFile);
 		if (!parseConfigFile(lexer))
 			return EXIT_FAILURE;
+		logging::setHasDatetime(true);
 		lexer.getMainContext().inheritDirectives();
 		if (!webserv.addVirtualServers(ConfigFactory::createVirtualServers(
 				lexer.getMainContext()))) {

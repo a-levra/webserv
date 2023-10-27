@@ -8,6 +8,7 @@
 #include "HttpMessages/AHttpMessage.hpp"
 #include "HttpMessages/HttpRequest.hpp"
 #include "HttpMessages/HttpResponse.hpp"
+#include "logger/logging.hpp"
 #include "utils/utils.hpp"
 
 bool Server::exit = false;
@@ -49,15 +50,14 @@ bool Server::addVirtualServers(const std::vector<VirtualServer> &virtualServers)
 }
 
 bool Server::listen() {
-	coloredLog("Start listening...", "", GREEN);
+	logging::info("start listening");
 	for (size_t i = 0; i < _listeners.size(); i++) {
 		if (!_tryListenSocket(_listeners[i])) {
 			return false;
 		}
-		std::cout << _listeners[i].getIPAndPort() << std::endl;
+		logging::info(_listeners[i].getIPAndPort());
 	}
 	while (!exit) {
-		coloredLog("Waiting for a request...", "", GREEN);
 		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1 && !exit) {
 			_printError("server.listen poll() failed");
 			return false;
@@ -177,7 +177,7 @@ bool Server::_acceptNewClient(struct pollfd listener) {
 	Client client(clientSocket, clientAddress, serverAddress);
 	_clients.push_back(client);
 	_pollFd.push_back((struct pollfd) {.fd = clientSocket, .events = POLLIN, .revents = 0});
-	std::cout << "A new client is connected" << std::endl;
+	logging::debug("a new client is connected");
 	return true;
 }
 
@@ -228,6 +228,6 @@ void Server::_sendClientRequest(Client &client) {
 }
 
 void Server::_printError(const std::string &error) {
-	std::cerr << "webserver: " << error << " ("
-			  << errno << ": " << strerror(errno) << ")" << std::endl;
+	logging::error(error + " (" + toString(errno) + ": "
+					+ strerror(errno) + ")");
 }

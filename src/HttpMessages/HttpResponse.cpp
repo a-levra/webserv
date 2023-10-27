@@ -46,12 +46,12 @@ std::string HttpResponse::getResponse(Server &server) {
 		return buildErrorPage(404);
 	coloredLog("Location best match: ", "", GREEN);
 	loc->display();
-	this->build(*loc, *host);
+	this->build(*loc);
 	return _rawMessage;
 }
 
-void HttpResponse::build(Location &location, const std::string& host) {
-	(void) host; //todo: use host to get the right server name
+void HttpResponse::build(Location &location) {
+
 
 	if ( !location.isAllowedMethod(_request.getMethod()) ){
 		buildErrorPage(405);

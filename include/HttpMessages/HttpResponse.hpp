@@ -12,7 +12,7 @@ class HttpResponse : public AHttpMessage {
 		virtual ~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &other);
-		void build(Location &location, const std::string& host);
+		void build(Location &location);
 
 		std::string getResponse(Server &server);
 		std::string & buildErrorPage(int i);

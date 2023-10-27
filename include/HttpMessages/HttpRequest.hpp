@@ -72,10 +72,11 @@ class HttpRequest: public AHttpMessage{
 		const std::string &getRequestUri();
 		const REQUEST_VALIDITY & getValidity() const;
 		bool isInvalid() const;
+		std::string getErrors();
 	private:
 		REQUEST_VALIDITY _validity;
 		std::vector<ERRORS> _errors;
-		void logLexerParserError(HttpRequest::ERRORS validity);
+		std::string getLexerParserError(HttpRequest::ERRORS validity);
 		void logErrors();
 };
 

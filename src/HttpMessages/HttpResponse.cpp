@@ -3,9 +3,9 @@
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
 
-HttpResponse::HttpResponse(void) {}
+HttpResponse::HttpResponse(class HttpRequest& r) : _request(r) {}
 
-HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other)
+HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other), _request(other._request)
 { *this = other; }
 
 HttpResponse::~HttpResponse(void) {}
@@ -24,13 +24,7 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  *  3) get the location corresponding to the path and the host
  *  4) build the response into _rawMessage and returns it
  */
-std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
-	const std::string *host = request.getHeader("Host");
-	if (host == NULL) {
-		coloredLog("Host not found: ", "", RED);
-		buildErrorPage(400);
-		return _rawMessage;
-	}
+std::string HttpResponse::getResponse(Server &server) {
 
 	if (_request.isInvalid())
 		return buildErrorPage(400);
@@ -45,29 +39,29 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		return buildErrorPage(404);
 
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
-	_requestUri = request.getRequestUri();
+	coloredLog("URI requested: ", _requestUri, PURPLE);
+	_requestUri = _request.getRequestUri();
 	Location *loc = vs->getLocation(_requestUri);
 	if (loc == NULL)
 		return buildErrorPage(404);
 	coloredLog("Location best match: ", "", GREEN);
 	loc->display();
-	this->build(*loc, *host, request);
+	this->build(*loc, *host);
 	return _rawMessage;
 }
 
-void HttpResponse::build(Location &location, std::string host, const HttpRequest &request) {
+void HttpResponse::build(Location &location, const std::string& host) {
 	(void) host; //todo: use host to get the right server name
 
-	if ( !location.isAllowedMethod(request.getMethod()) ){
-		coloredLog("Method not allowed: ", request.getMethod(), RED);
-		this->buildErrorPage(405);
+	if ( !location.isAllowedMethod(_request.getMethod()) ){
+		buildErrorPage(405);
 		return ;
 	}
-	coloredLog("Method allowed: ", "\"" + request.getMethod() + "\"", GREEN);
-	if (request.getMethod() == "GET")
+	coloredLog("Method allowed: ", "\"" + _request.getMethod() + "\"", GREEN);
+	if (_request.getMethod() == "GET")
 		this->buildGet(location);
-	else if (request.getMethod() == "POST")
-		this->buildPost(location, request);
+	else if (_request.getMethod() == "POST")
+		this->buildPost(location);
 //	else if (this->_method == "DELETE") //todo implement delete
 //		this->buildDelete(location);
 }
@@ -112,8 +106,8 @@ void HttpResponse::generateBody(Location &location) {
 	}
 }
 
-void HttpResponse::buildPost(Location &location, const HttpRequest &request) {
-	getFileFromPostAndSaveIt(request);
+void HttpResponse::buildPost(Location &location) {
+	getFileFromPostAndSaveIt();
 	this->buildGet(location);
 }
 
@@ -185,33 +179,27 @@ void HttpResponse::GenerateErrorBody() {
 	coloredLog("Error page generated: ", "", RED);
 	coloredLog("Error code: ", toString(_statusCode), RED);
 	coloredLog("Error message: ", _statusMessage, RED);
-	this->setBody("    <style>\n"
-				  "        body {\n"
-				  "            background-color: #111;\n"
-				  "            color: #fff;\n"
-				  "            font-family: Arial, sans-serif;\n"
-				  "            display: flex;\n"
-				  "            justify-content: center;\n"
-				  "            align-items: center;\n"
-				  "            height: 100vh;\n"
-				  "            margin: 0;\n"
-				  "        }\n"
-				  "        </style>\n");
-	this->appendBody("<html><body><h1>\n" + toString(_statusCode) + " " + _statusMessage + "\n</h1></body></html>");
+	setBody(GENERIC_CSS_STYLE);
+	appendBody("<html>"
+					"<body>"
+							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
+							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
+							 "<h3>\n" + _request.getErrors() + "\n</h3>" \
+					"</body></html>");
 
 }
 
-void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
+void HttpResponse::getFileFromPostAndSaveIt() {
 	coloredLog("Building POST response: ", "", BLUE);
 
-	std::string *boundary = request.getHeader("Content-Type");
+	std::string *boundary = _request.getHeader("Content-Type");
 	std::string filename = "file";
 	std::string fileContent;
 	if (boundary == NULL || boundary->find("boundary=") == std::string::npos)
-		fileContent = request.getBody();
+		fileContent = _request.getBody();
 	else{
 		try {
-			ExtractImgInsideBoudaries(request, boundary, filename, fileContent);
+			ExtractImgInsideBoundaries(boundary, filename, fileContent);
 		}
 		catch (std::exception &e) {
 			coloredLog("Error: ", e.what(), RED);
@@ -221,13 +209,12 @@ void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
 	createFile(filename, fileContent);
 }
 
-void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
-											 std::string *boundary,
-											 std::string &filename,
-											 std::string &fileContent) const {
+void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
+											  std::string &filename,
+											  std::string &fileContent) const {
 	coloredLog("Boundary found: ", *boundary, BLUE);
 	*boundary = boundary->substr(boundary->find("boundary=") + 9);
-	std::string body = request.getBody();
+	std::string body = _request.getBody();
 
 	filename = body.substr(body.find("filename=") + 9);
 	char delimiter = filename[0];

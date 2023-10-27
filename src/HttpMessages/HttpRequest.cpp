@@ -29,6 +29,7 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_statusCode = other._statusCode;
 		_statusMessage = other._statusMessage;
 		_validity = other._validity;
+		_errors = other._errors;
 	}
 	return (*this);
 }
@@ -36,9 +37,11 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	_validity = NOT_PARSED_YET; //mandatory when reusing the same object
 
+	coloredLog("Clearing errors", "", RED);
+	_errors.clear();
 	std::map<enum LEXER_TOKENS, std::string> lexerToken;
 	ERRORS lexerValidity = autoLexer(lexerToken);
-	logLexerParserError(lexerValidity);
+	getLexerParserError(lexerValidity);
 	if (lexerValidity != ALL_LEXER_TOKENS_VALID){
 		_errors.push_back(lexerValidity);
 		_validity = INCOMPLETE_REQUEST;
@@ -46,7 +49,7 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	}
 
 	autoParser(lexerToken);
-	logErrors();
+//	logErrors();
 	return (_validity);
 }
 
@@ -190,55 +193,70 @@ void HttpRequest::parseBody(const std::string &body){
 	}
 }
 
-void HttpRequest::logLexerParserError(HttpRequest::ERRORS validity) {
+
 bool HttpRequest::isInvalid() const {
 	return( _validity == INVALID_REQUEST);
 }
 
+
+std::string HttpRequest::getErrors() {
+	std::string res;
+	std::vector<ERRORS>::iterator it;
+	it = _errors.begin();
+	for (;it != _errors.end(); it++){
+		res.append(getLexerParserError(*it));
+	}
+	return res;
+}
+
+std::string HttpRequest::getLexerParserError(HttpRequest::ERRORS validity) {
 	switch (validity) {
 		case RAW_MESSAGE_TOO_SHORT:
-			coloredLog("Raw message too short : ", _rawMessage, RED);
+			return ("Raw message too short : " + _rawMessage );
 			break;
 		case NO_CLRF_FOUND:
-			coloredLog("No CRLF found in raw message : ", _rawMessage, RED);
+			return ("No CRLF found in raw message : " + _rawMessage);
 			break;
 		case NO_CLRFCLRF_FOUND:
-			coloredLog("No CLRFCLRF found in raw message : ", _rawMessage, RED);
+			return ("No CLRFCLRF found in raw message : " + _rawMessage );
 			break;
 		case REQUEST_LINE_INVALID:
-			coloredLog("Request line invalid : ", _rawMessage, RED);
+			return ("Request line invalid : " + _rawMessage);
 			break;
 		case ALL_LEXER_TOKENS_VALID:
-			coloredLog("Lexer tokens valid", "", GREEN);
+			return ("Lexer tokens are valid");
 			break;
 		case UNSUPPORTED_METHOD:
-			coloredLog("Unsupported method : ", "\"" + _method + "\"", RED);
+			return ("Unsupported method : " "\"" + _method + "\"");
 			break;
 		case REQUEST_URI_NOT_ALNUM:
-			coloredLog("Request URI not alphanumeric : ", "\"" + _requestUri + "\"", RED);
+			return ("Request URI not alphanumeric : " "\"" + _requestUri + "\"");
 			break;
 		case REQUEST_URI_FORBIDDEN_SYNTAX:
-			coloredLog("Request URI : \"..\" or \"//\" forbidden : ", "\"" + _requestUri + "\"", RED);
+			return ("Request URI : \"..\" or \"//\" forbidden : " "\"" + _requestUri + "\"");
 			break;
 		case INVALID_HTTP_VERSION:
-			coloredLog("Invalid HTTP version : ", "\"" + _httpVersion + "\"", RED);
+			return ("Invalid HTTP version : " "\"" + _httpVersion + "\"");
 			break;
 		case NO_COLON_FOUND_IN_HEADER:
-			coloredLog("No colon found in header : ", "\"" + _rawMessage + "\"", RED);
+			return ("No colon found in header : " "\"" + _rawMessage + "\"");
 			break;
 		case NO_VALUE_FOUND_FOR_HEADER:
-			coloredLog("No value found for header : ", "\"" + _rawMessage + "\"", RED);
+			return ("No value found for header : " "\"" + _rawMessage + "\"");
 			break;
 		case BODY_WITHOUT_CONTENT_LENGTH:
-			coloredLog("Body without content length : ", "\"" + _rawMessage + "\"", RED);
+			return ("Body without content length : " "\"" + _rawMessage + "\"");
 			break;
 		case BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH:
-			coloredLog("Body length not matching content length : ",
-					   "\nBody size : " +
-					   toString(_body.size()) +
-					   "\nContent-Length : " +
-					   _headers[CONTENT_LENGTH], RED);
+			return ("Body length not matching Content-Lenght :"
+					"\nBody size : " +
+				toString(_body.size()) +
+				"\nContent-Length : " +
+				_headers[CONTENT_LENGTH]);
 			break;
+			default:
+				return ("Unknown error");
+				break;
 	}
 }
 
@@ -253,7 +271,6 @@ const HttpRequest::REQUEST_VALIDITY &HttpRequest::getValidity() const {
 void HttpRequest::logErrors() {
 	std::vector<HttpRequest::ERRORS>::iterator it;
 	for (it = _errors.begin(); it != _errors.end(); it++) {
-		logLexerParserError(*it);
+		getLexerParserError(*it);
 	}
-	_errors.clear();
 }

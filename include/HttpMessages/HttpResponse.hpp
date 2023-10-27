@@ -7,26 +7,26 @@
 
 class HttpResponse : public AHttpMessage {
 	public:
-		HttpResponse();
+		HttpResponse(class HttpRequest& r);
 		HttpResponse(const HttpResponse &other);
 		virtual ~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &other);
-		void build(Location &location, std::string host, const HttpRequest &request);
+		void build(Location &location, const std::string& host);
 
-		std::string getResponse(Server &server, HttpRequest &request);
-		void setHeader(std::string header, std::string content);
+		std::string getResponse(Server &server);
 		std::string & buildErrorPage(int i);
 		void generateBody(Location &location);
 		const std::string * getFirstValidIndex(const Location &location) const;
 		void GenerateErrorBody();
 		void buildGet(Location &location);
-		void buildPost(Location &location, const HttpRequest &request);
-		void getFileFromPostAndSaveIt(HttpRequest request);
-		void ExtractImgInsideBoudaries(const HttpRequest &request,
-									   std::string *boundary,
-									   std::string &filename,
-									   std::string &fileContent) const;
+		void buildPost(Location &location);
+		void getFileFromPostAndSaveIt();
+		void ExtractImgInsideBoundaries(std::string *boundary,
+										std::string &filename,
+										std::string &fileContent) const;
+	private:
+		HttpRequest &_request;
 };
 
 #endif

@@ -31,6 +31,10 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 		buildErrorPage(400);
 		return _rawMessage;
 	}
+
+	if (_request.isInvalid())
+		return buildErrorPage(400);
+
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL){

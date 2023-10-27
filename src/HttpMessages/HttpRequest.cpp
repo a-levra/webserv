@@ -191,6 +191,10 @@ void HttpRequest::parseBody(const std::string &body){
 }
 
 void HttpRequest::logLexerParserError(HttpRequest::ERRORS validity) {
+bool HttpRequest::isInvalid() const {
+	return( _validity == INVALID_REQUEST);
+}
+
 	switch (validity) {
 		case RAW_MESSAGE_TOO_SHORT:
 			coloredLog("Raw message too short : ", _rawMessage, RED);

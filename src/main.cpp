@@ -8,12 +8,12 @@
 #include "config/ConfigFactory.hpp"
 #include "config/ConfigParser.hpp"
 
-static int 	testConfigFile(const std::string& configFile);
-static bool parseConfigFile(const ConfigLexer& lexer);
-static int	runServer(const std::string& configFile);
-static void handleSignal(int signum);
 static void	setLogOptions(const Options& options);
 static void printHelp();
+static int 	testConfigFile(const std::string& configFile);
+static int	runServer(const std::string& configFile);
+static bool parseConfigFile(const ConfigLexer& lexer);
+static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 	if (options.configFile.empty()) {
-		logging::critical("configFile not found");
+		logging::error("configFile not found");
 		return EXIT_FAILURE;
 	}
 	if (options.syntax)
@@ -35,6 +35,13 @@ int main(int argc, char **argv)
 	else
 		return runServer(options.configFile);
 	return EXIT_SUCCESS;
+}
+
+static void	setLogOptions(const Options& options) {
+	logging::setHasColor(options.logColor);
+	logging::setLevel(options.logLevel);
+	if (!options.logFile.empty())
+		logging::setFile(options.logFile);
 }
 
 static void printHelp() {
@@ -49,13 +56,6 @@ static void printHelp() {
 	   "  -c, --log-color           Enable colored logging output.\n"
 	   "  -s, --syntax              Check the syntax of the configuration file."
 	<< std::endl;
-}
-
-static void	setLogOptions(const Options& options) {
-	logging::setHasColor(options.logColor);
-	logging::setLevel(options.logLevel);
-	if (!options.logFile.empty())
-		logging::setFile(options.logFile);
 }
 
 static int	testConfigFile(const std::string& configFile) {

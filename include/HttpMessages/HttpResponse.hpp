@@ -15,8 +15,8 @@ class HttpResponse : public AHttpMessage {
 		void build(Location &location, std::string host, const HttpRequest &request);
 
 		std::string getResponse(Server &server, HttpRequest &request);
-		void buildErrorPage(int i);
 		void setHeader(std::string header, std::string content);
+		std::string & buildErrorPage(int i);
 		void generateBody(Location &location);
 		const std::string * getFirstValidIndex(const Location &location) const;
 		void GenerateErrorBody();

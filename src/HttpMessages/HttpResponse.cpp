@@ -35,22 +35,20 @@ std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
 	if (_request.isInvalid())
 		return buildErrorPage(400);
 
+	const std::string *host = _request.getHeader("Host");
+	if (host == NULL)
+		return buildErrorPage(400);
+
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
-	if (vs == NULL){
-		coloredLog("Virtual server not found: ", *host, RED);
-		buildErrorPage(404);
-		return _rawMessage;
-	}
+	if (vs == NULL)
+		return buildErrorPage(404);
+
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_requestUri = request.getRequestUri();
 	Location *loc = vs->getLocation(_requestUri);
-	coloredLog("URI requested: ", _requestUri, PURPLE);
-	if (loc == NULL){
-		coloredLog("Can't find a matching location for URI : ", _requestUri, RED);
-		buildErrorPage(404);
-		return _rawMessage;
-	}
+	if (loc == NULL)
+		return buildErrorPage(404);
 	coloredLog("Location best match: ", "", GREEN);
 	loc->display();
 	this->build(*loc, *host, request);
@@ -119,7 +117,7 @@ void HttpResponse::buildPost(Location &location, const HttpRequest &request) {
 	this->buildGet(location);
 }
 
-void HttpResponse::buildErrorPage(int i) {
+std::string & HttpResponse::buildErrorPage(int i) {
 	std::string response;
 	setStatusCode(i);
 	std::string error = toString(i);
@@ -161,7 +159,8 @@ void HttpResponse::buildErrorPage(int i) {
 	response += CRLF;
 	response += _body;
 	_rawMessage = response;
-				}
+	return _rawMessage;
+}
 
 void HttpResponse::setHeader(std::string header, std::string content) {
 	_headers[header] = content;

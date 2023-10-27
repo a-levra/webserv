@@ -76,7 +76,6 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 		lexerTokens[TOK_HTTP_VERSION] = requestLine[2];
 		lexerTokens[TOK_HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
 		lexerTokens[TOK_BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
-		coloredLog("\"" + _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE) + "\"", "", YELLOW);
 		return (ALL_LEXER_TOKENS_VALID);
 	}
 	return (REQUEST_LINE_INVALID);
@@ -111,6 +110,8 @@ void HttpRequest::parseRequestURI(const std::string &requestUri) {
 	//requestUri must be alphanumeric and can contain only '/', '.' and '-'
 	//requestUri cannot contain ".." or "//"
 
+	//it's useful to save the original requestUri first for error logging purposes
+	_requestUri = requestUri;
 	size_t requestUriSize = requestUri.size();
 	const char * c_str_uri = requestUri.c_str();
 	for (size_t i = 0; i < requestUriSize; i++) {
@@ -130,7 +131,6 @@ void HttpRequest::parseRequestURI(const std::string &requestUri) {
 		}
 
 	}
-	_requestUri = requestUri;
 }
 
 void HttpRequest::parseHttpVersion(const std::string &httpVersion) {

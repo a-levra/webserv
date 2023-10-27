@@ -156,7 +156,7 @@ std::string & HttpResponse::buildErrorPage(int i) {
 	return _rawMessage;
 }
 
-void HttpResponse::setHeader(std::string header, std::string content) {
+void HttpResponse::setHeader(const std::string& header, const std::string& content) {
 	_headers[header] = content;
 }
 

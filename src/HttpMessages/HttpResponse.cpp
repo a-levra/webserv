@@ -3,9 +3,9 @@
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
 
-HttpResponse::HttpResponse(void) {}
+HttpResponse::HttpResponse(class HttpRequest& r) : _request(r) {}
 
-HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other)
+HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other), _request(other._request)
 { *this = other; }
 
 HttpResponse::~HttpResponse(void) {}
@@ -24,48 +24,43 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  *  3) get the location corresponding to the path and the host
  *  4) build the response into _rawMessage and returns it
  */
-std::string HttpResponse::getResponse(Server &server, HttpRequest &request) {
-	const std::string *host = request.getHeader("Host");
-	if (host == NULL) {
-		coloredLog("Host not found: ", "", RED);
-		buildErrorPage(400);
-		return _rawMessage;
-	}
+std::string HttpResponse::getResponse(Server &server) {
+
+	if (_request.isInvalid())
+		return buildErrorPage(400);
+
+	const std::string *host = _request.getHeader("Host");
+	if (host == NULL)
+		return buildErrorPage(400);
+
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
-	if (vs == NULL){
-		coloredLog("Virtual server not found: ", *host, RED);
-		buildErrorPage(404);
-		return _rawMessage;
-	}
+	if (vs == NULL)
+		return buildErrorPage(404);
+
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
-	_requestUri = request.getRequestUri();
-	Location *loc = vs->getLocation(_requestUri);
+	_requestUri = _request.getRequestUri();
 	coloredLog("URI requested: ", _requestUri, PURPLE);
-	if (loc == NULL){
-		coloredLog("Can't find a matching location for URI : ", _requestUri, RED);
-		buildErrorPage(404);
-		return _rawMessage;
-	}
+	Location *loc = vs->getLocation(_requestUri);
+	if (loc == NULL)
+		return buildErrorPage(404);
 	coloredLog("Location best match: ", "", GREEN);
 	loc->display();
-	this->build(*loc, *host, request);
+	this->build(*loc);
 	return _rawMessage;
 }
 
-void HttpResponse::build(Location &location, std::string host, const HttpRequest &request) {
-	(void) host; //todo: use host to get the right server name
+void HttpResponse::build(Location &location) {
 
-	if ( !location.isAllowedMethod(request.getMethod()) ){
-		coloredLog("Method not allowed: ", request.getMethod(), RED);
-		this->buildErrorPage(405);
+
+	if ( !location.isAllowedMethod(_request.getMethod()) ){
+		buildErrorPage(405);
 		return ;
 	}
-	coloredLog("Method allowed: ", "\"" + request.getMethod() + "\"", GREEN);
-	if (request.getMethod() == "GET")
+	if (_request.getMethod() == "GET")
 		this->buildGet(location);
-	else if (request.getMethod() == "POST")
-		this->buildPost(location, request);
+	else if (_request.getMethod() == "POST")
+		this->buildPost(location);
 //	else if (this->_method == "DELETE") //todo implement delete
 //		this->buildDelete(location);
 }
@@ -73,6 +68,7 @@ void HttpResponse::build(Location &location, std::string host, const HttpRequest
 void HttpResponse::buildGet(Location &location) {
 	std::string response;
 	coloredLog("Building GET response: ", "", GREEN);
+
 	this->generateBody(location);
 	this->setHeader("Date", getDate());
 	this->setHeader("Server", "webserv");
@@ -89,15 +85,25 @@ void HttpResponse::buildGet(Location &location) {
 }
 
 void HttpResponse::generateBody(Location &location) {
+	const std::string *file;
 
-	const std::string *index = getFirstValidIndex(location);
+	std::string res = getResource(location);
+	if (!res.empty()){
+		file = tryGetFile(location, res);
+		if (file == NULL){
+			this->buildErrorPage(404);
+			return ;
+		}
+	}
+	else
+		file = getFirstValidIndex(location);
 
-	if (index == NULL){
+	if (file == NULL){
 		coloredLog("No index valid: ", _requestUri, RED);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *index );
+	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *file );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -110,12 +116,12 @@ void HttpResponse::generateBody(Location &location) {
 	}
 }
 
-void HttpResponse::buildPost(Location &location, const HttpRequest &request) {
-	getFileFromPostAndSaveIt(request);
+void HttpResponse::buildPost(Location &location) {
+	getFileFromPostAndSaveIt();
 	this->buildGet(location);
 }
 
-void HttpResponse::buildErrorPage(int i) {
+std::string & HttpResponse::buildErrorPage(int i) {
 	std::string response;
 	setStatusCode(i);
 	std::string error = toString(i);
@@ -157,9 +163,10 @@ void HttpResponse::buildErrorPage(int i) {
 	response += CRLF;
 	response += _body;
 	_rawMessage = response;
-				}
+	return _rawMessage;
+}
 
-void HttpResponse::setHeader(std::string header, std::string content) {
+void HttpResponse::setHeader(const std::string& header, const std::string& content) {
 	_headers[header] = content;
 }
 
@@ -182,33 +189,27 @@ void HttpResponse::GenerateErrorBody() {
 	coloredLog("Error page generated: ", "", RED);
 	coloredLog("Error code: ", toString(_statusCode), RED);
 	coloredLog("Error message: ", _statusMessage, RED);
-	this->setBody("    <style>\n"
-				  "        body {\n"
-				  "            background-color: #111;\n"
-				  "            color: #fff;\n"
-				  "            font-family: Arial, sans-serif;\n"
-				  "            display: flex;\n"
-				  "            justify-content: center;\n"
-				  "            align-items: center;\n"
-				  "            height: 100vh;\n"
-				  "            margin: 0;\n"
-				  "        }\n"
-				  "        </style>\n");
-	this->appendBody("<html><body><h1>\n" + toString(_statusCode) + " " + _statusMessage + "\n</h1></body></html>");
+	setBody(GENERIC_CSS_STYLE);
+	appendBody("<html>"
+					"<body>"
+							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
+							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
+							 "<h3>\n" + _request.getErrors() + "\n</h3>" \
+					"</body></html>");
 
 }
 
-void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
+void HttpResponse::getFileFromPostAndSaveIt() {
 	coloredLog("Building POST response: ", "", BLUE);
 
-	std::string *boundary = request.getHeader("Content-Type");
+	std::string *boundary = _request.getHeader("Content-Type");
 	std::string filename = "file";
 	std::string fileContent;
 	if (boundary == NULL || boundary->find("boundary=") == std::string::npos)
-		fileContent = request.getBody();
+		fileContent = _request.getBody();
 	else{
 		try {
-			ExtractImgInsideBoudaries(request, boundary, filename, fileContent);
+			ExtractImgInsideBoundaries(boundary, filename, fileContent);
 		}
 		catch (std::exception &e) {
 			coloredLog("Error: ", e.what(), RED);
@@ -218,13 +219,12 @@ void HttpResponse::getFileFromPostAndSaveIt(HttpRequest request) {
 	createFile(filename, fileContent);
 }
 
-void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
-											 std::string *boundary,
-											 std::string &filename,
-											 std::string &fileContent) const {
+void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
+											  std::string &filename,
+											  std::string &fileContent) const {
 	coloredLog("Boundary found: ", *boundary, BLUE);
 	*boundary = boundary->substr(boundary->find("boundary=") + 9);
-	std::string body = request.getBody();
+	std::string body = _request.getBody();
 
 	filename = body.substr(body.find("filename=") + 9);
 	char delimiter = filename[0];
@@ -237,4 +237,21 @@ void HttpResponse::ExtractImgInsideBoudaries(const HttpRequest &request,
 	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
 	if (fileContent.size() >= 2 && fileContent[fileContent.size() - 2] == '\r' && fileContent[fileContent.size() - 1] == '\n')
 		fileContent.erase(fileContent.size() - 2, 2);
+}
+
+std::string HttpResponse::getResource(Location &location) const {
+	std::string resource;
+
+	resource = _requestUri.substr(location.getURI().length());
+	coloredLog("resource: ", resource, YELLOW);
+	return resource;
+}
+
+const std::string *HttpResponse::tryGetFile(Location &location, const std::string &resource) {
+	std::string pathToFile = location.getRoot() + location.getURI() + "/" + resource;
+	coloredLog("pathToFile: ", pathToFile, YELLOW);
+	if (fileExists(pathToFile))
+		return &resource;
+	coloredLog("File not found: ", pathToFile, RED);
+	return NULL;
 }

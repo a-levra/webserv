@@ -49,7 +49,6 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	}
 
 	autoParser(lexerToken);
-//	logErrors();
 	return (_validity);
 }
 
@@ -266,11 +265,4 @@ const std::string &HttpRequest::getRequestUri() {
 
 const HttpRequest::REQUEST_VALIDITY &HttpRequest::getValidity() const {
 	return _validity;
-}
-
-void HttpRequest::logErrors() {
-	std::vector<HttpRequest::ERRORS>::iterator it;
-	for (it = _errors.begin(); it != _errors.end(); it++) {
-		getLexerParserError(*it);
-	}
 }

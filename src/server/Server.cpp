@@ -143,14 +143,14 @@ bool Server::_tryListenSocket(Socket &socket) {
 void Server::_handleSockets() {
 	for (size_t i = 0; i < _pollFd.size();) {
 		bool isDisconnect = false;
-		if (i >= _listeners.size()) {
+		if (i >= _listeners.size())
 			isDisconnect = !_handleClient(_pollFd[i], i - _listeners.size());
-		}
-		else if ((_pollFd[i].revents & POLLIN) == 1 && i < _listeners.size()) {
+		else if ((_pollFd[i].revents & POLLIN) == 1 && i < _listeners.size())
 			_acceptNewClient(_pollFd[i]);
-		}
-		if (isDisconnect)
+		if (isDisconnect) {
 			_pollFd.erase(_pollFd.begin() + i);
+			logging::debug("a client has been disconnected");
+		}
 		else
 			i++;
 	}
@@ -197,21 +197,8 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 		return false;
 	}
 	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
-	switch (validity){
-		case HttpRequest::INVALID_REQUEST:
-			coloredLog("Invalid request","", RED);
-			break;
-		case HttpRequest::VALID_AND_COMPLETE_REQUEST:
-			coloredLog("Valid and complete request","", GREEN);
-			break;
-		case HttpRequest::INCOMPLETE_REQUEST:
-			coloredLog("Incomplete request","", YELLOW);
-			break;
-		case HttpRequest::NOT_PARSED_YET:
-			coloredLog("Not parsed yet","", YELLOW);
-			break;
-	}
-	if (validity == HttpRequest::INVALID_REQUEST || validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
+	if (validity == HttpRequest::INVALID_REQUEST
+		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
 		_sendClientRequest(client);
 	return true;
 }

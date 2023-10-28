@@ -252,5 +252,6 @@ const std::string *HttpResponse::tryGetFile(Location &location, const std::strin
 	coloredLog("pathToFile: ", pathToFile, YELLOW);
 	if (fileExists(pathToFile))
 		return &resource;
+	coloredLog("File not found: ", pathToFile, RED);
 	return NULL;
 }

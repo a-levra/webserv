@@ -22,7 +22,7 @@ SRC				=	$(addprefix $(DIR_SRC),$(LIST_SRC))
 
 # ------------ COMPILATION ------------ #
 
-CPPFLAGS		=	-Wall -Wextra -Werror -std=c++98 -g3
+CPPFLAGS		=	-Wall -Wextra -Werror -std=c++98
 
 DEP_FLAGS		=	-MMD -MP
 

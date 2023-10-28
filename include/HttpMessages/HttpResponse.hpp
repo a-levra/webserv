@@ -1,31 +1,35 @@
 #ifndef HTTPRESPONSE_HPP
 # define HTTPRESPONSE_HPP
+
 #include "AHttpMessage.hpp"
 #include "HttpRequest.hpp"
 #include "../server/Server.hpp"
 
 class HttpResponse : public AHttpMessage {
 	public:
-		HttpResponse();
+		HttpResponse(class HttpRequest& r);
 		HttpResponse(const HttpResponse &other);
 		virtual ~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &other);
-		void build(Location &location, std::string host, const HttpRequest &request);
+		void build(Location &location);
 
-		std::string getResponse(Server &server, HttpRequest &request);
-		void buildErrorPage(int i);
-		void setHeader(std::string header, std::string content);
+		std::string getResponse(Server &server);
+		std::string & buildErrorPage(int i);
+		void setHeader(const std::string& header, const std::string& content);
 		void generateBody(Location &location);
 		const std::string * getFirstValidIndex(const Location &location) const;
 		void GenerateErrorBody();
 		void buildGet(Location &location);
-		void buildPost(Location &location, const HttpRequest &request);
-		void getFileFromPostAndSaveIt(HttpRequest request);
-		void ExtractImgInsideBoudaries(const HttpRequest &request,
-									   std::string *boundary,
-									   std::string &filename,
-									   std::string &fileContent) const;
+		void buildPost(Location &location);
+		void getFileFromPostAndSaveIt();
+		void ExtractImgInsideBoundaries(std::string *boundary,
+										std::string &filename,
+										std::string &fileContent) const;
+	private:
+		HttpRequest &_request;
+		std::string getResource(Location &location) const;
+		const std::string *tryGetFile(Location &location, const std::string & resource);
 };
 
 #endif

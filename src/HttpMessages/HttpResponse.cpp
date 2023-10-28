@@ -39,8 +39,8 @@ std::string HttpResponse::getResponse(Server &server) {
 		return buildErrorPage(404);
 
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
-	coloredLog("URI requested: ", _requestUri, PURPLE);
 	_requestUri = _request.getRequestUri();
+	coloredLog("URI requested: ", _requestUri, PURPLE);
 	Location *loc = vs->getLocation(_requestUri);
 	if (loc == NULL)
 		return buildErrorPage(404);
@@ -57,7 +57,6 @@ void HttpResponse::build(Location &location) {
 		buildErrorPage(405);
 		return ;
 	}
-	coloredLog("Method allowed: ", "\"" + _request.getMethod() + "\"", GREEN);
 	if (_request.getMethod() == "GET")
 		this->buildGet(location);
 	else if (_request.getMethod() == "POST")
@@ -69,6 +68,7 @@ void HttpResponse::build(Location &location) {
 void HttpResponse::buildGet(Location &location) {
 	std::string response;
 	coloredLog("Building GET response: ", "", GREEN);
+
 	this->generateBody(location);
 	this->setHeader("Date", getDate());
 	this->setHeader("Server", "webserv");
@@ -85,15 +85,25 @@ void HttpResponse::buildGet(Location &location) {
 }
 
 void HttpResponse::generateBody(Location &location) {
+	const std::string *file;
 
-	const std::string *index = getFirstValidIndex(location);
+	std::string res = getResource(location);
+	if (!res.empty()){
+		file = tryGetFile(location, res);
+		if (file == NULL){
+			this->buildErrorPage(404);
+			return ;
+		}
+	}
+	else
+		file = getFirstValidIndex(location);
 
-	if (index == NULL){
+	if (file == NULL){
 		coloredLog("No index valid: ", _requestUri, RED);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *index );
+	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *file );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -227,4 +237,20 @@ void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
 	fileContent = fileContent.substr(0, fileContent.find(*boundary) - 2);
 	if (fileContent.size() >= 2 && fileContent[fileContent.size() - 2] == '\r' && fileContent[fileContent.size() - 1] == '\n')
 		fileContent.erase(fileContent.size() - 2, 2);
+}
+
+std::string HttpResponse::getResource(Location &location) const {
+	std::string resource;
+
+	resource = _requestUri.substr(location.getURI().length());
+	coloredLog("resource: ", resource, YELLOW);
+	return resource;
+}
+
+const std::string *HttpResponse::tryGetFile(Location &location, const std::string &resource) {
+	std::string pathToFile = location.getRoot() + location.getURI() + "/" + resource;
+	coloredLog("pathToFile: ", pathToFile, YELLOW);
+	if (fileExists(pathToFile))
+		return &resource;
+	return NULL;
 }

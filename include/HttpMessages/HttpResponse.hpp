@@ -28,6 +28,8 @@ class HttpResponse : public AHttpMessage {
 										std::string &fileContent) const;
 	private:
 		HttpRequest &_request;
+		std::string getResource(Location &location) const;
+		const std::string *tryGetFile(Location &location, const std::string & resource);
 };
 
 #endif

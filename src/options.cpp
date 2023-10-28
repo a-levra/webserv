@@ -1,3 +1,6 @@
+#include <cstdlib>
+#include <cerrno>
+#include <cstring>
 #include <string>
 
 #include "argument.hpp"
@@ -79,5 +82,5 @@ static bool parseLogLevel(const std::string &flagContent, enum Logger::level &le
 static bool isConfigFile(const std::string& configFile) {
 	std::string::size_type pos = configFile.rfind(CONFIG_FILE_EXTENSION);
 	return (pos != std::string::npos
-			&& pos == configFile.length() - strlen(CONFIG_FILE_EXTENSION));
+			&& pos == configFile.length() - std::strlen(CONFIG_FILE_EXTENSION));
 }

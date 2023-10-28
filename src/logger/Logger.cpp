@@ -141,7 +141,7 @@ std::string Logger::_getPrompt(enum level level) const {
 	std::string datetime;
 
 	if (_hasDatetime) {
-		std::time_t now = std::time(nullptr);
+		std::time_t now = std::time(NULL);
 		struct std::tm timeinfo;
 		char buffer[50];
 
@@ -161,7 +161,7 @@ std::string Logger::_getPrompt(enum level level) const {
 }
 
 void Logger::_appendInLogFile(const std::string &line) const {
-	std::ofstream logFile(_file, std::ios::app);
+	std::ofstream logFile(_file.c_str(), std::ios::app);
 
 	if (logFile.is_open()) {
 		logFile << line << std::endl;

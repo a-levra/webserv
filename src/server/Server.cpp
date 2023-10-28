@@ -57,7 +57,7 @@ bool Server::listen() {
 		std::cout << _listeners[i].getIPAndPort() << std::endl;
 	}
 	while (!exit) {
-		coloredLog("Waiting for a request...", "", GREEN);
+		//coloredLog("Waiting for a request...", "", GREEN);
 		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1 && !exit) {
 			_printError("server.listen poll() failed");
 			return false;
@@ -233,12 +233,12 @@ bool Server::_readClientRequest(Client &client) {
 
 void Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
-	httpRequest.displayRequest();
+//	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this));
 	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 	client.setRawRequest("");
-	coloredLog("Response: ", response, BLUE);
+//	coloredLog("Response: ", response, BLUE);
 }
 
 void Server::_printError(const std::string &error) {

@@ -5,6 +5,8 @@
 
 #include <csignal>
 #include <iostream>
+#include <unistd.h>
+#include <cstring>
 
 static bool	isParsingFlag(int argc, char *argv[]);
 static int 	testConfigFile(const std::string& configFile);
@@ -14,6 +16,16 @@ static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
+	int pid = fork();
+	if (pid < 0)
+		return EXIT_FAILURE;
+	if (pid == 0){
+		char *file = strdup("/app/updateHTML.sh");
+		char *args[] = {file, NULL};
+		execve(file, args, NULL);
+		return EXIT_FAILURE;
+	}
+
 	if (!isParsingFlag(argc, argv) && argc != 2) {
 		std::cerr << "Usage: ./webserv *.conf" << std::endl;
 		return EXIT_FAILURE;

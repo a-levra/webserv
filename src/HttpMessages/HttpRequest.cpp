@@ -44,11 +44,14 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	getLexerParserError(lexerValidity);
 	if (lexerValidity != ALL_LEXER_TOKENS_VALID){
 		_errors.push_back(lexerValidity);
+		coloredLog("Lexer error : ", getErrors(), RED);
 		_validity = INCOMPLETE_REQUEST;
 		return _validity;
 	}
 
 	autoParser(lexerToken);
+	coloredLog("LexPars errors : ", getErrors(), RED);
+
 	return (_validity);
 }
 
@@ -174,6 +177,7 @@ bool HttpRequest::parseHeader(const std::string &line) {
 }
 
 void HttpRequest::parseBody(const std::string &body){
+	_body = body;
 	if (body.empty() && std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) == 0){
 		_body = body;
 		return;
@@ -192,11 +196,9 @@ void HttpRequest::parseBody(const std::string &body){
 	}
 }
 
-
 bool HttpRequest::isInvalid() const {
 	return( _validity == INVALID_REQUEST);
 }
-
 
 std::string HttpRequest::getErrors() {
 	std::string res;

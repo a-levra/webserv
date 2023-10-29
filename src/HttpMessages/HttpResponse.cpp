@@ -189,9 +189,10 @@ void HttpResponse::GenerateErrorBody() {
 	coloredLog("Error page generated: ", "", RED);
 	coloredLog("Error code: ", toString(_statusCode), RED);
 	coloredLog("Error message: ", _statusMessage, RED);
-	setBody(GENERIC_CSS_STYLE);
 	appendBody("<html>"
+			  			 GENERIC_CSS_STYLE
 					"<body>"
+					NAVBAR
 							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
 							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
 							 "<h3>\n" + _request.getErrors() + "\n</h3>" \

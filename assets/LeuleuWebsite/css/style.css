@@ -35,7 +35,22 @@ button, .btn {
     color: #333;
     /*border: 1px solid #333;*/
 }
+a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    /*border: 1px solid #111;*/
 
+}
+a:hover {
+    transition: ease-in-out 0.3s;
+    background-color: #333;
+    /*color: black;*/
+    /*border: 1px solid #ccc;*/
+}
 .navbar {
     background-color: #333;
     position: fixed; /* Make the navbar fixed at the top */

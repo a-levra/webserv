@@ -1,4 +1,7 @@
 #include <fstream>
+#include <unistd.h>
+#include <cstdlib>
+#include <cstring>
 
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
@@ -57,12 +60,15 @@ void HttpResponse::build(Location &location) {
 		buildErrorPage(405);
 		return ;
 	}
+	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
 	if (_request.getMethod() == "GET")
 		this->buildGet(location);
 	else if (_request.getMethod() == "POST")
 		this->buildPost(location);
-//	else if (this->_method == "DELETE") //todo implement delete
-//		this->buildDelete(location);
+	else if (_request.getMethod() == "DELETE")
+		this->buildDelete(location);
+	else
+		this->buildErrorPage(501);
 }
 
 void HttpResponse::buildGet(Location &location) {
@@ -118,7 +124,21 @@ void HttpResponse::generateBody(Location &location) {
 
 void HttpResponse::buildPost(Location &location) {
 	getFileFromPostAndSaveIt();
+	updateHTML();
 	this->buildGet(location);
+}
+
+void HttpResponse::buildDelete(Location &location) {
+	coloredLog("Building DELETE response: ", "", BLUE);
+	_request.displayRequest();
+	std::string res = getResource(location);
+	coloredLog("resources : " ,res, BLUE);
+	std::string file = "/app/uploadedFiles" + res;
+	if (!fileExists(file))
+		this->buildErrorPage(404);
+	else if (std::remove(file.c_str()) != 0)
+		this->buildErrorPage(500);
+	updateHTML();
 }
 
 std::string & HttpResponse::buildErrorPage(int i) {

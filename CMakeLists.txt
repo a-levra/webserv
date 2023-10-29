@@ -51,4 +51,5 @@ add_executable(42_webserv
         src/server/Client.cpp
         include/server/Client.hpp
         src/utils/getPositionsOfWord.cpp
+        src/utils/updateHTML.cpp
 )

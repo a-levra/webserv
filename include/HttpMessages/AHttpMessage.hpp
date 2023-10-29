@@ -6,7 +6,7 @@
 
 #define HTTP_VERSION "HTTP/1.1"
 #define GENERIC_CSS_STYLE "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">"
-#define NAVBAR "<div class=\"navbar\"><a href=\"/\">Home</a><a href=\"/upload\">Upload</a></div>"
+#define NAVBAR "<div class=\"navbar\"><a href=\"/\">Home</a><a href=\"/upload\">Upload</a><a href=\"/delete\">Delete</a></div>"
 class AHttpMessage {
 	public:
 		AHttpMessage();

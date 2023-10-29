@@ -30,6 +30,7 @@ class HttpResponse : public AHttpMessage {
 		HttpRequest &_request;
 		std::string getResource(Location &location) const;
 		const std::string *tryGetFile(Location &location, const std::string & resource);
+		void buildDelete(Location &location);
 };
 
 #endif

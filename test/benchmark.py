@@ -35,7 +35,8 @@ class TestBenchmark(unittest.TestCase):
 
     def test_single_page(self):
         siege_process = subprocess.Popen(
-            ["siege", "-b", f"-t{30}s", "http://127.0.0.1:9000/"],
+            ["siege", "-b", f"-t{BENCHMARK_TIME_SECONDS}s",
+             "http://127.0.0.1:9000/"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = siege_process.communicate()
         siege_process.wait()

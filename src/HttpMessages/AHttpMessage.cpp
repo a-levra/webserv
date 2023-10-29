@@ -1,8 +1,10 @@
+#include "HttpMessages/AHttpMessage.hpp"
+
 #include <iostream>
 #include <exception>
 
-#include "HttpMessages/AHttpMessage.hpp"
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 
 AHttpMessage::AHttpMessage(void) : _statusCode(-1) {}
@@ -32,21 +34,20 @@ void AHttpMessage::setRawRequest(std::string string) {
 }
 
 void AHttpMessage::display(std::string message) {
-	std::cout << "\"" << message << "\"" << std::endl;
+	logging::debug("\"" + message + "\"");
 }
 
 void AHttpMessage::displayRequest() {
-	printBoldThenThin("Method: ", _method);
-	printBoldThenThin("Path: ", _requestUri);
-	printBoldThenThin("Version: ", _httpVersion);
-	printBoldThenThin("Headers:", "");
-
+	logging::debug("Method: " + _method);
+	logging::debug("Path: " + _requestUri);
+	logging::debug("Version: " + _httpVersion);
+	logging::debug("Headers:");
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
-		printBoldThenThin("\t" + it->first + ": ", it->second);
+		logging::debug("\t" + it->first + ": " + it->second);
 	}
-//	printBoldThenThin("Body: ", _body);
-//	printBoldThenThin("Raw request: ", _rawMessage);
+//	logging::debug("Body: " + _body);
+//	logging::debug("Raw request: " + _rawMessage);
 }
 
 void AHttpMessage::setVersion() {

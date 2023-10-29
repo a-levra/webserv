@@ -1,4 +1,5 @@
-#include "../include/utils/utils.hpp"
+#include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 void coloredLog(std::string str1, std::string str2, colors color)
 {
@@ -27,5 +28,5 @@ void coloredLog(std::string str1, std::string str2, colors color)
 			colorCode = "\033[1;37m";
 			break;
 	}
-	printBoldThenThin(colorCode + str1, str2);
+	logging::debug(colorCode + str1 + str2);
 }

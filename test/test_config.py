@@ -91,6 +91,16 @@ class TestConfigFile(unittest.TestCase):
                                       "invalid_cgi_path.conf")
         self.assertEqual(return_code, 1)
 
+    def test_alias(self):
+        return_code = self.run_server(CONFIG_DIRECTORY +
+                                      "alias.conf")
+        self.assertEqual(return_code, 0)
+
+    def test_invalid_alias(self):
+        return_code = self.run_server(CONFIG_DIRECTORY +
+                                      "invalid_alias.conf")
+        self.assertEqual(return_code, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

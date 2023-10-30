@@ -61,6 +61,15 @@ void HttpResponse::build() {
 		return ;
 	}
 	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
+	if (!checkRequestMaxBodySize()) {
+		this->buildErrorPage(PAYLOAD_TOO_LARGE);
+		return;
+	}
+	if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST){
+		_rawMessage = "";
+		return;
+	}
+
 	if (_request.getMethod() == "GET")
 		this->buildGet();
 	else if (_request.getMethod() == "POST")
@@ -68,7 +77,18 @@ void HttpResponse::build() {
 	else if (_request.getMethod() == "DELETE")
 		this->buildDelete();
 	else
-		this->buildErrorPage(501);
+		this->buildErrorPage(NOT_IMPLEMENTED);
+}
+
+bool HttpResponse::checkRequestMaxBodySize() {
+	if ((float)_request.getBody().size() / 1000000 > (float)_location->getClientMaxBodySize()){
+		logging::debug("Payload to large : ");
+		logging::debug("\tBody size : " + toString(_request.getBody().size() / 1000000) + "m");
+		logging::debug("Max body size : " + toString(_location->getClientMaxBodySize()) + "m");
+		_request.addError(HttpRequest::PAYLOAD_TOO_LARGE_ERROR);
+		return false;
+	}
+	return true;
 }
 
 void HttpResponse::buildGet() {
@@ -208,13 +228,26 @@ void HttpResponse::GenerateErrorBody() {
 	logging::debug("Error page generated: ");
 	logging::debug("Error code: " + toString(_statusCode));
 	logging::debug("Error message: " + _statusMessage);
+	std::string additionnalInfo;
+	if (_statusCode == PAYLOAD_TOO_LARGE){
+		additionnalInfo = "The maximum size of the payload for \"" + _location->getURI() + "\" is " + toString(this->_location->getClientMaxBodySize()) + " Mb.";
+		additionnalInfo += "</h3><h3>Current payload size: " + toString(_request.getBody().size() / 1000000) + " Mb.";
+		if (_request.getHeader(CONTENT_LENGTH)){
+			additionnalInfo += "</h3><h3>Total payload you tried to send: ";
+			std::string payloadSizeStr = *(_request.getHeader(CONTENT_LENGTH));
+			size_t payloadSize = std::strtod(payloadSizeStr.c_str(), 0);
+			additionnalInfo += toString(payloadSize / 1000000) + " Mb.";
+		}
+	}
+	else
+		additionnalInfo = _request.getErrors();
 	appendBody("<html>"
 			  			 GENERIC_CSS_STYLE
 					"<body>"
 					NAVBAR
 							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
 							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
-							 "<h3>\n" + _request.getErrors() + "\n</h3>" \
+							 "<h3>\n" + additionnalInfo + "\n</h3>" \
 					"</body></html>");
 
 }
@@ -233,7 +266,7 @@ void HttpResponse::getFileFromPostAndSaveIt() {
 		}
 		catch (std::exception &e) {
 			coloredLog("Error: ", e.what(), RED);
-			this->buildErrorPage(500);
+			this->buildErrorPage(INTERNAL_SERVER_ERROR);
 		}
 	}
 	if (!createFile(filename, fileContent)){

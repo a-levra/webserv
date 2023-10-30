@@ -43,7 +43,7 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	std::map<enum LEXER_TOKENS, std::string> lexerToken;
 	ERRORS lexerValidity = autoLexer(lexerToken);
 	getLexerParserError(lexerValidity);
-	if (lexerValidity != ALL_LEXER_TOKENS_VALID){
+	if (lexerValidity != ALL_LEXER_TOKENS_VALID) {
 		_errors.push_back(lexerValidity);
 		coloredLog("Lexer error : ", getErrors(), RED);
 		_validity = INCOMPLETE_REQUEST;
@@ -57,7 +57,7 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 }
 
 enum HttpRequest::ERRORS HttpRequest::autoLexer
-	(std::map<enum LEXER_TOKENS,std::string> &lexerTokens){
+	(std::map<enum LEXER_TOKENS, std::string> &lexerTokens) {
 
 	if (_rawMessage.size() <= SHORTEST_HTTP_REQUEST_POSSIBLE)
 		return (RAW_MESSAGE_TOO_SHORT);
@@ -77,7 +77,8 @@ enum HttpRequest::ERRORS HttpRequest::autoLexer
 		lexerTokens[TOK_METHOD] = requestLine[0];
 		lexerTokens[TOK_REQUEST_URI] = requestLine[1];
 		lexerTokens[TOK_HTTP_VERSION] = requestLine[2];
-		lexerTokens[TOK_HEADERS] = _rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
+		lexerTokens[TOK_HEADERS] =
+			_rawMessage.substr(firstClrfPosition + CRLF_SIZE, doubleClrfPos - firstClrfPosition - CRLF_SIZE);
 		lexerTokens[TOK_BODY] = _rawMessage.substr(doubleClrfPos + DOUBLE_CRLF_SIZE);
 		return (ALL_LEXER_TOKENS_VALID);
 	}
@@ -102,7 +103,7 @@ void HttpRequest::parseRequestLine(std::string &method, std::string &requestUri,
 void HttpRequest::parseMethod(const std::string &method) {
 	if (method != "GET" &&
 		method != "POST" &&
-		method != "DELETE"){
+		method != "DELETE") {
 		_validity = INVALID_REQUEST;
 		_errors.push_back(UNSUPPORTED_METHOD);
 	}
@@ -116,18 +117,18 @@ void HttpRequest::parseRequestURI(const std::string &requestUri) {
 	//it's useful to save the original requestUri first for error logging purposes
 	_requestUri = requestUri;
 	size_t requestUriSize = requestUri.size();
-	const char * c_str_uri = requestUri.c_str();
+	const char *c_str_uri = requestUri.c_str();
 	for (size_t i = 0; i < requestUriSize; i++) {
-		if (!isalnum(c_str_uri[i]) && c_str_uri[i] != '/' && c_str_uri[i] != '.' && c_str_uri[i] != '-'){
+		if (!isalnum(c_str_uri[i]) && c_str_uri[i] != '/' && c_str_uri[i] != '.' && c_str_uri[i] != '-') {
 			_validity = INVALID_REQUEST;
 			_errors.push_back(REQUEST_URI_NOT_ALNUM);
 			return;
 		}
 
-		if (( i + 1 < requestUriSize) && (
+		if ((i + 1 < requestUriSize) && (
 			(c_str_uri[i] == '.' && c_str_uri[i + 1] == '.') ||
 				((c_str_uri[i] == '/') && (c_str_uri[i + 1] == '/'))
-		)){
+		)) {
 			_validity = INVALID_REQUEST;
 			_errors.push_back(REQUEST_URI_FORBIDDEN_SYNTAX);
 			return;
@@ -137,7 +138,7 @@ void HttpRequest::parseRequestURI(const std::string &requestUri) {
 }
 
 void HttpRequest::parseHttpVersion(const std::string &httpVersion) {
-	if (httpVersion != HTTP_VERSION){
+	if (httpVersion != HTTP_VERSION) {
 		_validity = INVALID_REQUEST;
 		_errors.push_back(INVALID_HTTP_VERSION);
 	}
@@ -151,8 +152,8 @@ void HttpRequest::parseHttpHeaders(const std::string &headers) {
 	std::vector<std::string> headersVector = splitDelimiter(headers, CRLF);
 
 	std::vector<std::string>::iterator it;
-	for (it = headersVector.begin(); it != headersVector.end(); it++){
-		if (!parseHeader(*it)){
+	for (it = headersVector.begin(); it != headersVector.end(); it++) {
+		if (!parseHeader(*it)) {
 			return;
 		}
 	}
@@ -177,88 +178,78 @@ bool HttpRequest::parseHeader(const std::string &line) {
 	return true;
 }
 
-void HttpRequest::parseBody(const std::string &body){
+void HttpRequest::parseBody(const std::string &body) {
 	_body = body;
-	if (body.empty() && std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) == 0){
+	if (body.empty() && std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) == 0) {
 		_body = body;
 		return;
 	}
-	if (body.empty()){
+	if (body.empty()) {
 		_errors.push_back(BODY_WITHOUT_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
 	}
-	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) > _body.size()){
+	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) > _body.size()) {
 		_errors.push_back(BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH);
-		_validity = INCOMPLETE_REQUEST;
+		_validity = VALID_AND_INCOMPLETE_REQUEST;
 	}
-	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) < _body.size()){
+	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) < _body.size()) {
 		_errors.push_back(BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
 	}
 }
 
 bool HttpRequest::isInvalid() const {
-	return( _validity == INVALID_REQUEST);
+	return (_validity == INVALID_REQUEST);
 }
 
 std::string HttpRequest::getErrors() {
 	std::string res;
 	std::vector<ERRORS>::iterator it;
 	it = _errors.begin();
-	for (;it != _errors.end(); it++){
-		res.append(getLexerParserError(*it));
+	for (; it != _errors.end(); it++) {
+		res.append(getLexerParserError(*it) + "</h3><h3>");
 	}
 	return res;
 }
 
 std::string HttpRequest::getLexerParserError(HttpRequest::ERRORS validity) {
 	switch (validity) {
-		case RAW_MESSAGE_TOO_SHORT:
-			return ("Raw message too short : " + _rawMessage );
+		case RAW_MESSAGE_TOO_SHORT: return ("Raw message too short : " + _rawMessage);
 			break;
-		case NO_CLRF_FOUND:
-			return ("No CRLF found in raw message : " + _rawMessage);
+		case NO_CLRF_FOUND: return ("No CRLF found in raw message : " + _rawMessage);
 			break;
-		case NO_CLRFCLRF_FOUND:
-			return ("No CLRFCLRF found in raw message : " + _rawMessage );
+		case NO_CLRFCLRF_FOUND: return ("No CLRFCLRF found in raw message : " + _rawMessage);
 			break;
-		case REQUEST_LINE_INVALID:
-			return ("Request line invalid : " + _rawMessage);
+		case REQUEST_LINE_INVALID: return ("Request line invalid : " + _rawMessage);
 			break;
-		case ALL_LEXER_TOKENS_VALID:
-			return ("Lexer tokens are valid");
+		case ALL_LEXER_TOKENS_VALID: return ("Lexer tokens are valid");
 			break;
-		case UNSUPPORTED_METHOD:
-			return ("Unsupported method : " "\"" + _method + "\"");
+		case UNSUPPORTED_METHOD: return ("Unsupported method : " "\"" + _method + "\"");
 			break;
-		case REQUEST_URI_NOT_ALNUM:
-			return ("Request URI not alphanumeric : " "\"" + _requestUri + "\"");
+		case REQUEST_URI_NOT_ALNUM: return ("Request URI not alphanumeric : " "\"" + _requestUri + "\"");
 			break;
 		case REQUEST_URI_FORBIDDEN_SYNTAX:
 			return ("Request URI : \"..\" or \"//\" forbidden : " "\"" + _requestUri + "\"");
 			break;
-		case INVALID_HTTP_VERSION:
-			return ("Invalid HTTP version : " "\"" + _httpVersion + "\"");
+		case INVALID_HTTP_VERSION: return ("Invalid HTTP version : " "\"" + _httpVersion + "\"");
 			break;
-		case NO_COLON_FOUND_IN_HEADER:
-			return ("No colon found in header : " "\"" + _rawMessage + "\"");
+		case NO_COLON_FOUND_IN_HEADER: return ("No colon found in header : " "\"" + _rawMessage + "\"");
 			break;
-		case NO_VALUE_FOUND_FOR_HEADER:
-			return ("No value found for header : " "\"" + _rawMessage + "\"");
+		case NO_VALUE_FOUND_FOR_HEADER: return ("No value found for header : " "\"" + _rawMessage + "\"");
 			break;
-		case BODY_WITHOUT_CONTENT_LENGTH:
-			return ("Body without content length : " "\"" + _rawMessage + "\"");
+		case BODY_WITHOUT_CONTENT_LENGTH: return ("Body without content length : " "\"" + _rawMessage + "\"");
 			break;
 		case BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH:
-			return ("Body length not matching Content-Lenght :"
-					"\nBody size : " +
+			return ("Body length not matching Content-Length :"
+					"<h4>Body size : " +
 				toString(_body.size()) +
-				"\nContent-Length : " +
-				_headers[CONTENT_LENGTH]);
+				"</h4><h4>Content-Length : " +
+				_headers[CONTENT_LENGTH] + "</h4>");
 			break;
-			default:
-				return ("Unknown error");
-				break;
+		case PAYLOAD_TOO_LARGE_ERROR: return ("Payload too large");
+			break;
+		default: return ("Unknown error");
+			break;
 	}
 }
 
@@ -268,4 +259,8 @@ const std::string &HttpRequest::getRequestUri() {
 
 const HttpRequest::REQUEST_VALIDITY &HttpRequest::getValidity() const {
 	return _validity;
+}
+
+void HttpRequest::addError(HttpRequest::ERRORS error) {
+	_errors.push_back(error);
 }

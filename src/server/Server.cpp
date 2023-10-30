@@ -150,8 +150,7 @@ void Server::_handleSockets() {
 		if (isDisconnect) {
 			_pollFd.erase(_pollFd.begin() + i);
 			logging::debug("a client has been disconnected");
-		}
-		else
+		} else
 			i++;
 	}
 }
@@ -198,14 +197,15 @@ bool Server::_handleClient(struct pollfd &pollSocket, size_t clientIndex) {
 	}
 	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
 	if (validity == HttpRequest::INVALID_REQUEST
-		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
+		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST
+		|| validity == HttpRequest::VALID_AND_INCOMPLETE_REQUEST)
 		_sendClientRequest(client);
 	return true;
 }
 
 bool Server::_readClientRequest(Client &client) {
 	char buffer[READ_BUFFER_SIZE];
-	std::string	strRequest;
+	std::string strRequest;
 
 	ssize_t bytesRead = recv(client.getFD(), buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
@@ -223,8 +223,12 @@ void Server::_sendClientRequest(Client &client) {
 //	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this));
-	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
-	client.setRawRequest("");
+	if (!response.empty()) {
+		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
+		client.setRawRequest("");
+	}
+	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
+		client.disconnect();
 //	coloredLog("Response: ", response, BLUE);
 }
 

@@ -6,7 +6,6 @@
 #include "utils/utils.hpp"
 #include "logger/logging.hpp"
 
-
 AHttpMessage::AHttpMessage(void) : _statusCode(-1) {}
 
 AHttpMessage::AHttpMessage(std::string raw) : _statusCode(-1) {
@@ -99,4 +98,3 @@ const std::string & AHttpMessage::getMethod() const {
 const std::string &AHttpMessage::getBody() const {
 	return _body;
 }
-

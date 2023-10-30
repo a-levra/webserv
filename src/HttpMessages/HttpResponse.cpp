@@ -1,7 +1,11 @@
 #include <fstream>
+#include <unistd.h>
+#include <cstdlib>
+#include <cstring>
 
 #include "HttpMessages/HttpResponse.hpp"
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 HttpResponse::HttpResponse(class HttpRequest& r) : _request(r) {}
 
@@ -57,12 +61,15 @@ void HttpResponse::build(Location &location) {
 		buildErrorPage(405);
 		return ;
 	}
+	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
 	if (_request.getMethod() == "GET")
 		this->buildGet(location);
 	else if (_request.getMethod() == "POST")
 		this->buildPost(location);
-//	else if (this->_method == "DELETE") //todo implement delete
-//		this->buildDelete(location);
+	else if (_request.getMethod() == "DELETE")
+		this->buildDelete(location);
+	else
+		this->buildErrorPage(501);
 }
 
 void HttpResponse::buildGet(Location &location) {
@@ -118,7 +125,21 @@ void HttpResponse::generateBody(Location &location) {
 
 void HttpResponse::buildPost(Location &location) {
 	getFileFromPostAndSaveIt();
+	updateHTML();
 	this->buildGet(location);
+}
+
+void HttpResponse::buildDelete(Location &location) {
+	logging::debug("Building DELETE response: ");
+	_request.displayRequest();
+	std::string res = getResource(location);
+	logging::debug("Resource: " + res);
+	std::string file = "/app/uploadedFiles" + res;
+	if (!fileExists(file))
+		this->buildErrorPage(404);
+	else if (std::remove(file.c_str()) != 0)
+		this->buildErrorPage(500);
+	updateHTML();
 }
 
 std::string & HttpResponse::buildErrorPage(int i) {
@@ -186,12 +207,13 @@ const std::string * HttpResponse::getFirstValidIndex(const Location &location) c
 }
 
 void HttpResponse::GenerateErrorBody() {
-	coloredLog("Error page generated: ", "", RED);
-	coloredLog("Error code: ", toString(_statusCode), RED);
-	coloredLog("Error message: ", _statusMessage, RED);
-	setBody(GENERIC_CSS_STYLE);
+	logging::debug("Error page generated: ");
+	logging::debug("Error code: " + toString(_statusCode));
+	logging::debug("Error message: " + _statusMessage);
 	appendBody("<html>"
+			  			 GENERIC_CSS_STYLE
 					"<body>"
+					NAVBAR
 							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
 							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
 							 "<h3>\n" + _request.getErrors() + "\n</h3>" \
@@ -200,7 +222,7 @@ void HttpResponse::GenerateErrorBody() {
 }
 
 void HttpResponse::getFileFromPostAndSaveIt() {
-	coloredLog("Building POST response: ", "", BLUE);
+	logging::debug("Building POST response ");
 
 	std::string *boundary = _request.getHeader("Content-Type");
 	std::string filename = "file";
@@ -216,7 +238,9 @@ void HttpResponse::getFileFromPostAndSaveIt() {
 			this->buildErrorPage(500);
 		}
 	}
-	createFile(filename, fileContent);
+	if (!createFile(filename, fileContent)){
+		this->buildErrorPage(500);
+	}
 }
 
 void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
@@ -243,7 +267,6 @@ std::string HttpResponse::getResource(Location &location) const {
 	std::string resource;
 
 	resource = _requestUri.substr(location.getURI().length());
-	coloredLog("resource: ", resource, YELLOW);
 	return resource;
 }
 

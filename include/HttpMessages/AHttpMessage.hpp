@@ -5,7 +5,8 @@
 #include <map>
 
 #define HTTP_VERSION "HTTP/1.1"
-#define GENERIC_CSS_STYLE "<style>\nbody {\nbackground-color: #111;\ncolor: #fff;\nfont-family: Arial, sans-serif;\ndisplay: flex;\njustify-content: center;\nalign-items: center;\nflex-direction: column;\nheight: 100vh;\nmargin: 0;\n}\n</style>\n"
+#define GENERIC_CSS_STYLE "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">"
+#define NAVBAR "<div class=\"navbar\"><a href=\"/\">Home</a><a href=\"/upload\">Upload</a><a href=\"/delete\">Delete</a></div>"
 class AHttpMessage {
 	public:
 		AHttpMessage();

@@ -220,12 +220,12 @@ bool Server::_readClientRequest(Client &client) {
 
 void Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
-	httpRequest.displayRequest();
+//	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this));
 	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 	client.setRawRequest("");
-	coloredLog("Response: ", response, BLUE);
+//	coloredLog("Response: ", response, BLUE);
 }
 
 void Server::_printError(const std::string &error) {

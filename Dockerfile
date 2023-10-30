@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     telnet \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /app/uploaded_files
+    && mkdir -p /app/uploadedFiles
 
 
 COPY . /app

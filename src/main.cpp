@@ -17,6 +17,7 @@ static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
+	updateHTML();
 	Options options;
 
 	if (!getOptions(argc, argv, options))

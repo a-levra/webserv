@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload</title>
+    <link rel="stylesheet" type="text/css" href="assets/LeuleuWebsite/css/style.css">
+</head>
+<body>
+<div class="navbar">
+    <a href="/">Home</a>
+    <a href="/upload">Upload</a>
+    <a href="/delete">Delete</a>
+</div>
+<h1>Delete File</h1>
+<label for="fileName">Enter the file name to delete:</label>
+<input type="text" id="fileName" placeholder="your_file_to_delete.txt">
+<button class="minimal-button" id="deleteButton">Delete File</button>
+<h1></h1>
+<script>
+    document.getElementById('deleteButton').addEventListener('click', function() {
+      const fileName = document.getElementById('fileName').value;
+      // Send a DELETE request to delete the specified file
+      fetch(`/delete/${fileName}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.status === 200) {
+          alert(`File '${fileName}' deleted successfully.`);
+        } else {
+          alert(`Failed to delete the file '${fileName}'.`);
+        }
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+      });
+    });
+</script>
+<button class="minimal-button" id="refreshButton">Refresh</button>
+
+<h3>List of uploaded files :</h3>

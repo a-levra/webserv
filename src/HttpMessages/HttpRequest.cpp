@@ -1,4 +1,5 @@
 #include "HttpMessages/HttpRequest.hpp"
+#include "logger/logging.hpp"
 
 #include <iostream>
 #include <stdlib.h>

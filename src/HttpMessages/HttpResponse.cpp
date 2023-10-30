@@ -31,23 +31,23 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 std::string HttpResponse::getResponse(Server &server) {
 
 	if (_request.isInvalid())
-		return buildErrorPage(400);
+		return buildErrorPage(BAD_REQUEST);
 
 	const std::string *host = _request.getHeader("Host");
 	if (host == NULL)
-		return buildErrorPage(400);
+		return buildErrorPage(BAD_REQUEST);
 
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL)
-		return buildErrorPage(404);
+		return buildErrorPage(NOT_FOUND);
 
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_requestUri = _request.getRequestUri();
 	coloredLog("URI requested: ", _requestUri, PURPLE);
 	Location *loc = vs->getLocation(_requestUri);
 	if (loc == NULL)
-		return buildErrorPage(404);
+		return buildErrorPage(NOT_FOUND);
 	coloredLog("Location best match: ", "", GREEN);
 	loc->display();
 	this->build(*loc);
@@ -56,9 +56,8 @@ std::string HttpResponse::getResponse(Server &server) {
 
 void HttpResponse::build(Location &location) {
 
-
 	if ( !location.isAllowedMethod(_request.getMethod()) ){
-		buildErrorPage(405);
+		buildErrorPage(METHOD_NOT_ALLOWED);
 		return ;
 	}
 	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
@@ -142,34 +141,31 @@ void HttpResponse::buildDelete(Location &location) {
 	updateHTML();
 }
 
-std::string & HttpResponse::buildErrorPage(int i) {
+std::string & HttpResponse::buildErrorPage(int errorCode) {
 	std::string response;
-	setStatusCode(i);
-	std::string error = toString(i);
+	setStatusCode(errorCode);
+	std::string error = toString(errorCode);
 	std::string errorName;
-	switch (i) {
-		case 400:
+	switch (errorCode) {
+		case BAD_REQUEST:
 			errorName = "Bad Request";
 			break;
-		case 403:
-			errorName = "Forbidden";
-			break;
-		case 404:
+		case NOT_FOUND:
 			errorName = "Not Found";
 			break;
-		case 405:
+		case METHOD_NOT_ALLOWED:
 			errorName = "Method Not Allowed";
 			break;
-		case 413:
+		case PAYLOAD_TOO_LARGE:
 			errorName = "Payload Too Large";
 			break;
-		case 500:
+		case INTERNAL_SERVER_ERROR:
 			errorName = "Internal Server Error";
 			break;
-		case 501:
+		case NOT_IMPLEMENTED:
 			errorName = "Not Implemented";
 			break;
-		case 505:
+		case HTTP_VERSION_NOT_SUPPORTED:
 			errorName = "HTTP Version Not Supported";
 			break;
 		default:
@@ -278,3 +274,5 @@ const std::string *HttpResponse::tryGetFile(Location &location, const std::strin
 	coloredLog("File not found: ", pathToFile, RED);
 	return NULL;
 }
+
+

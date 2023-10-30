@@ -7,6 +7,17 @@
 #define HTTP_VERSION "HTTP/1.1"
 #define GENERIC_CSS_STYLE "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">"
 #define NAVBAR "<div class=\"navbar\"><a href=\"/\">Home</a><a href=\"/upload\">Upload</a><a href=\"/delete\">Delete</a></div>"
+
+#define BAD_REQUEST 400
+#define NOT_FOUND 404
+#define METHOD_NOT_ALLOWED 405
+#define PAYLOAD_TOO_LARGE 413
+#define INTERNAL_SERVER_ERROR 500
+#define NOT_IMPLEMENTED 501
+#define HTTP_VERSION_NOT_SUPPORTED 505
+
+
+
 class AHttpMessage {
 	public:
 		AHttpMessage();
@@ -19,6 +30,7 @@ class AHttpMessage {
 
 		void setVersion();
 		void setStatusCode(int i);
+		int getStatusCode();
 		void setStatusMessage(std::string statusMessage);
 		void setHeaders(std::string header, std::string content);
 		std::string * getHeader(const std::string &header);

@@ -57,6 +57,10 @@ void AHttpMessage::setStatusCode(int code) {
 	this->_statusCode = code;
 }
 
+int AHttpMessage::getStatusCode() {
+	return this->_statusCode;
+}
+
 void AHttpMessage::setStatusMessage(std::string statusMessage) {
 	this->_statusMessage = statusMessage;
 }

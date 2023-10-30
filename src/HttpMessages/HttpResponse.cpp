@@ -45,37 +45,37 @@ std::string HttpResponse::getResponse(Server &server) {
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_requestUri = _request.getRequestUri();
 	coloredLog("URI requested: ", _requestUri, PURPLE);
-	Location *loc = vs->getLocation(_requestUri);
-	if (loc == NULL)
+	_location = vs->getLocation(_requestUri);
+	if (_location == NULL)
 		return buildErrorPage(NOT_FOUND);
 	coloredLog("Location best match: ", "", GREEN);
-	loc->display();
-	this->build(*loc);
+	_location->display();
+	this->build();
 	return _rawMessage;
 }
 
-void HttpResponse::build(Location &location) {
+void HttpResponse::build() {
 
-	if ( !location.isAllowedMethod(_request.getMethod()) ){
+	if ( !_location->isAllowedMethod(_request.getMethod()) ){
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return ;
 	}
 	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
 	if (_request.getMethod() == "GET")
-		this->buildGet(location);
+		this->buildGet();
 	else if (_request.getMethod() == "POST")
-		this->buildPost(location);
+		this->buildPost();
 	else if (_request.getMethod() == "DELETE")
-		this->buildDelete(location);
+		this->buildDelete();
 	else
 		this->buildErrorPage(501);
 }
 
-void HttpResponse::buildGet(Location &location) {
+void HttpResponse::buildGet() {
 	std::string response;
 	coloredLog("Building GET response: ", "", GREEN);
 
-	this->generateBody(location);
+	this->generateBody();
 	this->setHeader("Date", getDate());
 	this->setHeader("Server", "webserv");
 	this->setHeader("Content-Length", toString(_body.length()));
@@ -90,26 +90,26 @@ void HttpResponse::buildGet(Location &location) {
 	_rawMessage = response;
 }
 
-void HttpResponse::generateBody(Location &location) {
+void HttpResponse::generateBody() {
 	const std::string *file;
 
-	std::string res = getResource(location);
+	std::string res = getResource();
 	if (!res.empty()){
-		file = tryGetFile(location, res);
+		file = tryGetFile(res);
 		if (file == NULL){
 			this->buildErrorPage(404);
 			return ;
 		}
 	}
 	else
-		file = getFirstValidIndex(location);
+		file = getFirstValidIndex();
 
 	if (file == NULL){
 		coloredLog("No index valid: ", _requestUri, RED);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *file );
+	_body = readFileToString( _location->getRoot() + _location->getURI() + "/" + *file );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -122,16 +122,16 @@ void HttpResponse::generateBody(Location &location) {
 	}
 }
 
-void HttpResponse::buildPost(Location &location) {
+void HttpResponse::buildPost() {
 	getFileFromPostAndSaveIt();
 	updateHTML();
-	this->buildGet(location);
+	this->buildGet();
 }
 
-void HttpResponse::buildDelete(Location &location) {
+void HttpResponse::buildDelete() {
 	logging::debug("Building DELETE response: ");
 	_request.displayRequest();
-	std::string res = getResource(location);
+	std::string res = getResource();
 	logging::debug("Resource: " + res);
 	std::string file = "/app/uploadedFiles" + res;
 	if (!fileExists(file))
@@ -187,18 +187,20 @@ void HttpResponse::setHeader(const std::string& header, const std::string& conte
 	_headers[header] = content;
 }
 
-const std::string * HttpResponse::getFirstValidIndex(const Location &location) const {
-	const std::vector<std::string> &index = location.getIndex();
+const std::string * HttpResponse::getFirstValidIndex() const {
+	if (!_location)
+		return NULL;
+	const std::vector<std::string> &index = _location->getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + location.getURI() + "/" + *it;
+		std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + *it;
 		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
-	coloredLog("No index found: ", location.getURI(), RED);
+	coloredLog("No index found: ", _location->getURI(), RED);
 	return NULL;
 }
 
@@ -259,15 +261,17 @@ void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
 		fileContent.erase(fileContent.size() - 2, 2);
 }
 
-std::string HttpResponse::getResource(Location &location) const {
+std::string HttpResponse::getResource() const {
 	std::string resource;
-
-	resource = _requestUri.substr(location.getURI().length());
+	if (_location)
+		resource = _requestUri.substr(_location->getURI().length());
 	return resource;
 }
 
-const std::string *HttpResponse::tryGetFile(Location &location, const std::string &resource) {
-	std::string pathToFile = location.getRoot() + location.getURI() + "/" + resource;
+const std::string *HttpResponse::tryGetFile(const std::string &resource) {
+	if (!_location)
+		return NULL;
+	std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
 	coloredLog("pathToFile: ", pathToFile, YELLOW);
 	if (fileExists(pathToFile))
 		return &resource;

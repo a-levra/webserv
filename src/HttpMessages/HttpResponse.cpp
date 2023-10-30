@@ -222,7 +222,7 @@ void HttpResponse::GenerateErrorBody() {
 }
 
 void HttpResponse::getFileFromPostAndSaveIt() {
-	logging::debug("Building POST response ", "", BLUE);
+	logging::debug("Building POST response ");
 
 	std::string *boundary = _request.getHeader("Content-Type");
 	std::string filename = "file";

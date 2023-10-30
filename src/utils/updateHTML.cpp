@@ -1,4 +1,5 @@
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 #include <cstring>
 #include <unistd.h>
@@ -6,11 +7,7 @@
 
 
 int updateHTML(){
-	coloredLog("updating HTML", "", RED);
-	coloredLog("updating HTML", "", BLUE);
-	coloredLog("updating HTML", "", YELLOW);
-	coloredLog("updating HTML", "", PURPLE);
-	coloredLog("updating HTML", "", GREEN);
+	logging::debug("updating HTML");
 
 	int pid = fork();
 	if (pid < 0)
@@ -20,7 +17,7 @@ int updateHTML(){
 		char *args[] = {file, NULL};
 		execve(file, args, NULL);
 		free(file);
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 	return EXIT_SUCCESS;
 }

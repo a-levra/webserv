@@ -50,19 +50,19 @@ ConfigLexer::codeError	ConfigLexer::getCodeError() const {
 std::string ConfigLexer::getError() const {
 	switch (_error) {
 		case NO_ERROR:
-			return "Success";
+			return "success";
 		case INVALID_FILE:
-			return "Unable to open file";
+			return "unable to open file";
 		case EMPTY_DIRECTIVE:
-			return "Empty directive found";
+			return "empty directive found";
 		case UNCLOSE_DIRECTIVE:
-			return "Unclose directive found";
+			return "unclose directive found";
 		case UNCLOSE_CONTEXT:
-			return "Unclose context found";
+			return "unclose context found";
 		case CLOSE_UNOPENED_CONTEXT:
-			return "Closing unopened context";
+			return "closing unopened context";
 		case EMPTY_NAME_CONTEXT:
-			return "Empty name context";
+			return "empty name context";
 	}
 	return "";
 }

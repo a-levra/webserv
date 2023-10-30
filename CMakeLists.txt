@@ -50,6 +50,13 @@ add_executable(42_webserv
         src/utils/createFile.cpp
         src/server/Client.cpp
         include/server/Client.hpp
+        src/logger/Logger.cpp
+        include/logger/logging.hpp
+        src/argument.cpp
+        src/options.cpp
+        include/options.hpp
+        src/logger/logging.cpp
         src/utils/getPositionsOfWord.cpp
         src/utils/updateHTML.cpp
+        include/argument.hpp
 )

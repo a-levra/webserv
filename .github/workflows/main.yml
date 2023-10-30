@@ -11,9 +11,31 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
-        
+        os: [ubuntu-22.04, macos-12]
+
     steps:
-    - uses: actions/checkout@v3
-    - name: make
-      run: make
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Set up Python Modules
+        run: pip3 install requests
+
+
+      - name: Tests
+        run: make test
+
+      - name: Benchmark
+        run: |
+          if [[ ${{ matrix.os }} == 'ubuntu-22.04' ]]; then
+            sudo apt-get install -y siege
+          elif [[ ${{ matrix.os }} == 'macos-12' ]]; then
+            sudo sysctl -w net.inet.tcp.msl=1000
+            brew install siege
+          fi
+          make benchmark

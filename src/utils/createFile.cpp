@@ -2,10 +2,13 @@
 #include <fstream>
 
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 void createFile(const std::string &filename, const std::string &fileContent) {
+
 	coloredLog("Creating file: ", filename, GREEN);
 //	coloredLog("File content: ", fileContent, GREEN);
+
 	std::ofstream file;
 	file.open(("uploadedFiles/" + filename).c_str());
 	file << fileContent;

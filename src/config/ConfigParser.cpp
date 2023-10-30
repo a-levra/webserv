@@ -20,6 +20,7 @@ ConfigParser::ConfigParser(): _codeError(NO_ERROR) {
 	_directiveFunctions["server_name"] = &ConfigParser::_parseServerName;
 	_directiveFunctions["return"] = &ConfigParser::_parseReturn;
 	_directiveFunctions["cgi_path"] = &ConfigParser::_parseCGIPath;
+	_directiveFunctions["alias"] = &ConfigParser::_parseAlias;
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
@@ -342,6 +343,12 @@ bool ConfigParser::_parseCGIPath(const std::string &directiveContent) {
 			return false;
 	}
 	return true;
+}
+
+bool ConfigParser::_parseAlias(const std::string &directiveContent) {
+	std::vector<std::string> arguments = splitWhiteSpace(directiveContent);
+
+	return (arguments.size() == 1);
 }
 
 bool ConfigParser::_isEqualVirtualServersIP(const virtualServer& virtualServer1,

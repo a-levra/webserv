@@ -38,14 +38,16 @@ Location::~Location(void) {}
 Location &Location::operator=(const Location &other) {
 	if (this == &other)
 		return *this;
-	this->_URI = other._URI;
-	this->_root = other._root;
-	this->_index = other._index;
-	this->_allowMethods = other._allowMethods;
-	this->_errorPage = other._errorPage;
-	this->_return = other._return;
-	this->_clientMaxBodySize = other._clientMaxBodySize;
-	this->_autoIndex = other._autoIndex;
+	_URI = other._URI;
+	_root = other._root;
+	_alias = other._alias;
+	_index = other._index;
+	_allowMethods = other._allowMethods;
+	_errorPage = other._errorPage;
+	_return = other._return;
+	_clientMaxBodySize = other._clientMaxBodySize;
+	_autoIndex = other._autoIndex;
+	_cgiPath = other._cgiPath;
 	return *this;
 }
 
@@ -66,6 +68,8 @@ void Location::addDirective(const std::string &name, const std::string &content)
 		setAutoIndex(content == "on");
 	else if (name == "cgi_path")
 		addCGIPathDirective(content);
+	else if (name == "alias")
+		setAlias(content);
 }
 
 void Location::addIndexDirective(const std::string &content) {
@@ -115,6 +119,10 @@ std::string Location::getRoot() const {
 	return _root;
 }
 
+std::string Location::getAlias() const {
+	return _alias;
+}
+
 size_t Location::getClientMaxBodySize() const {
 	return _clientMaxBodySize;
 }
@@ -149,6 +157,10 @@ void Location::setURI(const std::string &URI) {
 
 void Location::setRoot(const std::string &root) {
 	_root = root;
+}
+
+void Location::setAlias(const std::string &alias) {
+	_alias = alias;
 }
 
 void Location::setClientMaxBodySize(size_t clientMaxBodySize) {

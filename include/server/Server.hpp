@@ -25,7 +25,9 @@ class Server {
 		bool	addVirtualServers(const std::vector<VirtualServer>& virtualServers);
 		bool	listen();
 
-		VirtualServer * getVirtualServer(const std::string &serverName);
+		VirtualServer * getVirtualServer(const std::string& IPAddress,
+										 const unsigned short port,
+										 const std::string &serverName);
 		void displayVirtualServers();
 
 		static bool					exit;

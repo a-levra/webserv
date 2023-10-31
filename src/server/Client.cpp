@@ -60,6 +60,14 @@ int Client::getFD() {
 	return _socket.getFD();
 }
 
+const std::string &Client::getEntryIPAddress() const {
+	return _entryIPAddress;
+}
+
+unsigned short Client::getEntryPort() const {
+	return _entryPort;
+}
+
 time_t Client::getMSSinceLastActivity() {
 	return ((std::time(NULL) - _lastActivity) * 1000);
 }

@@ -40,7 +40,6 @@ std::string HttpResponse::getResponse(Server &server, const Client& client) {
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(client.getEntryIPAddress(),
 												 client.getEntryPort(), *host);
-	logging::debug("Choose virtualserver: " + vs->getIPAndPort());
 	if (vs == NULL)
 		return buildErrorPage(NOT_FOUND);
 

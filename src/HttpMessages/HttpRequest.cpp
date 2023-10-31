@@ -1,8 +1,8 @@
 #include "HttpMessages/HttpRequest.hpp"
 #include "logger/logging.hpp"
 
-#include <iostream>
 #include <stdlib.h>
+#include <vector>
 #include <map>
 
 #define MAX_METHOD_LENGTH 6 // "DELETE" is the longest (supported) method

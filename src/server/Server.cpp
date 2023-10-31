@@ -1,7 +1,7 @@
-#include <iostream>
 #include <unistd.h>
 #include <cstring>
 #include <cerrno>
+#include <algorithm>
 
 #include "server/Server.hpp"
 #include "server/Client.hpp"

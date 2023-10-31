@@ -31,52 +31,71 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 std::string HttpResponse::getResponse(Server &server) {
 
 	if (_request.isInvalid())
-		return buildErrorPage(400);
+		return buildErrorPage(BAD_REQUEST);
 
 	const std::string *host = _request.getHeader("Host");
 	if (host == NULL)
-		return buildErrorPage(400);
+		return buildErrorPage(BAD_REQUEST);
 
 	coloredLog("Host requested: ", *host, PURPLE);
 	VirtualServer *vs  = server.getVirtualServer(*host);
 	if (vs == NULL)
-		return buildErrorPage(404);
+		return buildErrorPage(NOT_FOUND);
 
 	coloredLog("Virtual server found: ", vs->getServerName()[0], GREEN);
 	_requestUri = _request.getRequestUri();
 	coloredLog("URI requested: ", _requestUri, PURPLE);
-	Location *loc = vs->getLocation(_requestUri);
-	if (loc == NULL)
-		return buildErrorPage(404);
+	_location = vs->getLocation(_requestUri);
+	if (_location == NULL)
+		return buildErrorPage(NOT_FOUND);
 	coloredLog("Location best match: ", "", GREEN);
-	loc->display();
-	this->build(*loc);
+	_location->display();
+	this->build();
 	return _rawMessage;
 }
 
-void HttpResponse::build(Location &location) {
+void HttpResponse::build() {
 
-
-	if ( !location.isAllowedMethod(_request.getMethod()) ){
-		buildErrorPage(405);
+	if ( !_location->isAllowedMethod(_request.getMethod()) ){
+		buildErrorPage(METHOD_NOT_ALLOWED);
 		return ;
 	}
-	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
+	logging::debug("Building..." "\"" + _request.getMethod() + "\"");
+	if (!checkRequestMaxBodySize()) {
+		this->buildErrorPage(PAYLOAD_TOO_LARGE);
+		return;
+	}
+	if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST){
+		_rawMessage = "";
+		return;
+	}
+
 	if (_request.getMethod() == "GET")
-		this->buildGet(location);
+		this->buildGet();
 	else if (_request.getMethod() == "POST")
-		this->buildPost(location);
+		this->buildPost();
 	else if (_request.getMethod() == "DELETE")
-		this->buildDelete(location);
+		this->buildDelete();
 	else
-		this->buildErrorPage(501);
+		this->buildErrorPage(NOT_IMPLEMENTED);
 }
 
-void HttpResponse::buildGet(Location &location) {
+bool HttpResponse::checkRequestMaxBodySize() {
+	if ((float)_request.getBody().size() / 1000000 > (float)_location->getClientMaxBodySize()){
+		logging::debug("Payload to large : ");
+		logging::debug("\tBody size : " + toString(_request.getBody().size() / 1000000) + "m");
+		logging::debug("Max body size : " + toString(_location->getClientMaxBodySize()) + "m");
+		_request.addError(HttpRequest::PAYLOAD_TOO_LARGE_ERROR);
+		return false;
+	}
+	return true;
+}
+
+void HttpResponse::buildGet() {
 	std::string response;
 	coloredLog("Building GET response: ", "", GREEN);
 
-	this->generateBody(location);
+	this->generateBody();
 	this->setHeader("Date", getDate());
 	this->setHeader("Server", "webserv");
 	this->setHeader("Content-Length", toString(_body.length()));
@@ -91,26 +110,26 @@ void HttpResponse::buildGet(Location &location) {
 	_rawMessage = response;
 }
 
-void HttpResponse::generateBody(Location &location) {
+void HttpResponse::generateBody() {
 	const std::string *file;
 
-	std::string res = getResource(location);
+	std::string res = getResource();
 	if (!res.empty()){
-		file = tryGetFile(location, res);
+		file = tryGetFile(res);
 		if (file == NULL){
 			this->buildErrorPage(404);
 			return ;
 		}
 	}
 	else
-		file = getFirstValidIndex(location);
+		file = getFirstValidIndex();
 
 	if (file == NULL){
-		coloredLog("No index valid: ", _requestUri, RED);
+		logging::debug("No index valid: "+ _requestUri);
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( location.getRoot() + location.getURI() + "/" + *file );
+	_body = readFileToString( _location->getRoot() + _location->getURI() + "/" + *file );
 	if (_body.empty()){
 		this->buildErrorPage(500);
 		return ;
@@ -123,16 +142,16 @@ void HttpResponse::generateBody(Location &location) {
 	}
 }
 
-void HttpResponse::buildPost(Location &location) {
+void HttpResponse::buildPost() {
 	getFileFromPostAndSaveIt();
 	updateHTML();
-	this->buildGet(location);
+	this->buildGet();
 }
 
-void HttpResponse::buildDelete(Location &location) {
+void HttpResponse::buildDelete() {
 	logging::debug("Building DELETE response: ");
 	_request.displayRequest();
-	std::string res = getResource(location);
+	std::string res = getResource();
 	logging::debug("Resource: " + res);
 	std::string file = "/app/uploadedFiles" + res;
 	if (!fileExists(file))
@@ -142,34 +161,31 @@ void HttpResponse::buildDelete(Location &location) {
 	updateHTML();
 }
 
-std::string & HttpResponse::buildErrorPage(int i) {
+std::string & HttpResponse::buildErrorPage(int errorCode) {
 	std::string response;
-	setStatusCode(i);
-	std::string error = toString(i);
+	setStatusCode(errorCode);
+	std::string error = toString(errorCode);
 	std::string errorName;
-	switch (i) {
-		case 400:
+	switch (errorCode) {
+		case BAD_REQUEST:
 			errorName = "Bad Request";
 			break;
-		case 403:
-			errorName = "Forbidden";
-			break;
-		case 404:
+		case NOT_FOUND:
 			errorName = "Not Found";
 			break;
-		case 405:
+		case METHOD_NOT_ALLOWED:
 			errorName = "Method Not Allowed";
 			break;
-		case 413:
+		case PAYLOAD_TOO_LARGE:
 			errorName = "Payload Too Large";
 			break;
-		case 500:
+		case INTERNAL_SERVER_ERROR:
 			errorName = "Internal Server Error";
 			break;
-		case 501:
+		case NOT_IMPLEMENTED:
 			errorName = "Not Implemented";
 			break;
-		case 505:
+		case HTTP_VERSION_NOT_SUPPORTED:
 			errorName = "HTTP Version Not Supported";
 			break;
 		default:
@@ -191,18 +207,20 @@ void HttpResponse::setHeader(const std::string& header, const std::string& conte
 	_headers[header] = content;
 }
 
-const std::string * HttpResponse::getFirstValidIndex(const Location &location) const {
-	const std::vector<std::string> &index = location.getIndex();
+const std::string * HttpResponse::getFirstValidIndex() const {
+	if (!_location)
+		return NULL;
+	const std::vector<std::string> &index = _location->getIndex();
 	std::vector<std::string>::const_iterator it;
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = location.getRoot() + location.getURI() + "/" + *it;
+		std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + *it;
 		coloredLog("Index tested: ", pathToFile, YELLOW);
 		if (fileExists(pathToFile)){
 			coloredLog("Index found: ", pathToFile, GREEN);
 			return &(*it);
 		}
 	}
-	coloredLog("No index found: ", location.getURI(), RED);
+	coloredLog("No index found: ", _location->getURI(), RED);
 	return NULL;
 }
 
@@ -210,13 +228,26 @@ void HttpResponse::GenerateErrorBody() {
 	logging::debug("Error page generated: ");
 	logging::debug("Error code: " + toString(_statusCode));
 	logging::debug("Error message: " + _statusMessage);
+	std::string additionnalInfo;
+	if (_statusCode == PAYLOAD_TOO_LARGE){
+		additionnalInfo = "The maximum size of the payload for \"" + _location->getURI() + "\" is " + toString(this->_location->getClientMaxBodySize()) + " Mb.";
+		additionnalInfo += "</h3><h3>Current payload size: " + toString(_request.getBody().size() / 1000000) + " Mb.";
+		if (_request.getHeader(CONTENT_LENGTH)){
+			additionnalInfo += "</h3><h3>Total payload you tried to send: ";
+			std::string payloadSizeStr = *(_request.getHeader(CONTENT_LENGTH));
+			size_t payloadSize = std::strtod(payloadSizeStr.c_str(), 0);
+			additionnalInfo += toString(payloadSize / 1000000) + " Mb.";
+		}
+	}
+	else
+		additionnalInfo = _request.getErrors();
 	appendBody("<html>"
 			  			 GENERIC_CSS_STYLE
 					"<body>"
 					NAVBAR
 							 "<h1>\n" +toString(_statusCode) + " " + 	_statusMessage + "\n</h1>" \
 							 "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
-							 "<h3>\n" + _request.getErrors() + "\n</h3>" \
+							 "<h3>\n" + additionnalInfo + "\n</h3>" \
 					"</body></html>");
 
 }
@@ -235,7 +266,7 @@ void HttpResponse::getFileFromPostAndSaveIt() {
 		}
 		catch (std::exception &e) {
 			coloredLog("Error: ", e.what(), RED);
-			this->buildErrorPage(500);
+			this->buildErrorPage(INTERNAL_SERVER_ERROR);
 		}
 	}
 	if (!createFile(filename, fileContent)){
@@ -263,18 +294,22 @@ void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
 		fileContent.erase(fileContent.size() - 2, 2);
 }
 
-std::string HttpResponse::getResource(Location &location) const {
+std::string HttpResponse::getResource() const {
 	std::string resource;
-
-	resource = _requestUri.substr(location.getURI().length());
+	if (_location)
+		resource = _requestUri.substr(_location->getURI().length());
 	return resource;
 }
 
-const std::string *HttpResponse::tryGetFile(Location &location, const std::string &resource) {
-	std::string pathToFile = location.getRoot() + location.getURI() + "/" + resource;
-	coloredLog("pathToFile: ", pathToFile, YELLOW);
+const std::string *HttpResponse::tryGetFile(const std::string &resource) {
+	if (!_location)
+		return NULL;
+	std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
+	logging::debug("pathToFile: " + pathToFile);
 	if (fileExists(pathToFile))
 		return &resource;
-	coloredLog("File not found: ", pathToFile, RED);
+	logging::debug("File not found: " + pathToFile);
 	return NULL;
 }
+
+

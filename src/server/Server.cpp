@@ -81,7 +81,7 @@ VirtualServer *Server::getVirtualServer(const std::string &serverName) {
 }
 
 void Server::displayVirtualServers() {
-	coloredLog( "Webserv virtual servers(hosts): ", "", BLUE);
+	logging::debug("Webserv virtual servers(hosts): ");
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
 		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
 	}
@@ -92,7 +92,7 @@ bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
 		_virtualServers.push_back(virtualServer);
 		return true;
 	}
-	Socket	serverSocket = Socket();
+	Socket serverSocket = Socket();
 	if (!serverSocket.initialize()) {
 		_printError("socket.initialize() failed");
 		return false;
@@ -118,13 +118,13 @@ bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short p
 	return false;
 }
 
-bool Server::_tryBindSocket(Socket &socket, const std::string& IPAddress,
+bool Server::_tryBindSocket(Socket &socket, const std::string &IPAddress,
 							unsigned short port) {
 	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
 		if (socket.binding(IPAddress, port))
 			return true;
 		_printError("socket.binding() to " + IPAddress + ":"
-					+ toString(port) + " failed");
+						+ toString(port) + " failed");
 		ftSleep(PERSISTENCE_SLEEP_MS);
 	}
 	return false;
@@ -150,8 +150,7 @@ void Server::_handleSockets() {
 		if (isDisconnect) {
 			_pollFd.erase(_pollFd.begin() + i);
 			logging::debug("a client has been disconnected");
-		}
-		else
+		} else
 			i++;
 	}
 }
@@ -162,13 +161,13 @@ bool Server::_acceptNewClient(struct pollfd listener) {
 	socklen_t			serverAddressLength = sizeof(serverAddress);
 	socklen_t			clientAddressLength = sizeof(clientAddressLength);
 
-	int clientSocket = accept(listener.fd, (struct sockaddr*) &clientAddress,
+	int clientSocket = accept(listener.fd, (struct sockaddr *) &clientAddress,
 							  &clientAddressLength);
 	if (clientSocket == -1) {
 		_printError("server.listen accept() failed");
 		return false;
 	}
-	if (getsockname(clientSocket, (struct sockaddr*) &serverAddress,
+	if (getsockname(clientSocket, (struct sockaddr *) &serverAddress,
 					&serverAddressLength) == -1) {
 		_printError("server.listen getsockname() failed");
 		close(clientSocket);
@@ -181,9 +180,9 @@ bool Server::_acceptNewClient(struct pollfd listener) {
 	return true;
 }
 
-bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
-	std::vector<Client>::iterator	clientIt = _clients.begin() + clientIndex;
-	Client& client = *clientIt;
+bool Server::_handleClient(struct pollfd &pollSocket, size_t clientIndex) {
+	std::vector<Client>::iterator clientIt = _clients.begin() + clientIndex;
+	Client &client = *clientIt;
 	if (client.getMSSinceLastActivity() >= CLIENT_TIMEOUT_MS) {
 		client.disconnect();
 		_clients.erase(clientIt);
@@ -198,14 +197,15 @@ bool	Server::_handleClient(struct pollfd& pollSocket, size_t clientIndex) {
 	}
 	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
 	if (validity == HttpRequest::INVALID_REQUEST
-		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST)
+		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST
+		|| validity == HttpRequest::VALID_AND_INCOMPLETE_REQUEST)
 		_sendClientRequest(client);
 	return true;
 }
 
 bool Server::_readClientRequest(Client &client) {
 	char buffer[READ_BUFFER_SIZE];
-	std::string	strRequest;
+	std::string strRequest;
 
 	ssize_t bytesRead = recv(client.getFD(), buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
@@ -223,12 +223,16 @@ void Server::_sendClientRequest(Client &client) {
 //	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this));
-	send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
-	client.setRawRequest("");
+	if (!response.empty()) {
+		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
+		client.setRawRequest("");
+	}
+	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
+		client.disconnect();
 //	coloredLog("Response: ", response, BLUE);
 }
 
 void Server::_printError(const std::string &error) {
 	logging::error(error + " (" + toString(errno) + ": "
-					+ strerror(errno) + ")");
+					   + strerror(errno) + ")");
 }

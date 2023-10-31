@@ -19,6 +19,7 @@ class HttpRequest: public AHttpMessage{
 			VALID_AND_COMPLETE_REQUEST,
 			INVALID_REQUEST,
 			INCOMPLETE_REQUEST,
+			VALID_AND_INCOMPLETE_REQUEST
 		};
 
 
@@ -49,6 +50,10 @@ class HttpRequest: public AHttpMessage{
 			NO_VALUE_FOUND_FOR_HEADER,
 			BODY_WITHOUT_CONTENT_LENGTH,
 			BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH,
+
+			/* other errors */
+			PAYLOAD_TOO_LARGE_ERROR,
+			UNKNOWN_ERROR
 		};
 
 		HttpRequest();
@@ -68,6 +73,7 @@ class HttpRequest: public AHttpMessage{
 		bool parseHeader(const std::string &line);
 		void parseBody(const std::string &body);
 		void parseRequestURI(const std::string &requestUri);
+		void addError(ERRORS error);
 
 		const std::string &getRequestUri();
 		const REQUEST_VALIDITY & getValidity() const;

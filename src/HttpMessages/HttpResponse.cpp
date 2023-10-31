@@ -60,7 +60,7 @@ void HttpResponse::build() {
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return ;
 	}
-	coloredLog("Building...", "\"" + _request.getMethod() + "\"", BLUE);
+	logging::debug("Building..." "\"" + _request.getMethod() + "\"");
 	if (!checkRequestMaxBodySize()) {
 		this->buildErrorPage(PAYLOAD_TOO_LARGE);
 		return;
@@ -125,7 +125,7 @@ void HttpResponse::generateBody() {
 		file = getFirstValidIndex();
 
 	if (file == NULL){
-		coloredLog("No index valid: ", _requestUri, RED);
+		logging::debug("No index valid: "+ _requestUri);
 		this->buildErrorPage(500);
 		return ;
 	}
@@ -305,10 +305,10 @@ const std::string *HttpResponse::tryGetFile(const std::string &resource) {
 	if (!_location)
 		return NULL;
 	std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
-	coloredLog("pathToFile: ", pathToFile, YELLOW);
+	logging::debug("pathToFile: " + pathToFile);
 	if (fileExists(pathToFile))
 		return &resource;
-	coloredLog("File not found: ", pathToFile, RED);
+	logging::debug("File not found: " + pathToFile);
 	return NULL;
 }
 

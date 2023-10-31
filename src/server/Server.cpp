@@ -81,7 +81,7 @@ VirtualServer *Server::getVirtualServer(const std::string &serverName) {
 }
 
 void Server::displayVirtualServers() {
-	coloredLog("Webserv virtual servers(hosts): ", "", BLUE);
+	logging::debug("Webserv virtual servers(hosts): ");
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
 		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
 	}

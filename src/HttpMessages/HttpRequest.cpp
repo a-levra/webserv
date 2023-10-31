@@ -38,7 +38,7 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	_validity = NOT_PARSED_YET; //mandatory when reusing the same object
 
-	coloredLog("Clearing errors", "", RED);
+	logging::debug("Clearing errors");
 	_errors.clear();
 	std::map<enum LEXER_TOKENS, std::string> lexerToken;
 	ERRORS lexerValidity = autoLexer(lexerToken);
@@ -51,7 +51,7 @@ HttpRequest::REQUEST_VALIDITY HttpRequest::checkValidity() {
 	}
 
 	autoParser(lexerToken);
-	coloredLog("LexPars errors : ", getErrors(), RED);
+	logging::debug("LexPars errors : "+ getErrors());
 
 	return (_validity);
 }

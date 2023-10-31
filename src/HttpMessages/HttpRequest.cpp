@@ -167,14 +167,16 @@ bool HttpRequest::parseHeader(const std::string &line) {
 		_errors.push_back(NO_COLON_FOUND_IN_HEADER);
 		return false;
 	}
-	if (semicolPos + 2 >= line.size()) {
+	std::string headerValue = line.substr(semicolPos + 1);
+	headerValue = trim(headerValue);
+	if (headerValue.empty()) {
 		_validity = INVALID_REQUEST;
 		_errors.push_back(NO_VALUE_FOUND_FOR_HEADER);
 		return false;
 	}
 	std::string headerName = line.substr(0, semicolPos);
-	std::string headerValue = line.substr(semicolPos + 2);
-	_headers[trim(headerName)] = trim(headerValue);
+	headerName = trim(headerName);
+	_headers[headerName] = headerValue;
 	return true;
 }
 

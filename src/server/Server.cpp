@@ -67,15 +67,18 @@ bool Server::listen() {
 	return true;
 }
 
-VirtualServer *Server::getVirtualServer(const std::string &serverName) {
-	std::vector<VirtualServer>::iterator itHosts;
-	for (itHosts = _virtualServers.begin(); itHosts != _virtualServers.end(); itHosts++) {
-		std::vector<std::string> serverNames = itHosts->getServerName();
-		std::vector<std::string>::iterator itHostNames;
-		for (itHostNames = serverNames.begin(); itHostNames != serverNames.end(); itHostNames++) {
-			if (*itHostNames == serverName)
-				return &(*itHosts);
-		}
+VirtualServer *Server::getVirtualServer(const std::string& IPAddress,
+										const unsigned short port,
+										const std::string &serverName) {
+	std::vector<VirtualServer>::iterator vs;
+	for (vs = _virtualServers.begin(); vs != _virtualServers.end(); vs++) {
+		if (vs->getIPAddress() != IPAddress || vs->getPort() != port)
+			continue;
+		std::vector<std::string> serverNames = vs->getServerName();
+		std::vector<std::string>::iterator serverNameIt =
+			std::find(serverNames.begin(), serverNames.end(), serverName);
+		if (serverNameIt != serverNames.end())
+			return &(*vs);
 	}
 	return NULL;
 }
@@ -222,7 +225,7 @@ void Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
 //	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
-	std::string response = httpResponse.getResponse((*this));
+	std::string response = httpResponse.getResponse((*this), client);
 	if (!response.empty()) {
 		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 		client.setRawRequest("");

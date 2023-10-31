@@ -3,7 +3,7 @@
 
 #include "AHttpMessage.hpp"
 #include "HttpRequest.hpp"
-#include "../server/Server.hpp"
+#include "server/Server.hpp"
 
 class HttpResponse : public AHttpMessage {
 	public:
@@ -14,7 +14,7 @@ class HttpResponse : public AHttpMessage {
 		HttpResponse &operator=(const HttpResponse &other);
 		void build();
 
-		std::string getResponse(Server &server);
+		std::string getResponse(Server &server, const Client& client);
 		std::string & buildErrorPage(int errorCode);
 		void setHeader(const std::string& header, const std::string& content);
 		void generateBody();

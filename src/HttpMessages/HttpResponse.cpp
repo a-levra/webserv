@@ -28,7 +28,7 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
  *  3) get the location corresponding to the path and the host
  *  4) build the response into _rawMessage and returns it
  */
-std::string HttpResponse::getResponse(Server &server) {
+std::string HttpResponse::getResponse(Server &server, const Client& client) {
 
 	if (_request.isInvalid())
 		return buildErrorPage(BAD_REQUEST);
@@ -38,7 +38,9 @@ std::string HttpResponse::getResponse(Server &server) {
 		return buildErrorPage(BAD_REQUEST);
 
 	coloredLog("Host requested: ", *host, PURPLE);
-	VirtualServer *vs  = server.getVirtualServer(*host);
+	VirtualServer *vs  = server.getVirtualServer(client.getEntryIPAddress(),
+												 client.getEntryPort(), *host);
+	logging::debug("Choose virtualserver: " + vs->getIPAndPort());
 	if (vs == NULL)
 		return buildErrorPage(NOT_FOUND);
 

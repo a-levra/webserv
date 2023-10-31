@@ -22,6 +22,8 @@ public:
 	void	setRawRequest(const std::string& rawRequest);
 	HttpRequest	getRequest();
 	int 		getFD();
+	const std::string& getEntryIPAddress() const;
+	unsigned short getEntryPort() const;
 	time_t		getMSSinceLastActivity();
 	time_t		updateLastActivity();
 	int 		disconnect() const;

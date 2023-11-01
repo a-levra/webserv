@@ -71,22 +71,31 @@ VirtualServer *Server::getVirtualServer(const std::string& IPAddress,
 										const unsigned short port,
 										const std::string &serverName) {
 	std::vector<VirtualServer>::iterator vs;
+	logging::debug(B_PURPLE "getting VirtualServer: " + IPAddress + ":" + toString(port) + " " + serverName + "" THIN);
 	for (vs = _virtualServers.begin(); vs != _virtualServers.end(); vs++) {
-		if (vs->getIPAddress() != IPAddress || vs->getPort() != port)
+		bool DoesNotMatchIpAdress = (vs->getIPAddress() != IPAddress && vs->getIPAddress() != "0.0.0.0");
+		bool DoesNotMatchPort = (vs->getPort() != port);
+		logging::debug("This vs: " + vs->getIPAddress() + ":" + toString(vs->getPort()) + " " + vs->getServerName()[0] + "");
+		logging::debug("DoesNotMatchIpAdress : " + toString(DoesNotMatchIpAdress));
+		logging::debug("DoesNotMatchPort : " + toString(DoesNotMatchPort));
+		if (DoesNotMatchIpAdress|| DoesNotMatchPort)
 			continue;
 		std::vector<std::string> serverNames = vs->getServerName();
 		std::vector<std::string>::iterator serverNameIt =
 			std::find(serverNames.begin(), serverNames.end(), serverName);
-		if (serverNameIt != serverNames.end())
+		if (serverNameIt != serverNames.end()){
+			logging::debug(B_GREEN "Found virtual server: " + vs->getIPAddress() + ":" + toString(vs->getPort()) + " " + *serverNameIt + "" COLOR_RESET);
 			return &(*vs);
+		}
 	}
+	logging::debug(B_RED "No virtual server found" COLOR_RESET);
 	return NULL;
 }
 
 void Server::displayVirtualServers() {
 	logging::debug("Webserv virtual servers(hosts): ");
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		coloredLog("\thost [" + toString(i) + "]: ", _virtualServers[i].getServerName()[0], PURPLE);
+		logging::debug("\thost [" + toString(i) + "]: " + _virtualServers[i].getServerName()[0]);
 	}
 }
 
@@ -232,7 +241,7 @@ void Server::_sendClientRequest(Client &client) {
 	}
 	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
 		client.disconnect();
-//	coloredLog("Response: ", response, BLUE);
+//	logging::debug("Response: ", response, BLUE);
 }
 
 void Server::_printError(const std::string &error) {

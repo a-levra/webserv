@@ -1,5 +1,6 @@
 #include "virtualServer/Location.hpp"
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 #include <cstdlib>
 
@@ -188,32 +189,30 @@ void Location::setReturn(const std::pair<int, std::string> &returnPage) {
 }
 
 void Location::display() {
-	coloredLog("Location : ", "", PURPLE);
-	coloredLog("URI : ", _URI, PURPLE);
-	coloredLog("root : ", _root, PURPLE);
-	coloredLog("client_max_body_size : ", toString(_clientMaxBodySize), PURPLE);
-	coloredLog("autoindex : ", toString(_autoIndex), PURPLE);
-	coloredLog("index : ", "", PURPLE);
+	logging::debug(B_PURPLE  "Location : " THIN );
+	logging::debug(B_PURPLE  "\tURI : " THIN + _URI + COLOR_RESET);
+	logging::debug(B_PURPLE  "\troot : " THIN + _root);
+	logging::debug(B_PURPLE  "\tclient_max_body_size : " THIN + toString(_clientMaxBodySize));
+	logging::debug(B_PURPLE  "\tautoindex : " THIN + toString(_autoIndex));
+	logging::debug(B_PURPLE  "\tindex : " THIN );
 	for (size_t i = 0; i < _index.size(); i++) {
-		coloredLog("\t", _index[i], PURPLE);
+		logging::debug("\t\t" THIN + _index[i]);
 	}
-	coloredLog("allow_methods : ", "", PURPLE);
+	logging::debug(B_PURPLE "allow_methods : " THIN );
 	for (size_t i = 0; i < _allowMethods.size(); i++) {
-		coloredLog("\t", _allowMethods[i], PURPLE);
+		logging::debug("\t\t" THIN + _allowMethods[i]);
 	}
-	coloredLog("error_page : ", "", PURPLE);
+	logging::debug(B_PURPLE  "error_page : " THIN );
 	for (size_t i = 0; i < _errorPage.first.size(); i++) {
-		coloredLog("\t", toString(_errorPage.first[i]), PURPLE);
+		logging::debug("\t\t" THIN + toString(_errorPage.first[i]));
 	}
-	coloredLog("\t", _errorPage.second, PURPLE);
-	coloredLog("return : ", "", PURPLE);
-	coloredLog("\t", toString(_return.first), PURPLE);
-	coloredLog("\t", _return.second, PURPLE);
+	logging::debug("\t\t" THIN + _errorPage.second);
+	logging::debug(B_PURPLE  "\treturn : " THIN );
+	logging::debug("\t\t" THIN + toString(_return.first));
+	logging::debug("\t\t" THIN + _return.second);
 }
 
 bool	Location::isAllowedMethod(const std::string& method) const{
-	coloredLog("isAllowedMethod : ", method, PURPLE);
-
 	std::vector<std::string>::const_iterator it;
 	for (it = _allowMethods.begin(); it != _allowMethods.end(); it++) {
 		if (*it == method)

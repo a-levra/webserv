@@ -8,6 +8,7 @@
 #define GENERIC_CSS_STYLE "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">"
 #define NAVBAR "<div class=\"navbar\"><a href=\"/\">Home</a><a href=\"/upload\">Upload</a><a href=\"/delete\">Delete</a></div>"
 
+#define OK 200
 #define BAD_REQUEST 400
 #define NOT_FOUND 404
 #define METHOD_NOT_ALLOWED 405

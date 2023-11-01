@@ -196,22 +196,20 @@ bool Server::_handleClient(struct pollfd &pollSocket, size_t clientIndex) {
 	std::vector<Client>::iterator clientIt = _clients.begin() + clientIndex;
 	Client &client = *clientIt;
 	if (client.getMSSinceLastActivity() >= CLIENT_TIMEOUT_MS) {
-		client.disconnect();
-		_clients.erase(clientIt);
+		_disconnectClient(clientIt);
 		return false;
 	}
 	if ((pollSocket.revents & POLLIN) == 0)
 		return true;
 	if (!_readClientRequest(client)) {
-		client.disconnect();
-		_clients.erase(clientIt);
+		_disconnectClient(clientIt);
 		return false;
 	}
-	enum HttpRequest::REQUEST_VALIDITY validity = client.checkRequestValidity();
-	if (validity == HttpRequest::INVALID_REQUEST
-		|| validity == HttpRequest::VALID_AND_COMPLETE_REQUEST
-		|| validity == HttpRequest::VALID_AND_INCOMPLETE_REQUEST)
-		_sendClientRequest(client);
+	client.checkRequestValidity();
+	if (client.getRequest().canSendResponse() && !_sendClientRequest(client)) {
+		_disconnectClient(clientIt);
+		return false;
+	}
 	return true;
 }
 
@@ -230,9 +228,8 @@ bool Server::_readClientRequest(Client &client) {
 	return true;
 }
 
-void Server::_sendClientRequest(Client &client) {
+bool Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
-//	httpRequest.displayRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this), client);
 	if (!response.empty()) {
@@ -240,8 +237,16 @@ void Server::_sendClientRequest(Client &client) {
 		client.setRawRequest("");
 	}
 	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
-		client.disconnect();
-//	logging::debug("Response: ", response, BLUE);
+		return false;
+	return true;
+}
+
+void	Server::_disconnectClient(std::vector<Client>::iterator clientIt)
+{
+	if (clientIt == _clients.end())
+		return;
+	clientIt->disconnect();
+	_clients.erase(clientIt);
 }
 
 void Server::_printError(const std::string &error) {

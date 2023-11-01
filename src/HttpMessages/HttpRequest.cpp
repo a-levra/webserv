@@ -262,6 +262,13 @@ const HttpRequest::REQUEST_VALIDITY &HttpRequest::getValidity() const {
 	return _validity;
 }
 
+bool HttpRequest::canSendResponse() const
+{
+	return (_validity == HttpRequest::INVALID_REQUEST
+			|| _validity == HttpRequest::VALID_AND_COMPLETE_REQUEST
+			|| _validity == HttpRequest::VALID_AND_INCOMPLETE_REQUEST);
+}
+
 void HttpRequest::addError(HttpRequest::ERRORS error) {
 	_errors.push_back(error);
 }

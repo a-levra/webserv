@@ -43,7 +43,8 @@ class Server {
 		void	_handleSockets();
 		bool	_handleClient(struct pollfd& pollSocket, size_t clientIndex);
 		bool	_readClientRequest(Client& client);
-		void	_sendClientRequest(Client& client);
+		bool	_sendClientRequest(Client& client);
+		void	_disconnectClient(std::vector<Client>::iterator clientIt);
 
 		void	_printError(const std::string& error);
 

@@ -78,6 +78,7 @@ class HttpRequest: public AHttpMessage{
 		const std::string &getRequestUri();
 		const REQUEST_VALIDITY & getValidity() const;
 		bool isInvalid() const;
+		bool canSendResponse() const;
 		std::string getErrors();
 	private:
 		REQUEST_VALIDITY _validity;

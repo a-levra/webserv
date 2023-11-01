@@ -77,11 +77,6 @@ std::string AHttpMessage::getRawRequest() {
 	return _rawMessage;
 }
 
-void AHttpMessage::setBodyFromFile(std::string path) {
-	//open a file, and put its content in _body
-	setBody(readFileToString(path));
-}
-
 std::string * AHttpMessage::getHeader(const std::string &header)  {
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {

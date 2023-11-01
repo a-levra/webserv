@@ -3,6 +3,7 @@
 #include "virtualServer/VirtualServer.hpp"
 #include "virtualServer/Location.hpp"
 #include "utils/utils.hpp"
+#include "logger/logging.hpp"
 
 VirtualServer::VirtualServer(): _ipAddress(DEFAULT_VIRTUAL_SERVER_IP_ADDRESS),
 								_port(DEFAULT_VIRTUAL_SERVER_PORT) {
@@ -64,10 +65,7 @@ Location * VirtualServer::getLocation(const std::string &URI) {
 	size_t bestScore = 0;
 	Location *bestLocation = NULL;
 	for (res = _locations.begin(); res != _locations.end(); res++) {
-		coloredLog("comparing loc: ", res->first, YELLOW);
-		coloredLog("with URI: ", URI, YELLOW);
 		score = (strncmp(res->first.c_str(), URI.c_str(), (size_t)res->first.length()) == 0 ? (size_t)res->first.length():0);
-		coloredLog("score: ", toString(score), YELLOW);
 		if (score > bestScore){
 			bestScore = score;
 			bestLocation = 	&(res->second);
@@ -93,13 +91,13 @@ void VirtualServer::setLocations(const std::map<std::string, Location> &location
 }
 
 void VirtualServer::display() {
-	coloredLog("Virtual server : ", "", PURPLE);
-	coloredLog("\tname: ", _serverName[0], GREEN);
-	coloredLog("\tip: ", _ipAddress, GREEN);
-	coloredLog("\tport: ", toString(_port), GREEN);
-	coloredLog("\tlocation : ", "", GREEN);
+	logging::debug(B_BLUE "Virtual server : ");
+	logging::debug(B_BLUE "\tname: " THIN + _serverName[0]);
+	logging::debug(B_BLUE "\tip: " THIN + _ipAddress);
+	logging::debug(B_BLUE "\tport: " THIN + toString(_port));
+	logging::debug(B_BLUE "\tlocation : " THIN );
 	if (_locations.empty()) {
-		coloredLog("", "(empty)", GREEN);
+		logging::debug("(empty)" COLOR_RESET );
 		return;
 	}
 	std::map<std::string, Location>::iterator it;

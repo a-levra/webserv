@@ -15,7 +15,6 @@ LIST_SRC	=\
         server/Server.cpp	\
         server/Socket.cpp	\
         \
-        utils/coloredLog.cpp 		\
         utils/getDate.cpp 			\
         utils/isDigitString.cpp		\
         utils/printBold.cpp 		\

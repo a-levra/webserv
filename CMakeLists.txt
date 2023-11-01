@@ -28,7 +28,6 @@ add_executable(42_webserv
         src/virtualServer/VirtualServer.cpp
         src/virtualServer/Location.cpp
         src/utils/readFileToString.cpp
-        src/utils/coloredLog.cpp
         src/utils/getDate.cpp
         src/utils/printBold.cpp
         src/HttpMessages/AHttpMessage.cpp

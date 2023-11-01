@@ -7,18 +7,18 @@
 
 #define DECIMAL_BASE 10
 
-enum colors {
-	RED,
-	GREEN,
-	YELLOW,
-	BLUE,
-	GREY,
-	PURPLE
-};
-std::string readFileToString(const std::string &filename);
+#define BOLD "\033[1m"
+#define THIN "\033[0m"
+#define B_RED BOLD "\033[1;31m"
+#define B_GREEN BOLD "\033[1;32m"
+#define B_YELLOW BOLD "\033[1;33m"
+#define B_BLUE BOLD "\033[1;34m"
+#define B_PURPLE BOLD "\033[1;35m"
+#define COLOR_RESET "\033[0m"
+
+std::string readFileToString(const std::string& filename, bool & success);
 void printBold(const std::string &str);
 void printBoldThenThin(const std::string &str1, const std::string &str2);
-void coloredLog(std::string str1, std::string str2, colors color);
 
 template<typename T>
 std::string toString(const T &value) {

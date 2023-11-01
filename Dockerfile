@@ -15,4 +15,4 @@ WORKDIR /app
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "make re && ./webserv -l0 resources/webserv.conf"]
+CMD ["sh", "-c", "make re && ./webserv -l0 resources/leuleu.conf"]

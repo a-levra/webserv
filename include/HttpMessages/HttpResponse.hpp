@@ -33,6 +33,7 @@ class HttpResponse : public AHttpMessage {
 		const std::string *tryGetFile(const std::string &resource);
 		void buildDelete();
 		bool checkRequestMaxBodySize();
+		std::string getSpecificErrorPage(int code);
 };
 
 #endif

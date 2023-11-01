@@ -7,7 +7,7 @@
 #include "utils/utils.hpp"
 #include "logger/logging.hpp"
 
-HttpResponse::HttpResponse(class HttpRequest &r) : _request(r) {}
+HttpResponse::HttpResponse(class HttpRequest &r) : _location(NULL), _request(r) {}
 
 HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other), _request(other._request) { *this = other; }
 
@@ -16,6 +16,8 @@ HttpResponse::~HttpResponse(void) {}
 HttpResponse &HttpResponse::operator=(const HttpResponse &other) {
 	if (this != &other) {
 		AHttpMessage::operator=(other);
+		_request = other._request;
+		_location = other._location;
 	}
 	return (*this);
 }
@@ -319,9 +321,15 @@ const std::string *HttpResponse::tryGetFile(const std::string &resource) {
 }
 
 std::string HttpResponse::getSpecificErrorPage(int code) {
-	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
+	if (!_location)
+		return "";
 	std::pair<std::vector<int>, std::string> errorPage;
+	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
+	logging::debug(B_BLUE "Location : " THIN + _location->getURI() + COLOR_RESET);
 	errorPage = _location->getErrorPage();
+
+	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
+
 	std::vector<int>::iterator it;
 	for (it = errorPage.first.begin(); it != errorPage.first.end(); it++) {
 		logging::debug(B_YELLOW "Comparing code: " + toString(*it) + COLOR_RESET);

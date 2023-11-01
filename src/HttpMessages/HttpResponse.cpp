@@ -130,8 +130,9 @@ void HttpResponse::generateBody() {
 		this->buildErrorPage(500);
 		return ;
 	}
-	_body = readFileToString( _location->getRoot() + _location->getURI() + "/" + *file );
-	if (_body.empty()){
+	bool success;
+	_body = readFileToString( _location->getRoot() + _location->getURI() + "/" + *file , success);
+	if (!success){
 		this->buildErrorPage(500);
 		return ;
 	}

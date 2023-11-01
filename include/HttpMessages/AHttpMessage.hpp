@@ -37,7 +37,6 @@ class AHttpMessage {
 		void setBody(std::string body);
 		const std::string & getBody() const;
 		std::string getRawRequest();
-		void setBodyFromFile(std::string path);
 		void appendBody(const std::string &message);
 		const std::string & getMethod() const;
 

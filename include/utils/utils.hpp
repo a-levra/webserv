@@ -15,7 +15,7 @@ enum colors {
 	GREY,
 	PURPLE
 };
-std::string readFileToString(const std::string &filename);
+std::string readFileToString(const std::string& filename, bool & success);
 void printBold(const std::string &str);
 void printBoldThenThin(const std::string &str1, const std::string &str2);
 void coloredLog(std::string str1, std::string str2, colors color);

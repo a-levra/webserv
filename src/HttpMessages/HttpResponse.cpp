@@ -223,6 +223,16 @@ const std::string *HttpResponse::getFirstValidIndex() const {
 }
 
 void HttpResponse::GenerateErrorBody() {
+	std::string specificErrorPage = getSpecificErrorPage(_statusCode);
+	bool success;
+	if (!specificErrorPage.empty()) {
+		setBody(readFileToString(_location->getRoot() + _location->getURI() + "/" + specificErrorPage, success));
+		if (!success)
+			setStatusCode(INTERNAL_SERVER_ERROR);
+		else
+			return;
+	}
+
 	logging::debug("Error page generated: ");
 	logging::debug("Error code: " + toString(_statusCode));
 	logging::debug("Error message: " + _statusMessage);
@@ -306,6 +316,22 @@ const std::string *HttpResponse::tryGetFile(const std::string &resource) {
 		return &resource;
 	logging::debug(B_RED "File not found: " THIN + pathToFile);
 	return NULL;
+}
+
+std::string HttpResponse::getSpecificErrorPage(int code) {
+	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
+	std::pair<std::vector<int>, std::string> errorPage;
+	errorPage = _location->getErrorPage();
+	std::vector<int>::iterator it;
+	for (it = errorPage.first.begin(); it != errorPage.first.end(); it++) {
+		logging::debug(B_YELLOW "Comparing code: " + toString(*it) + COLOR_RESET);
+		if (*it == code){
+			logging::debug(B_BLUE "Specific error page found: " + errorPage.second + COLOR_RESET);
+			return errorPage.second;
+		}
+	}
+	logging::debug(B_BLUE "No specific error page for code: " + toString(code) + COLOR_RESET);
+	return "";
 }
 
 

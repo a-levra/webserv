@@ -218,7 +218,7 @@ bool	Location::isAllowedMethod(const std::string& method) const{
 		if (*it == method)
 			return true;
 	}
-	return true;
+	return false;
 }
 
 bool Location::hasCGI() const {

@@ -216,7 +216,7 @@ bool ConfigParser::_parseAllowMethods(const std::string &directiveContent) {
 	if (arguments.empty())
 		return false;
 	for (it = arguments.begin(); it != arguments.end(); it++) {
-		if (*it != "GET" || *it != "POST" || *it != "DELETE")
+		if (*it != "GET" && *it != "POST" && *it != "DELETE")
 			return false;
 	}
 	return true;

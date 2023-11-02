@@ -61,11 +61,14 @@ Location * VirtualServer::getLocation(const std::string &URI) {
 	if (res != _locations.end())
 		return &(res->second);
 
+	logging::debug(B_YELLOW "Searching best match for \"" + URI + "\"" THIN);
+	logging::debug(B_YELLOW "List of scores : " THIN);
 	size_t score = 0;
 	size_t bestScore = 0;
 	Location *bestLocation = NULL;
 	for (res = _locations.begin(); res != _locations.end(); res++) {
 		score = (strncmp(res->first.c_str(), URI.c_str(), (size_t)res->first.length()) == 0 ? (size_t)res->first.length():0);
+		logging::debug(B_YELLOW "\t\"" + res->first + "\" : " + toString(score) + THIN);
 		if (score > bestScore){
 			bestScore = score;
 			bestLocation = 	&(res->second);

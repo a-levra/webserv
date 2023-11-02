@@ -71,24 +71,22 @@ VirtualServer *Server::getVirtualServer(const std::string& IPAddress,
 										const unsigned short port,
 										const std::string &serverName) {
 	std::vector<VirtualServer>::iterator vs;
-	logging::debug(B_PURPLE "getting VirtualServer: " + IPAddress + ":" + toString(port) + " " + serverName + "" THIN);
+	logging::debug(B_PURPLE "Host requested: " THIN + serverName + COLOR_RESET);
+	logging::debug(B_PURPLE "Client entry point: " THIN + IPAddress + ":" + toString(port) + THIN);
 	for (vs = _virtualServers.begin(); vs != _virtualServers.end(); vs++) {
 		bool DoesNotMatchIpAdress = (vs->getIPAddress() != IPAddress && vs->getIPAddress() != "0.0.0.0");
 		bool DoesNotMatchPort = (vs->getPort() != port);
-		logging::debug("This vs: " + vs->getIPAddress() + ":" + toString(vs->getPort()) + " " + vs->getServerName()[0] + "");
-		logging::debug("DoesNotMatchIpAdress : " + toString(DoesNotMatchIpAdress));
-		logging::debug("DoesNotMatchPort : " + toString(DoesNotMatchPort));
 		if (DoesNotMatchIpAdress|| DoesNotMatchPort)
 			continue;
 		std::vector<std::string> serverNames = vs->getServerName();
 		std::vector<std::string>::iterator serverNameIt =
 			std::find(serverNames.begin(), serverNames.end(), serverName);
 		if (serverNameIt != serverNames.end()){
-			logging::debug(B_GREEN "Found virtual server: " + vs->getIPAddress() + ":" + toString(vs->getPort()) + " " + *serverNameIt + "" COLOR_RESET);
+			logging::debug(B_GREEN "Host found: " THIN + *serverNameIt + " " + vs->getIPAddress() + ":" + toString(vs->getPort()) + "" COLOR_RESET);
 			return &(*vs);
 		}
 	}
-	logging::debug(B_RED "No virtual server found" COLOR_RESET);
+	logging::debug(B_RED "No hosts found" COLOR_RESET);
 	return NULL;
 }
 
@@ -161,7 +159,8 @@ void Server::_handleSockets() {
 			_acceptNewClient(_pollFd[i]);
 		if (isDisconnect) {
 			_pollFd.erase(_pollFd.begin() + i);
-			logging::debug("a client has been disconnected");
+			logging::debug(B_BLUE "a client has been disconnected" THIN);
+			logging::debug("------------------------------");
 		} else
 			i++;
 	}

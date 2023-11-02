@@ -189,27 +189,27 @@ void Location::setReturn(const std::pair<int, std::string> &returnPage) {
 }
 
 void Location::display() {
-	logging::debug(B_PURPLE  "Location : " THIN );
-	logging::debug(B_PURPLE  "\tURI : " THIN + _URI + COLOR_RESET);
-	logging::debug(B_PURPLE  "\troot : " THIN + _root);
-	logging::debug(B_PURPLE  "\tclient_max_body_size : " THIN + toString(_clientMaxBodySize));
-	logging::debug(B_PURPLE  "\tautoindex : " THIN + toString(_autoIndex));
-	logging::debug(B_PURPLE  "\tindex : " THIN );
-	for (size_t i = 0; i < _index.size(); i++) {
-		logging::debug("\t\t" THIN + _index[i]);
-	}
-	logging::debug(B_PURPLE "allow_methods : " THIN );
-	for (size_t i = 0; i < _allowMethods.size(); i++) {
-		logging::debug("\t\t" THIN + _allowMethods[i]);
-	}
-	logging::debug(B_PURPLE  "error_page : " THIN );
-	for (size_t i = 0; i < _errorPage.first.size(); i++) {
-		logging::debug("\t\t" THIN + toString(_errorPage.first[i]));
-	}
-	logging::debug("\t\t" THIN + _errorPage.second);
-	logging::debug(B_PURPLE  "\treturn : " THIN );
-	logging::debug("\t\t" THIN + toString(_return.first));
-	logging::debug("\t\t" THIN + _return.second);
+//	logging::debug(B_PURPLE  "Location : " THIN );
+	logging::debug(COLOR_RESET BOLD  "\tURI : " THIN + _URI + COLOR_RESET);
+	logging::debug(COLOR_RESET BOLD  "\troot : " THIN + _root);
+//	logging::debug(B_PURPLE  "\tclient_max_body_size : " THIN + toString(_clientMaxBodySize));
+//	logging::debug(B_PURPLE  "\tautoindex : " THIN + toString(_autoIndex));
+//	logging::debug(B_PURPLE  "\tindex : " THIN );
+//	for (size_t i = 0; i < _index.size(); i++) {
+//		logging::debug("\t\t" THIN + _index[i]);
+//	}
+//	logging::debug(B_PURPLE "allow_methods : " THIN );
+//	for (size_t i = 0; i < _allowMethods.size(); i++) {
+//		logging::debug("\t\t" THIN + _allowMethods[i]);
+//	}
+//	logging::debug(B_PURPLE  "error_page : " THIN );
+//	for (size_t i = 0; i < _errorPage.first.size(); i++) {
+//		logging::debug("\t\t" THIN + toString(_errorPage.first[i]));
+//	}
+//	logging::debug("\t\t" THIN + _errorPage.second);
+//	logging::debug(B_PURPLE  "\treturn : " THIN );
+//	logging::debug("\t\t" THIN + toString(_return.first));
+//	logging::debug("\t\t" THIN + _return.second);
 }
 
 bool	Location::isAllowedMethod(const std::string& method) const{

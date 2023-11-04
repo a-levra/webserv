@@ -38,15 +38,13 @@ std::string HttpResponse::getResponse(Server &server, const Client &client) {
 	if (host == NULL)
 		return buildErrorPage(BAD_REQUEST);
 
-	logging::debug(B_PURPLE "Host requested: " THIN + *host + COLOR_RESET);
 	VirtualServer *vs  = server.getVirtualServer(client.getEntryIPAddress(),
 												 client.getEntryPort(), *host);
 	if (vs == NULL)
 		return buildErrorPage(NOT_FOUND);
 
-	logging::debug(B_GREEN "Virtual server found: " + vs->getServerName()[0] + COLOR_RESET);
 	_requestUri = _request.getRequestUri();
-	logging::debug(B_GREEN  "URI requested: " + _requestUri + COLOR_RESET);
+	logging::debug(B_PURPLE  "URI requested: " + _requestUri + COLOR_RESET);
 	_location = vs->getLocation(_requestUri);
 	if (_location == NULL)
 		return buildErrorPage(NOT_FOUND);
@@ -62,7 +60,7 @@ void HttpResponse::build() {
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return;
 	}
-	logging::debug("Building..." "\"" + _request.getMethod() + "\"");
+	logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " " + _location->getURI());
 	if (!checkRequestMaxBodySize()) {
 		buildErrorPage(PAYLOAD_TOO_LARGE);
 		return;
@@ -233,11 +231,11 @@ const std::string *HttpResponse::getFirstValidIndex() const {
 		return NULL;
 	const std::vector<std::string> &index = _location->getIndex();
 	std::vector<std::string>::const_iterator it;
+	logging::debug(B_BLUE "Searching a valid index.. " THIN);
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = _location->getRoot() + _requestUri + "/" + *it;
-		logging::debug("Index tested: " +  pathToFile);
+		std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + *it;
 		if (fileExists(pathToFile)){
-			logging::debug(B_GREEN "Index found: " THIN + pathToFile);
+			logging::debug(B_GREEN "Index found : " THIN + pathToFile);
 			return &(*it);
 		}
 	}
@@ -250,8 +248,17 @@ void HttpResponse::GenerateErrorBody() {
 	bool success;
 	if (!specificErrorPage.empty()) {
 		setBody(readFileToString(_location->getRoot() + _location->getURI() + "/" + specificErrorPage, success));
-		if (!success)
-			setStatusCode(INTERNAL_SERVER_ERROR);
+		if (!success){
+			logging::debug(B_RED "Failed to open specific error page !" THIN);
+			if (_statusCode != INTERNAL_SERVER_ERROR){
+				buildErrorPage(INTERNAL_SERVER_ERROR);
+				return ;
+			}
+			else{
+				setStatusCode(INTERNAL_SERVER_ERROR);
+				setStatusMessage("Internal server error");
+			}
+		}
 		else
 			return;
 	}
@@ -325,6 +332,8 @@ std::string HttpResponse::getResource() const {
 	std::string resource;
 	if (_location)
 		resource = _requestUri.substr(_location->getURI().length());
+	if (!resource.empty())
+		logging::debug(B_PURPLE "Resource detected: " THIN + resource);
 	return resource;
 }
 
@@ -332,7 +341,7 @@ const std::string *HttpResponse::tryGetFile(const std::string &resource) {
 	if (!_location)
 		return NULL;
 	std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
-	logging::debug("pathToFile: " + pathToFile);
+	logging::debug("path to resource: " + pathToFile);
 	if (fileExists(pathToFile))
 		return &resource;
 	logging::debug(B_RED "File not found: " THIN + pathToFile);
@@ -343,21 +352,19 @@ std::string HttpResponse::getSpecificErrorPage(int code) {
 	if (!_location)
 		return "";
 	std::pair<std::vector<int>, std::string> errorPage;
-	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
-	logging::debug(B_BLUE "Location : " THIN + _location->getURI() + COLOR_RESET);
+	logging::debug(B_BLUE "Checking if a specific error page exist " COLOR_RESET);
+	logging::debug(B_BLUE "\tfor code : " THIN + toString(code) + COLOR_RESET);
+	logging::debug(B_BLUE "\tand location : " THIN + _location->getURI() + COLOR_RESET);
 	errorPage = _location->getErrorPage();
-
-	logging::debug(B_BLUE "Getting specific error page for code: " + toString(code) + COLOR_RESET);
 
 	std::vector<int>::iterator it;
 	for (it = errorPage.first.begin(); it != errorPage.first.end(); it++) {
-		logging::debug(B_YELLOW "Comparing code: " + toString(*it) + COLOR_RESET);
 		if (*it == code){
-			logging::debug(B_BLUE "Specific error page found: " + errorPage.second + COLOR_RESET);
+			logging::debug(B_GREEN "Specific error page found: " THIN + errorPage.second + COLOR_RESET);
 			return errorPage.second;
 		}
 	}
-	logging::debug(B_BLUE "No specific error page for code: " + toString(code) + COLOR_RESET);
+	logging::debug(B_BLUE "No specific error page found " COLOR_RESET);
 	return "";
 }
 

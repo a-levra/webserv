@@ -33,7 +33,7 @@ CGI::codeError CGI::execute(const HttpResponse& request) {
 	pid_t pidExec = runExecutable(request.getCGIExtension().second,
 								  request.getCGIPath(),
 								  request.getCGIFile(), envp);
-//	deleteEnv(envp);
+	deleteEnv(envp);
 	if (pidExec == -1)
 		return FAILED;
 	pid_t pidTimeOut = runTimeout(CGI_TIMEOUT_MS);

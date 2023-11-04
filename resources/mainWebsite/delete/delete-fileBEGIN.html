@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload</title>
-    <link rel="stylesheet" type="text/css" href="assets/LeuleuWebsite/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
 </head>
 <body>
 <div class="navbar">
     <a href="/">Home</a>
-    <a href="/upload">Upload</a>
-    <a href="/delete">Delete</a>
-    <a href="/cookies">Cookies</a>
+    <a href="/upload/">Upload</a>
+    <a href="/delete/">Delete</a>
+    <a href="/cookies/">Cookies</a>
 </div>
 <h1>Delete File</h1>
 <label for="fileName">Enter the file name to delete:</label>
@@ -22,7 +22,7 @@
     document.getElementById('deleteButton').addEventListener('click', function() {
       const fileName = document.getElementById('fileName').value;
       // Send a DELETE request to delete the specified file
-      fetch(`/delete/${fileName}`, {
+      fetch(`../upload/files/${fileName}`, {
         method: 'DELETE'
       })
       .then(response => {

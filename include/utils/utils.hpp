@@ -38,9 +38,12 @@ std::vector<std::string> splitWhiteSpace(const std::string &s);
 std::string &trim(std::string &s);
 std::string &ltrim(std::string &s);
 std::string &rtrim(std::string &s);
+std::string& trimCharset(std::string& s, const std::string& charset);
+std::string& ltrimCharset(std::string& s, const std::string& charset);
+std::string& rtrimCharset(std::string& s, const std::string& charset);
 
 bool fileExists(const std::string &pathToFile);
-bool createFile(const std::string &filename, const std::string &fileContent);
+bool createFile(const std::string &file, const std::string &fileContent);
 bool appendFile(const std::string &filename, const std::string &fileContent);
 
 std::vector<size_t> getPositionsOfWord(const std::string &word, const std::string &src);

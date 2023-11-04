@@ -1,12 +1,15 @@
 LIST_SRC	=\
+		cgi/CGI.cpp	\
+		\
 		config/ConfigContext.cpp	\
 		config/ConfigFactory.cpp	\
 		config/ConfigLexer.cpp		\
 		config/ConfigParser.cpp		\
 		\
-        HttpMessages/AHttpMessage.cpp	\
-        HttpMessages/HttpRequest.cpp	\
-        HttpMessages/HttpResponse.cpp	\
+        HttpMessages/AHttpMessage.cpp		\
+        HttpMessages/HttpRequest.cpp		\
+        HttpMessages/HttpResponse.cpp		\
+        HttpMessages/HttpResponseCGI.cpp	\
         \
         logger/Logger.cpp	\
         logger/logging.cpp	\

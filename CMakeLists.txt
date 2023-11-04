@@ -58,4 +58,7 @@ add_executable(42_webserv
         src/utils/getPositionsOfWord.cpp
         src/utils/updateHTML.cpp
         include/argument.hpp
+        include/cgi/CGI.hpp
+        src/cgi/CGI.cpp
+        src/HttpMessages/HttpResponseCGI.cpp
 )

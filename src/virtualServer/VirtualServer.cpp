@@ -17,9 +17,9 @@ VirtualServer::~VirtualServer() {}
 VirtualServer &VirtualServer::operator=(const VirtualServer &other) {
 	if (this == &other)
 		return *this;
-	this->_ipAddress = other._ipAddress;
-	this->_port = other._port;
-	this->_serverName = other._serverName;
+	_ipAddress = other._ipAddress;
+	_port = other._port;
+	_serverName = other._serverName;
 	setLocations(other._locations);
 	return *this;
 }

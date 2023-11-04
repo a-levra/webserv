@@ -58,7 +58,10 @@ bool Server::listen() {
 		logging::info(_listeners[i].getIPAndPort());
 	}
 	while (!exit) {
-		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1 && !exit) {
+		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1) {
+			if (exit) {
+				return true;
+		  	}
 			_printError("server.listen poll() failed");
 			return false;
 		}
@@ -234,6 +237,9 @@ bool Server::_sendClientRequest(Client &client) {
 	std::string response = httpResponse.getResponse((*this), client);
 	if (!response.empty()) {
 		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
+		logging::info(client.getEntryIPAddress()+ ":" +
+		toString(client.getEntryPort()) + " " + httpRequest.getMethod() + " "+
+		httpRequest.getRequestUri());
 		client.setRawRequest("");
 	}
 	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)

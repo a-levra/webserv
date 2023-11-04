@@ -7,17 +7,17 @@
 
 
 int updateHTML(){
-	logging::debug("updating HTML");
-
-	int pid = fork();
-	if (pid < 0)
-		return EXIT_FAILURE;
-	if (pid == 0){
-		char *file = strdup("/app/updateHTML.sh");
-		char *args[] = {file, NULL};
-		execve(file, args, NULL);
-		free(file);
-		exit(EXIT_FAILURE);
-	}
+//	logging::debug("updating HTML");
+//
+//	int pid = fork();
+//	if (pid < 0)
+//		return EXIT_FAILURE;
+//	if (pid == 0){
+//		char *file = strdup("/app/updateHTML.sh");
+//		char *args[] = {file, NULL};
+//		execve(file, args, NULL);
+//		free(file);
+//		exit(EXIT_FAILURE);
+//	}
 	return EXIT_SUCCESS;
 }

@@ -94,6 +94,12 @@ bool HttpResponse::checkRequestMaxBodySize() {
 void HttpResponse::buildGet() {
 	std::string response;
 
+	if (_location->hasReturn()) {
+		_statusCode = _location->getReturn().first;
+		setHeader("Location", _location->getReturn().second);
+		buildRawMessage();
+		return;
+	}
 	if (_location->hasCGI()) {
 		buildCGIGet();
 		return;

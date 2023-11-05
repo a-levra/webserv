@@ -25,14 +25,14 @@ CGI::~CGI() {
 
 }
 
-CGI::codeError CGI::execute(const HttpResponse& request) {
-  	if (!writeInTmpIN(request.getRequest().getBody())) {
+CGI::codeError CGI::execute(const HttpResponse& response) {
+  	if (!writeInTmpIN(response.getRequest().getBody())) {
 		return FAILED;
 	}
-	char** envp = initEnv(request);
-	pid_t pidExec = runExecutable(request.getCGIExtension().second,
-								  request.getCGIPath(),
-								  request.getCGIFile(), envp);
+	char** envp = initEnv(response);
+	pid_t pidExec = runExecutable(response.getCGIExtension().second,
+								  response.getCGIPath(),
+								  response.getCGIFile(), envp);
 	deleteEnv(envp);
 	if (pidExec == -1)
 		return FAILED;

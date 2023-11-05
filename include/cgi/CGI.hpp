@@ -29,7 +29,7 @@ public:
 
 	CGI &operator=(const CGI &other);
 
-	CGI::codeError	execute(const HttpResponse& request);
+	CGI::codeError	execute(const HttpResponse& response);
 	bool	executeBinary(const std::string& path, const std::string& script);
 	pid_t 	runExecutable(const std::string& interpreter, const std::string& path, const std::string& executable, char **envp);
 	pid_t	runTimeout(size_t ms);

@@ -18,21 +18,20 @@ LIST_SRC	=\
         server/Server.cpp	\
         server/Socket.cpp	\
         \
-        utils/getDate.cpp 			\
-        utils/isDigitString.cpp		\
-        utils/printBold.cpp 		\
-        utils/readFileToString.cpp	\
-        utils/sleep.cpp				\
-        utils/split.cpp				\
-        utils/trim.cpp				\
-        utils/fileExist.cpp			\
-        utils/createFile.cpp		\
-        utils/getPositionsOfWord.cpp		\
-        utils/updateHTML.cpp		\
+        utils/getDate.cpp 				\
+        utils/isDigitString.cpp			\
+        utils/printBold.cpp 			\
+        utils/readFileToString.cpp		\
+        utils/sleep.cpp					\
+        utils/split.cpp					\
+        utils/trim.cpp					\
+        utils/fileExist.cpp				\
+        utils/createFile.cpp			\
+        utils/getPositionsOfWord.cpp	\
         \
         virtualServer/Location.cpp 		\
         virtualServer/VirtualServer.cpp	\
         \
         argument.cpp	\
         main.cpp		\
-        options.cpp		\
+        options.cpp

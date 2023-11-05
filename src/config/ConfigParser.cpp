@@ -20,7 +20,6 @@ ConfigParser::ConfigParser(): _codeError(NO_ERROR) {
 	_directiveFunctions["server_name"] = &ConfigParser::_parseServerName;
 	_directiveFunctions["return"] = &ConfigParser::_parseReturn;
 	_directiveFunctions["cgi_path"] = &ConfigParser::_parseCGIPath;
-	_directiveFunctions["alias"] = &ConfigParser::_parseAlias;
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)

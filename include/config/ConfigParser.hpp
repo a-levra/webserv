@@ -14,7 +14,7 @@
 #define AUTHORIZED_DIRECTIVES_IN_SERVER_CONTEXT "error_page index root \
 	allow_methods client_max_body_size autoindex listen server_name return"
 #define AUTHORIZED_DIRECTIVES_IN_LOCATION_CONTEXT "error_page index root \
-	allow_methods client_max_body_size autoindex return cgi_path alias"
+	allow_methods client_max_body_size autoindex return cgi_path"
 
 class ConfigParser
 {

@@ -35,7 +35,6 @@ class Location {
 
 		void	setURI(const std::string& URI);
 		void	setRoot(const std::string& root);
-		void	setAlias(const std::string& alias);
 		void	setClientMaxBodySize(size_t clientMaxBodySize);
 		void	setAutoIndex(bool autoIndex);
 		void	setIndex(const std::vector<std::string>& index);
@@ -49,7 +48,6 @@ class Location {
 	private:
 		std::string _URI;
 		std::string _root;
-		std::string	_alias;
 		std::vector<std::string> _index;
 		std::vector<std::string> _allowMethods;
 		std::pair<std::vector<int>, std::string> _errorPage;

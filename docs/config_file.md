@@ -78,20 +78,6 @@ location /i/ {
 }
 ```
 
-### alias:
-```
-Syntax:	alias path;
-Default: —
-Context: location
-```
-Defines a replacement for the specified location. For example, with the following configuration.
-```
-location /i/ {
-    alias /data/w3/images/;
-}
-```
-on request of “/i/top.gif”, the file /data/w3/images/top.gif will be sent.
-
 ### return:
 ```
 Syntax:	return code URL;

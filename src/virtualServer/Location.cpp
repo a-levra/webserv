@@ -6,7 +6,8 @@
 
 Location::Location(): _URI(""), _root("html"),
 					  _clientMaxBodySize(1),
-					  _autoIndex(false) {
+					  _autoIndex(false),
+					  _hasReturn(false) {
 	std::vector<std::string> index;
 	index.push_back("index.html");
 	setIndex(index);
@@ -15,12 +16,12 @@ Location::Location(): _URI(""), _root("html"),
 	allowMethods.push_back("POST");
 	allowMethods.push_back("DELETE");
 	setAllowMethods(allowMethods);
-
 }
 
 Location::Location(const std::string &URI): _URI(URI), _root("html"),
 											_clientMaxBodySize(1),
-											_autoIndex(false) {
+											_autoIndex(false),
+											_hasReturn(false) {
 	std::vector<std::string> index;
 	index.push_back("index.html");
 	setIndex(index);
@@ -29,7 +30,6 @@ Location::Location(const std::string &URI): _URI(URI), _root("html"),
 	allowMethods.push_back("POST");
 	allowMethods.push_back("DELETE");
 	setAllowMethods(allowMethods);
-
 }
 
 Location::Location(const Location &other) { *this = other; }
@@ -49,6 +49,7 @@ Location &Location::operator=(const Location &other) {
 	_clientMaxBodySize = other._clientMaxBodySize;
 	_autoIndex = other._autoIndex;
 	_cgiPath = other._cgiPath;
+	_hasReturn = other._hasReturn;
 	return *this;
 }
 
@@ -186,6 +187,7 @@ void Location::setErrorPage(const std::pair<std::vector<int>, std::string> &erro
 
 void Location::setReturn(const std::pair<int, std::string> &returnPage) {
 	_return = returnPage;
+	_hasReturn = true;
 }
 
 void Location::display() {
@@ -223,4 +225,8 @@ bool	Location::isAllowedMethod(const std::string& method) const{
 
 bool Location::hasCGI() const {
 	return _cgiPath.size() > 0;
+}
+
+bool Location::hasReturn() const {
+	return _hasReturn;
 }

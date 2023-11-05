@@ -99,17 +99,7 @@ void HttpResponse::buildGet() {
 		return;
 	}
 	generateBody();
-	setHeader("Date", getDate());
-	setHeader("Server", "webserv");
-	setHeader("Content-Length", toString(_body.length()));
-	response += HTTP_VERSION  " " + toString(_statusCode) + CRLF;
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-		response += it->first + ": " + it->second + CRLF;
-	}
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	buildRawMessage();
 }
 
 void HttpResponse::generateBody() {
@@ -148,8 +138,13 @@ void HttpResponse::buildPost() {
 	  buildCGIPost();
 	  return;
 	}
-	getFileFromPostAndSaveIt();
-	this->buildGet();
+	if (!getFileFromPostAndSaveIt()) {
+		buildRawMessage();
+		return;
+	}
+	_statusCode = OK;
+	_statusMessage = "OK";
+	buildRawMessage();
 }
 
 void HttpResponse::buildDelete() {
@@ -159,25 +154,16 @@ void HttpResponse::buildDelete() {
 	logging::debug("Resource: " + res);
 	std::string file = _location->getRoot() + "/" + _requestUri;
 	if (!fileExists(file)) {
-	  this->buildErrorPage(NOT_FOUND);
+	  buildErrorPage(NOT_FOUND);
 	  return;
 	}
 	else if (std::remove(file.c_str()) != 0) {
-	  this->buildErrorPage(INTERNAL_SERVER_ERROR);
+	  buildErrorPage(INTERNAL_SERVER_ERROR);
 	  return;
 	}
-	setHeader("Date", getDate());
-	setHeader("Server", "webserv");
-	setHeader("Content-Length", toString(_body.length()));
-	_statusCode = 200;
-	std::string response = HTTP_VERSION  " " + toString(this->_statusCode) + " OK" + CRLF;
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-	  response += it->first + ": " + it->second + CRLF;
-	}
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	_statusCode = OK;
+	_statusMessage = "OK";
+	buildRawMessage();
 }
 
 std::string &HttpResponse::buildErrorPage(int errorCode) {
@@ -212,13 +198,9 @@ std::string &HttpResponse::buildErrorPage(int errorCode) {
 			break;
 	}
 	setStatusMessage(errorName);
-	response += HTTP_VERSION " " + error + " " + errorName + CRLF;
-	response += "Content-Type: text/html" CRLF;
-	this->GenerateErrorBody();
-	response += "Content-Length: " + toString(_body.length()) + CRLF;
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	setHeader("Content-type", "text/html");
+	GenerateErrorBody();
+	buildRawMessage();
 	return _rawMessage;
 }
 
@@ -288,7 +270,7 @@ void HttpResponse::GenerateErrorBody() {
 
 }
 
-void HttpResponse::getFileFromPostAndSaveIt() {
+bool HttpResponse::getFileFromPostAndSaveIt() {
 	logging::debug("Building POST response ");
 
 	std::string *boundary = _request.getHeader("Content-Type");
@@ -302,11 +284,14 @@ void HttpResponse::getFileFromPostAndSaveIt() {
 		}
 		catch (std::exception &e) {
 			this->buildErrorPage(INTERNAL_SERVER_ERROR);
+			return false;
 		}
 	}
 	if (!createFile(_location->getRoot() + "/" + _requestUri + "/" + filename, fileContent)) {
-		this->buildErrorPage(500);
+		buildErrorPage(INTERNAL_SERVER_ERROR);
+		return false;
 	}
+	return true;
 }
 
 void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
@@ -368,4 +353,17 @@ std::string HttpResponse::getSpecificErrorPage(int code) {
 	return "";
 }
 
-
+void HttpResponse::buildRawMessage() {
+	setHeader("Date", getDate());
+	setHeader("Server", "webserv");
+	setHeader("Content-Length", toString(_body.length()));
+	std::string response = HTTP_VERSION  " " + toString(this->_statusCode)
+						   + " " + _statusMessage + CRLF;
+	std::map<std::string, std::string>::iterator it;
+	for (it = _headers.begin(); it != _headers.end(); it++) {
+		response += it->first + ": " + it->second + CRLF;
+	}
+	response += CRLF;
+	response += _body;
+	_rawMessage = response;
+}

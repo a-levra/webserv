@@ -11,6 +11,7 @@
 # define PATH_CGI_IN "/tmp/webserv_cgi_stdin"
 
 # define CGI_TIMEOUT_MS 5000
+# define NB_DEFAULT_ENV_VAR 4
 
 class CGI {
 
@@ -39,7 +40,8 @@ private:
 	pid_t 	_runExecutable(const std::string& interpreter, const std::string& path, const std::string& executable, char **envp);
 	pid_t	_runTimeout(size_t ms);
 	std::pair<pid_t, int>	_waitFirstChild(pid_t child1, pid_t child2);
-	char**	_initEnv(const HttpResponse& request);
+	char**	_initEnv(const HttpResponse& response);
+	void	_setDefaultEnv(const HttpResponse& response, char **envp);
 	char*	_getEnvVariable(const std::string& key, const std::string& value);
 	void    _deleteEnv(char** env);
 	bool	_writeInTmpIN(const std::string& content);

@@ -14,6 +14,8 @@ if method == "POST":
     if "file" in form:
         file_item = form["file"]
         if file_item.file:
+            if not os.path.exists("files/"):
+                os.mkdir("files/")
             try:
                 file_path = 'files/' + os.path.basename(file_item.filename)
                 with open(file_path, 'wb') as f:

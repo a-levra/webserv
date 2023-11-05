@@ -114,6 +114,8 @@ def post_view():
 
 
 method = os.environ.get("REQUEST_METHOD")
+if not os.path.exists("sessions/"):
+    os.mkdir("sessions/")
 if method == "GET":
     get_view()
 elif method == "POST":

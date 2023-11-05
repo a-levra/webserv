@@ -1,8 +1,8 @@
-
 #include "HttpMessages/HttpResponse.hpp"
+
 #include "utils/utils.hpp"
 #include "cgi/CGI.hpp"
-
+#include "logger/logging.hpp"
 
 void HttpResponse::buildCGIGet() {
 	if (!searchCGIPath()) {
@@ -12,23 +12,21 @@ void HttpResponse::buildCGIGet() {
 	CGI cgi;
 	CGI::codeError code = cgi.execute(*this);
 	if (code != CGI::SUCCESSFUL) {
+		if (code == CGI::TIMEOUT) {
+			logging::warning(_cgiFile + " timeout after "
+							 + toString(CGI_TIMEOUT_MS) + "ms");
+		}
+		if (code == CGI::FAILED) {
+			logging::warning(_cgiFile + " failed. StdErr: " + cgi.getStdErr());
+		}
 		_body = cgi.getStdErr();
 		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return;
 	}
 	parseCGIOutput(cgi.getStdOut());
-	setHeader("Date", getDate());
-	setHeader("Server", "webserv");
-	setHeader("Content-Length", toString(_body.length()));
 	_statusCode = 200;
-	std::string response = HTTP_VERSION  " " + toString(_statusCode) + " OK" + CRLF;
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-		response += it->first + ": " + it->second + CRLF;
-	}
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	_statusMessage = "OK";
+	buildRawMessage();
 	displayRequest();
 }
 
@@ -122,30 +120,29 @@ void HttpResponse::parseCGIOutput(const std::string& cgiOutput) {
 }
 
 void HttpResponse::buildCGIPost() {
-  if (!searchCGIPath()) {
-	buildErrorPage(NOT_FOUND);
-	return;
-  }
-  CGI cgi;
-  CGI::codeError code = cgi.execute(*this);
-  if (code != CGI::SUCCESSFUL) {
-	buildErrorPage(INTERNAL_SERVER_ERROR);
-	return;
-  }
-  parseCGIOutput(cgi.getStdOut());
-  setHeader("Date", getDate());
-  setHeader("Server", "webserv");
-  setHeader("Content-Length", toString(_body.length()));
-  _statusCode = 200;
-  std::string response = HTTP_VERSION  " " + toString(_statusCode) + " OK" + CRLF;
-  std::map<std::string, std::string>::iterator it;
-  for (it = _headers.begin(); it != _headers.end(); it++) {
-	response += it->first + ": " + it->second + CRLF;
-  }
-  response += CRLF;
-  response += _body;
-  _rawMessage = response;
-  displayRequest();
+	if (!searchCGIPath()) {
+		buildErrorPage(NOT_FOUND);
+		return;
+	}
+	CGI cgi;
+	CGI::codeError code = cgi.execute(*this);
+	if (code != CGI::SUCCESSFUL) {
+		if (code == CGI::TIMEOUT) {
+			logging::warning(_cgiFile + " timeout after "
+			+ toString(CGI_TIMEOUT_MS) + "ms");
+		}
+		if (code == CGI::FAILED) {
+			logging::warning(_cgiFile + " failed. StdErr: " + cgi.getStdErr());
+		}
+		_body = cgi.getStdErr();
+		buildErrorPage(INTERNAL_SERVER_ERROR);
+		return;
+	}
+	parseCGIOutput(cgi.getStdOut());
+	_statusCode = 200;
+	_statusMessage = "OK";
+	buildRawMessage();
+	displayRequest();
 }
 
 

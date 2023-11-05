@@ -105,22 +105,12 @@ std::pair<pid_t, int> CGI::_waitFirstChild(pid_t child1, pid_t child2) {
 	return std::make_pair(firstChildPid, WEXITSTATUS(statusCode));
 }
 
-char **CGI::_initEnv(const HttpResponse& request) {
-	const std::map<std::string, std::string>& headers = request.getRequest().getHeaders();
-	char** envp = new char*[headers.size() + 5];
+char **CGI::_initEnv(const HttpResponse& response) {
+	const std::map<std::string, std::string>& headers = response.getRequest().getHeaders();
+	char** envp = new char*[headers.size() + NB_DEFAULT_ENV_VAR + 1];
 
-	size_t envpIndex = 0;
-	envp[envpIndex] = _getEnvVariable("PATH_INFO", request.getCGIPathInfo());
-	envpIndex++;
-  	envp[envpIndex] = _getEnvVariable("REQUEST_METHOD",
-									  request.getRequest().getMethod());
-  	envpIndex++;
-	envp[envpIndex] = _getEnvVariable("CONTENT_LENGTH",
-									  headers.find("Content-Length")->second);
-	envpIndex++;
-	envp[envpIndex] = _getEnvVariable("CONTENT_TYPE",
-									  headers.find("Content-Type")->second);
-	envpIndex++;
+	_setDefaultEnv(response, envp);
+	size_t envpIndex = NB_DEFAULT_ENV_VAR;
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = headers.begin(); it != headers.end(); it++) {
 		envp[envpIndex] = _getEnvVariable("HTTP_" + it->first, it->second);
@@ -129,6 +119,32 @@ char **CGI::_initEnv(const HttpResponse& request) {
 	envp[envpIndex] = NULL;
 	return envp;
 }
+
+void CGI::_setDefaultEnv(const HttpResponse &response, char **envp) {
+	const std::map<std::string, std::string>& headers = response.getRequest().getHeaders();
+	size_t envpIndex = 0;
+	envp[envpIndex] = _getEnvVariable("PATH_INFO", response.getCGIPathInfo());
+	envpIndex++;
+	envp[envpIndex] = _getEnvVariable("REQUEST_METHOD",
+									  response.getRequest().getMethod());
+	envpIndex++;
+	if (headers.find("Content-Length") == headers.end()) {
+		envp[envpIndex] = _getEnvVariable("CONTENT_LENGTH", "0");
+	}
+	else {
+		envp[envpIndex] = _getEnvVariable("CONTENT_LENGTH",
+										  headers.find("Content-Length")->second);
+	}
+	envpIndex++;
+	if (headers.find("Content-Type") == headers.end()) {
+		envp[envpIndex] = _getEnvVariable("CONTENT_TYPE", "text/html");
+	}
+	else {
+		envp[envpIndex] = _getEnvVariable("CONTENT_TYPE",
+										  headers.find("Content-Type")->second);
+	}
+}
+
 
 char *CGI::_getEnvVariable(const std::string& key, const std::string& value) {
 	std::string newKey = key;

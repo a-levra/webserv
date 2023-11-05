@@ -22,18 +22,38 @@ class HttpResponse : public AHttpMessage {
 		void GenerateErrorBody();
 		void buildGet();
 		void buildPost();
-		void getFileFromPostAndSaveIt();
+		void buildRawMessage();
+		bool getFileFromPostAndSaveIt();
 		void ExtractImgInsideBoundaries(std::string *boundary,
 										std::string &filename,
 										std::string &fileContent) const;
+		const std::string& getCGIPath() const;
+		const std::string& getCGIFile() const;
+		const std::string& getCGIPathInfo() const;
+		const std::pair<std::string, std::string>& getCGIExtension() const;
+		HttpRequest& getRequest() const;
+
 	private:
 		Location *_location;
 		HttpRequest &_request;
+		std::string _cgiPath;
+		std::string _cgiFile;
+		std::string _cgiPathInfo;
+		std::pair<std::string, std::string> _cgiExtension;
 		std::string getResource() const;
 		const std::string *tryGetFile(const std::string &resource);
 		void buildDelete();
 		bool checkRequestMaxBodySize();
 		std::string getSpecificErrorPage(int code);
+
+		void buildCGIGet();
+		void buildCGIPost();
+		bool findCGIExtension(const std::string& path);
+		void extractCGIPath(const std::string& path,
+							std::string::size_type extensionPos);
+		bool searchCGIPath();
+		void parseCGIOutput(const std::string& cgiOutput);
+
 };
 
 #endif

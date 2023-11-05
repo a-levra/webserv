@@ -17,8 +17,6 @@
 #define NOT_IMPLEMENTED 501
 #define HTTP_VERSION_NOT_SUPPORTED 505
 
-
-
 class AHttpMessage {
 	public:
 		AHttpMessage();
@@ -34,6 +32,7 @@ class AHttpMessage {
 		int getStatusCode();
 		void setStatusMessage(std::string statusMessage);
 		void setHeaders(std::string header, std::string content);
+		const std::map<std::string, std::string>& getHeaders() const;
 		std::string * getHeader(const std::string &header);
 		void setBody(std::string body);
 		const std::string & getBody() const;

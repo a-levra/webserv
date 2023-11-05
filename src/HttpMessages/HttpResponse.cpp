@@ -50,7 +50,7 @@ std::string HttpResponse::getResponse(Server &server, const Client &client) {
 		return buildErrorPage(NOT_FOUND);
 	logging::debug(B_GREEN  "Location best match: " THIN COLOR_RESET);
 	_location->display();
-	this->build();
+	build();
 	return _rawMessage;
 }
 
@@ -62,7 +62,7 @@ void HttpResponse::build() {
 	}
 	logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " " + _location->getURI());
 	if (!checkRequestMaxBodySize()) {
-		this->buildErrorPage(PAYLOAD_TOO_LARGE);
+		buildErrorPage(PAYLOAD_TOO_LARGE);
 		return;
 	}
 	if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST) {
@@ -71,13 +71,13 @@ void HttpResponse::build() {
 	}
 
 	if (_request.getMethod() == "GET")
-		this->buildGet();
+		buildGet();
 	else if (_request.getMethod() == "POST")
-		this->buildPost();
+		buildPost();
 	else if (_request.getMethod() == "DELETE")
-		this->buildDelete();
+		buildDelete();
 	else
-		this->buildErrorPage(NOT_IMPLEMENTED);
+		buildErrorPage(NOT_IMPLEMENTED);
 }
 
 bool HttpResponse::checkRequestMaxBodySize() {
@@ -94,19 +94,12 @@ bool HttpResponse::checkRequestMaxBodySize() {
 void HttpResponse::buildGet() {
 	std::string response;
 
-	this->generateBody();
-	this->setHeader("Date", getDate());
-	this->setHeader("Server", "webserv");
-	this->setHeader("Content-Length", toString(_body.length()));
-
-	response += HTTP_VERSION  " " + toString(this->_statusCode) + CRLF;
-	std::map<std::string, std::string>::iterator it;
-	for (it = _headers.begin(); it != _headers.end(); it++) {
-		response += it->first + ": " + it->second + CRLF;
+	if (_location->hasCGI()) {
+		buildCGIGet();
+		return;
 	}
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	generateBody();
+	buildRawMessage();
 }
 
 void HttpResponse::generateBody() {
@@ -116,7 +109,7 @@ void HttpResponse::generateBody() {
 	if (!res.empty()) {
 		file = tryGetFile(res);
 		if (file == NULL) {
-			this->buildErrorPage(NOT_FOUND);
+			buildErrorPage(NOT_FOUND);
 			return;
 		}
 	} else
@@ -124,26 +117,34 @@ void HttpResponse::generateBody() {
 
 	if (file == NULL) {
 		logging::debug("No index valid: " + _requestUri);
-		this->buildErrorPage(INTERNAL_SERVER_ERROR);
+		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return;
 	}
 	bool success;
 	_body = readFileToString(_location->getRoot() + _location->getURI() + "/" + *file, success);
 	if (!success) {
-		this->buildErrorPage(INTERNAL_SERVER_ERROR);
+		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return;
 	} else {
-		this->setStatusCode(OK);
-		this->setStatusMessage("OK");
-		this->setBody(_body);
+		setStatusCode(OK);
+		setStatusMessage("OK");
+		setBody(_body);
 		return;
 	}
 }
 
 void HttpResponse::buildPost() {
-	getFileFromPostAndSaveIt();
-	updateHTML();
-	this->buildGet();
+	if (_location->hasCGI()) {
+	  buildCGIPost();
+	  return;
+	}
+	if (!getFileFromPostAndSaveIt()) {
+		buildRawMessage();
+		return;
+	}
+	_statusCode = OK;
+	_statusMessage = "OK";
+	buildRawMessage();
 }
 
 void HttpResponse::buildDelete() {
@@ -151,12 +152,18 @@ void HttpResponse::buildDelete() {
 	_request.displayRequest();
 	std::string res = getResource();
 	logging::debug("Resource: " + res);
-	std::string file = "/app/uploadedFiles" + res;
-	if (!fileExists(file))
-		this->buildErrorPage(NOT_FOUND);
-	else if (std::remove(file.c_str()) != 0)
-		this->buildErrorPage(INTERNAL_SERVER_ERROR);
-	updateHTML();
+	std::string file = _location->getRoot() + "/" + _requestUri;
+	if (!fileExists(file)) {
+	  buildErrorPage(NOT_FOUND);
+	  return;
+	}
+	else if (std::remove(file.c_str()) != 0) {
+	  buildErrorPage(INTERNAL_SERVER_ERROR);
+	  return;
+	}
+	_statusCode = OK;
+	_statusMessage = "OK";
+	buildRawMessage();
 }
 
 std::string &HttpResponse::buildErrorPage(int errorCode) {
@@ -191,13 +198,9 @@ std::string &HttpResponse::buildErrorPage(int errorCode) {
 			break;
 	}
 	setStatusMessage(errorName);
-	response += HTTP_VERSION " " + error + " " + errorName + CRLF;
-	response += "Content-Type: text/html" CRLF;
-	this->GenerateErrorBody();
-	response += "Content-Length: " + toString(_body.length()) + CRLF;
-	response += CRLF;
-	response += _body;
-	_rawMessage = response;
+	setHeader("Content-type", "text/html");
+	GenerateErrorBody();
+	buildRawMessage();
 	return _rawMessage;
 }
 
@@ -259,9 +262,7 @@ void HttpResponse::GenerateErrorBody() {
 	} else
 		additionnalInfo = _request.getErrors();
 	appendBody("<html>"
-			   GENERIC_CSS_STYLE
 			   "<body>"
-			   NAVBAR
 			   "<h1>\n" + toString(_statusCode) + " " + _statusMessage + "\n</h1>" \
                              "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
                              "<h3>\n" + additionnalInfo + "\n</h3>" \
@@ -269,7 +270,7 @@ void HttpResponse::GenerateErrorBody() {
 
 }
 
-void HttpResponse::getFileFromPostAndSaveIt() {
+bool HttpResponse::getFileFromPostAndSaveIt() {
 	logging::debug("Building POST response ");
 
 	std::string *boundary = _request.getHeader("Content-Type");
@@ -283,11 +284,14 @@ void HttpResponse::getFileFromPostAndSaveIt() {
 		}
 		catch (std::exception &e) {
 			this->buildErrorPage(INTERNAL_SERVER_ERROR);
+			return false;
 		}
 	}
-	if (!createFile(filename, fileContent)) {
-		this->buildErrorPage(500);
+	if (!createFile(_location->getRoot() + "/" + _requestUri + "/" + filename, fileContent)) {
+		buildErrorPage(INTERNAL_SERVER_ERROR);
+		return false;
 	}
+	return true;
 }
 
 void HttpResponse::ExtractImgInsideBoundaries(std::string *boundary,
@@ -349,4 +353,17 @@ std::string HttpResponse::getSpecificErrorPage(int code) {
 	return "";
 }
 
-
+void HttpResponse::buildRawMessage() {
+	setHeader("Date", getDate());
+	setHeader("Server", "webserv");
+	setHeader("Content-Length", toString(_body.length()));
+	std::string response = HTTP_VERSION  " " + toString(this->_statusCode)
+						   + " " + _statusMessage + CRLF;
+	std::map<std::string, std::string>::iterator it;
+	for (it = _headers.begin(); it != _headers.end(); it++) {
+		response += it->first + ": " + it->second + CRLF;
+	}
+	response += CRLF;
+	response += _body;
+	_rawMessage = response;
+}

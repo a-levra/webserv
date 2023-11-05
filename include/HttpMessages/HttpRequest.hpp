@@ -87,6 +87,7 @@ class HttpRequest: public AHttpMessage{
 		REQUEST_VALIDITY _validity;
 		std::vector<ERRORS> _errors;
 		std::string getLexerParserError(HttpRequest::ERRORS validity);
+		bool unchunkBody(std::string &unchunkedBody);
 };
 
 #endif

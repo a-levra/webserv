@@ -184,10 +184,16 @@ bool HttpRequest::parseHeader(const std::string &line) {
 
 void HttpRequest::parseBody(const std::string &body) {
 	_body = body;
+	if (this->getHeader("Transfer-Encoding") && this->getHeader("Transfer-Encoding")->find("chunked") != std::string::npos) {
+		this->setChunked(true);
+		logging::debug(B_BLUE "Chunked transfer encoding detected" THIN);
+	}
 	if (body.empty() && std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) == 0) {
 		_body = body;
 		return;
 	}
+	if (!this->isChunked()){
+
 	if (body.empty()) {
 		_errors.push_back(BODY_WITHOUT_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
@@ -199,6 +205,14 @@ void HttpRequest::parseBody(const std::string &body) {
 	if (std::strtod(_headers[CONTENT_LENGTH].c_str(), 0) < _body.size()) {
 		_errors.push_back(BODY_LENGTH_NOT_MATCHING_CONTENT_LENGTH);
 		_validity = INVALID_REQUEST;
+	}
+	}
+	std::string unchunkedBody;
+	if (this->isChunked()) {
+		unchunkBody(unchunkedBody);
+		if (_body.empty()) {
+			_validity = INVALID_REQUEST;
+		}
 	}
 }
 
@@ -282,4 +296,40 @@ bool HttpRequest::isChunked() const {
 
 void HttpRequest::setChunked(bool isChunked) {
 	_isChunked = isChunked;
+}
+
+bool HttpRequest::unchunkBody(std::string &unchunkedBody) {
+	bool complete = false;
+	std::vector<std::string> tok = splitDelimiter(_body, CRLF);
+	std::vector<std::string>::const_iterator it;
+	std::string strChunkSize;
+	size_t chunkSize;
+	for (it = tok.begin(); it != tok.end(); it++){
+		if (strChunkSize.empty()){
+			strChunkSize = *it;
+			std::istringstream iss(strChunkSize);
+			iss >> std::hex >> chunkSize;
+			logging::debug("Chunk size : Ox" + *it + "(" + toString(chunkSize) + ")");
+			if (chunkSize == 0 && it + 1 == tok.end()){
+				complete = true;
+				break;
+			}
+		}
+		else{
+			logging::debug("Chunk : " + *it);
+			unchunkedBody.append(*it);
+			size_t delta = chunkSize - it->size();
+			while (delta/2 > 0){
+				unchunkedBody.append(CRLF);
+				delta -= 2;
+			}
+			strChunkSize = "";
+		}
+	}
+	_body = unchunkedBody;
+	if (complete)
+		_validity = VALID_AND_COMPLETE_REQUEST;
+	else
+		_validity = VALID_AND_INCOMPLETE_REQUEST;
+	return true;
 }

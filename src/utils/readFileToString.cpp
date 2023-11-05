@@ -1,11 +1,12 @@
 #include <fstream>
-#include <iostream>
+
+#include "logger/logging.hpp"
 
 std::string readFileToString(const std::string& filename, bool & success) {
 	std::ifstream file(filename.c_str());
 
 	if (!file.is_open()) {
-		std::cerr << "Error: Unable to open file " << filename << std::endl;
+		logging::error("Unable to open file " + filename);
 		success = false;
 		return "";
 	}

@@ -9,7 +9,7 @@
 AHttpMessage::AHttpMessage(void) : _statusCode(-1) {}
 
 AHttpMessage::AHttpMessage(std::string raw) : _statusCode(-1) {
-	this->setRawRequest(raw);
+	setRawRequest(raw);
 }
 
 AHttpMessage::AHttpMessage(const AHttpMessage &other) { *this = other; }
@@ -50,31 +50,36 @@ void AHttpMessage::displayRequest() {
 }
 
 void AHttpMessage::setVersion() {
-	this->_httpVersion = HTTP_VERSION;
+	_httpVersion = HTTP_VERSION;
 }
 
 void AHttpMessage::setStatusCode(int code) {
-	this->_statusCode = code;
+	_statusCode = code;
 }
 
 int AHttpMessage::getStatusCode() {
-	return this->_statusCode;
+	return _statusCode;
 }
 
 void AHttpMessage::setStatusMessage(std::string statusMessage) {
-	this->_statusMessage = statusMessage;
+	_statusMessage = statusMessage;
 }
 
 void AHttpMessage::setHeaders(std::string header, std::string content) {
-	this->_headers[header] = content;
+	_headers[header] = content;
 }
 
 void AHttpMessage::setBody(std::string body) {
-	this->_body = body;
+	_body = body;
 }
 
 std::string AHttpMessage::getRawRequest() {
 	return _rawMessage;
+}
+
+const std::map<std::string, std::string>& AHttpMessage::getHeaders() const
+{
+	return _headers;
 }
 
 std::string * AHttpMessage::getHeader(const std::string &header)  {

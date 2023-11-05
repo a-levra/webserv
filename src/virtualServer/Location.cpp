@@ -6,7 +6,8 @@
 
 Location::Location(): _URI(""), _root("html"),
 					  _clientMaxBodySize(1),
-					  _autoIndex(false) {
+					  _autoIndex(false),
+					  _hasReturn(false) {
 	std::vector<std::string> index;
 	index.push_back("index.html");
 	setIndex(index);
@@ -15,12 +16,12 @@ Location::Location(): _URI(""), _root("html"),
 	allowMethods.push_back("POST");
 	allowMethods.push_back("DELETE");
 	setAllowMethods(allowMethods);
-
 }
 
 Location::Location(const std::string &URI): _URI(URI), _root("html"),
 											_clientMaxBodySize(1),
-											_autoIndex(false) {
+											_autoIndex(false),
+											_hasReturn(false) {
 	std::vector<std::string> index;
 	index.push_back("index.html");
 	setIndex(index);
@@ -29,7 +30,6 @@ Location::Location(const std::string &URI): _URI(URI), _root("html"),
 	allowMethods.push_back("POST");
 	allowMethods.push_back("DELETE");
 	setAllowMethods(allowMethods);
-
 }
 
 Location::Location(const Location &other) { *this = other; }
@@ -41,7 +41,6 @@ Location &Location::operator=(const Location &other) {
 		return *this;
 	_URI = other._URI;
 	_root = other._root;
-	_alias = other._alias;
 	_index = other._index;
 	_allowMethods = other._allowMethods;
 	_errorPage = other._errorPage;
@@ -49,6 +48,7 @@ Location &Location::operator=(const Location &other) {
 	_clientMaxBodySize = other._clientMaxBodySize;
 	_autoIndex = other._autoIndex;
 	_cgiPath = other._cgiPath;
+	_hasReturn = other._hasReturn;
 	return *this;
 }
 
@@ -69,8 +69,6 @@ void Location::addDirective(const std::string &name, const std::string &content)
 		setAutoIndex(content == "on");
 	else if (name == "cgi_path")
 		addCGIPathDirective(content);
-	else if (name == "alias")
-		setAlias(content);
 }
 
 void Location::addIndexDirective(const std::string &content) {
@@ -120,10 +118,6 @@ std::string Location::getRoot() const {
 	return _root;
 }
 
-std::string Location::getAlias() const {
-	return _alias;
-}
-
 size_t Location::getClientMaxBodySize() const {
 	return _clientMaxBodySize;
 }
@@ -160,10 +154,6 @@ void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-void Location::setAlias(const std::string &alias) {
-	_alias = alias;
-}
-
 void Location::setClientMaxBodySize(size_t clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
 }
@@ -186,6 +176,7 @@ void Location::setErrorPage(const std::pair<std::vector<int>, std::string> &erro
 
 void Location::setReturn(const std::pair<int, std::string> &returnPage) {
 	_return = returnPage;
+	_hasReturn = true;
 }
 
 void Location::display() {
@@ -223,4 +214,8 @@ bool	Location::isAllowedMethod(const std::string& method) const{
 
 bool Location::hasCGI() const {
 	return _cgiPath.size() > 0;
+}
+
+bool Location::hasReturn() const {
+	return _hasReturn;
 }

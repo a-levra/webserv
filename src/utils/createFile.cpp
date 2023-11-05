@@ -4,14 +4,13 @@
 #include "utils/utils.hpp"
 #include "logger/logging.hpp"
 
-bool createFile(const std::string &filename, const std::string &fileContent) {
-	logging::debug("Creating file : " + filename);
-//	coloredLog("File content: ", fileContent, GREEN);
+bool createFile(const std::string &file, const std::string &fileContent) {
+	logging::debug("Creating file : " + file);
 
-	std::ofstream file(("uploadedFiles/" + filename).c_str());
-	if (file.is_open()) {
-		file << fileContent;
-		file.close();
+	std::ofstream newFile(file.c_str());
+	if (newFile.is_open()) {
+		newFile << fileContent;
+		newFile.close();
 		return true;
 	}
 	else

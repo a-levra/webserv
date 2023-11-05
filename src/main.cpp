@@ -17,7 +17,6 @@ static void handleSignal(int signum);
 
 int main(int argc, char **argv)
 {
-	updateHTML();
 	Options options;
 
 	if (!getOptions(argc, argv, options))
@@ -106,5 +105,8 @@ static int runServer(const std::string& configFile) {
 
 static void handleSignal(int signum) {
 	static_cast<void>(signum);
+    logging::info("shutdown server...");
 	Server::exit = true;
+    signal(SIGINT, &handleSignal);
+    signal(SIGTERM, &handleSignal);
 }

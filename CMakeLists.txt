@@ -60,4 +60,5 @@ add_executable(42_webserv
         include/cgi/CGI.hpp
         src/cgi/CGI.cpp
         src/HttpMessages/HttpResponseCGI.cpp
+        src/utils/isDirectory.cpp
 )

@@ -5,12 +5,11 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
-#include <iosfwd>
 #include <cstdio>
-#include <csignal>
 #include <cstdlib>
 #include <cstring>
+
+#include "logger/logging.hpp"
 
 
 CGI::CGI() {
@@ -26,21 +25,24 @@ CGI::~CGI() {
 }
 
 CGI::codeError CGI::execute(const HttpResponse& response) {
-  	if (!writeInTmpIN(response.getRequest().getBody())) {
+  	if (!_writeInTmpIN(response.getRequest().getBody())) {
 		return FAILED;
 	}
-	char** envp = initEnv(response);
-	pid_t pidExec = runExecutable(response.getCGIExtension().second,
-								  response.getCGIPath(),
-								  response.getCGIFile(), envp);
-	deleteEnv(envp);
+	char** envp = _initEnv(response);
+	pid_t pidExec = _runExecutable(response.getCGIExtension().second,
+								   response.getCGIPath(),
+								   response.getCGIFile(), envp);
+	_deleteEnv(envp);
 	if (pidExec == -1)
 		return FAILED;
-	pid_t pidTimeOut = runTimeout(CGI_TIMEOUT_MS);
-	if (pidTimeOut == -1)
+	pid_t pidTimeOut = _runTimeout(CGI_TIMEOUT_MS);
+	if (pidTimeOut == -1) {
+		kill(pidExec, SIGKILL);
+		waitpid(-1, NULL, WUNTRACED);
 		return FAILED;
-	std::pair<pid_t, int> firstChild = waitFirstChild(pidExec, pidTimeOut);
-	if (!readTmpFiles())
+	}
+	std::pair<pid_t, int> firstChild = _waitFirstChild(pidExec, pidTimeOut);
+	if (!_readTmpFiles())
 		return FAILED;
 	if (firstChild.first == pidExec && firstChild.second == 0)
 		return SUCCESSFUL;
@@ -49,10 +51,10 @@ CGI::codeError CGI::execute(const HttpResponse& response) {
 	return TIMEOUT;
 }
 
-pid_t CGI::runExecutable(const std::string &interpreter, const std::string &path, const std::string &executable, char **envp) {
+pid_t CGI::_runExecutable(const std::string &interpreter, const std::string &path, const std::string &executable, char **envp) {
 	pid_t pidExec = fork();
 	if (pidExec == -1) {
-		std::cout << "fork failed" << std::endl;
+		logging::warning("Fork executable failed");
 		return pidExec;
 	}
 	else if (pidExec == 0) {
@@ -72,10 +74,11 @@ pid_t CGI::runExecutable(const std::string &interpreter, const std::string &path
 	return pidExec;
 }
 
-pid_t CGI::runTimeout(size_t ms) {
+pid_t CGI::_runTimeout(size_t ms) {
 	pid_t pidTimeOut = fork();
 	if (pidTimeOut == -1) {
-		perror("fork");
+		logging::warning("Fork timeout failed");
+		return pidTimeOut;
 	}
 	else if (pidTimeOut == 0) {
 		ftSleep(ms);
@@ -84,41 +87,50 @@ pid_t CGI::runTimeout(size_t ms) {
 	return pidTimeOut;
 }
 
-std::pair<pid_t, int> CGI::waitFirstChild(pid_t child1, pid_t child2) {
+std::pair<pid_t, int> CGI::_waitFirstChild(pid_t child1, pid_t child2) {
 	int statusCode = 0;
 	pid_t firstChildPid = waitpid(-1, &statusCode, WUNTRACED);
 
-	if (firstChildPid == child1)
-		kill(child2,SIGKILL);
-	else
-		kill(child1, SIGKILL);
+	if (firstChildPid == child1) {
+		if (kill(child2,SIGKILL) == -1) {
+			logging::error("Kill failed");
+		}
+	}
+	else {
+		if (kill(child1, SIGKILL) == -1) {
+			logging::error("Kill failed");
+		}
+	}
 	waitpid(-1, NULL, WUNTRACED);
 	return std::make_pair(firstChildPid, WEXITSTATUS(statusCode));
 }
 
-char **CGI::initEnv(const HttpResponse& request) {
+char **CGI::_initEnv(const HttpResponse& request) {
 	const std::map<std::string, std::string>& headers = request.getRequest().getHeaders();
 	char** envp = new char*[headers.size() + 5];
 
 	size_t envpIndex = 0;
-	envp[envpIndex] = getEnvVariable("PATH_INFO", request.getCGIPathInfo());
+	envp[envpIndex] = _getEnvVariable("PATH_INFO", request.getCGIPathInfo());
 	envpIndex++;
-  	envp[envpIndex] = getEnvVariable("REQUEST_METHOD",  request.getRequest().getMethod());
+  	envp[envpIndex] = _getEnvVariable("REQUEST_METHOD",
+									  request.getRequest().getMethod());
   	envpIndex++;
-	envp[envpIndex] = getEnvVariable("CONTENT_LENGTH",  headers.find("Content-Length")->second);
+	envp[envpIndex] = _getEnvVariable("CONTENT_LENGTH",
+									  headers.find("Content-Length")->second);
 	envpIndex++;
-	envp[envpIndex] = getEnvVariable("CONTENT_TYPE",  headers.find("Content-Type")->second);
+	envp[envpIndex] = _getEnvVariable("CONTENT_TYPE",
+									  headers.find("Content-Type")->second);
 	envpIndex++;
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = headers.begin(); it != headers.end(); it++) {
-		envp[envpIndex] = getEnvVariable("HTTP_" + it->first, it->second);
+		envp[envpIndex] = _getEnvVariable("HTTP_" + it->first, it->second);
 		envpIndex++;
 	}
 	envp[envpIndex] = NULL;
 	return envp;
 }
 
-char *CGI::getEnvVariable(const std::string& key, const std::string& value) {
+char *CGI::_getEnvVariable(const std::string& key, const std::string& value) {
 	std::string newKey = key;
 	std::transform(newKey.begin(), newKey.end(), newKey.begin(), ::toupper);
 	std::replace(newKey.begin(), newKey.end(), '-', '_');
@@ -128,7 +140,7 @@ char *CGI::getEnvVariable(const std::string& key, const std::string& value) {
 	return envVariable;
 }
 
-void  CGI::deleteEnv(char **env) {
+void  CGI::_deleteEnv(char **env) {
 	if (env == NULL) return;
 	for (size_t i = 0; env[i] != NULL; i++) {
 		delete[] env[i];
@@ -136,17 +148,18 @@ void  CGI::deleteEnv(char **env) {
 	delete[] env;
 }
 
-bool CGI::writeInTmpIN(const std::string &content) {
+bool CGI::_writeInTmpIN(const std::string &content) {
 	std::ofstream fileIn(PATH_CGI_IN);
 
 	if (fileIn.is_open()) {
 		fileIn << content;
 		return true;
 	}
+	logging::warning("open tmpIN failed");
 	return false;
 }
 
-bool CGI::readTmpFiles() {
+bool CGI::_readTmpFiles() {
 	std::ifstream tmpOut(PATH_CGI_OUT);
 	std::ifstream tmpErr(PATH_CGI_ERR);
 	std::string content;
@@ -158,6 +171,7 @@ bool CGI::readTmpFiles() {
 		}
 		_stdout = content;
 	} else {
+		logging::warning("open tmpOut failed");
 		return false;
 	}
 	content = "";
@@ -167,6 +181,7 @@ bool CGI::readTmpFiles() {
 		}
 		_stderr = content;
 	} else {
+		logging::warning("open tmpErr failed");
 		return false;
 	}
 	return true;
@@ -184,26 +199,11 @@ CGI::codeError CGI::getCodeError() const {
 	return _codeError;
 }
 
-std::string::size_type CGI::findEndBinaryPos(const std::string &s) {
-	std::vector<std::string> extensions;
-	extensions.push_back(".py");
-	extensions.push_back(".php");
-
-	std::string::size_type binaryPos = std::string::npos;
-	std::vector<std::string>::const_iterator it;
-	for (it = extensions.begin(); it != extensions.end(); it++) {
-		std::string::size_type pos = s.find(*it);
-		// TODO : query check ?
-		if (pos != std::string::npos && (s[pos + it->length()] == '/'
-										 || s[pos + it->length()] == '?'
-										 || s[pos + it->length()] == '\0'))
-			binaryPos = pos + it->length();
-	}
-	return binaryPos;
-}
-
 CGI &CGI::operator=(const CGI &other) {
 	if (this == &other)
 		return *this;
+	_stdout = other._stdout;
+	_stderr = other._stderr;
+	_codeError = other._codeError;
 	return *this;
 }

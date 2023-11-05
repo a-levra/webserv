@@ -29,23 +29,22 @@ public:
 
 	CGI &operator=(const CGI &other);
 
-	CGI::codeError	execute(const HttpResponse& response);
-	bool	executeBinary(const std::string& path, const std::string& script);
-	pid_t 	runExecutable(const std::string& interpreter, const std::string& path, const std::string& executable, char **envp);
-	pid_t	runTimeout(size_t ms);
-	std::pair<pid_t, int>	waitFirstChild(pid_t child1, pid_t child2);
-	char**	initEnv(const HttpResponse& request);
-	char*	getEnvVariable(const std::string& key, const std::string& value);
-    void    deleteEnv(char** env);
-	std::string::size_type findEndBinaryPos(const std::string& s);
-	bool	writeInTmpIN(const std::string& content);
-	bool	readTmpFiles();
+	CGI::codeError		execute(const HttpResponse& response);
 
-	const std::string& getStdErr() const;
-	const std::string& getStdOut() const;
+	const std::string&	getStdErr() const;
+	const std::string&	getStdOut() const;
 	codeError			getCodeError() const;
 
 private:
+	pid_t 	_runExecutable(const std::string& interpreter, const std::string& path, const std::string& executable, char **envp);
+	pid_t	_runTimeout(size_t ms);
+	std::pair<pid_t, int>	_waitFirstChild(pid_t child1, pid_t child2);
+	char**	_initEnv(const HttpResponse& request);
+	char*	_getEnvVariable(const std::string& key, const std::string& value);
+	void    _deleteEnv(char** env);
+	bool	_writeInTmpIN(const std::string& content);
+	bool	_readTmpFiles();
+
 	std::string	_stdout;
 	std::string	_stderr;
 	codeError	_codeError;

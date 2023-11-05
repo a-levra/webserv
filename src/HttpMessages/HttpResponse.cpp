@@ -349,4 +349,8 @@ std::string HttpResponse::getSpecificErrorPage(int code) {
 	return "";
 }
 
+HttpRequest::REQUEST_VALIDITY HttpResponse::getRequestValidity() const {
+	return _request.getValidity();
+}
+
 

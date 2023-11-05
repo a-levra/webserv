@@ -9,10 +9,12 @@
 
 HttpRequest::HttpRequest(void) : AHttpMessage() {
 	_validity = NOT_PARSED_YET;
+	_isChunked = false;
 }
 
 HttpRequest::HttpRequest(const std::string &raw) : AHttpMessage(raw) {
 	_validity = NOT_PARSED_YET;
+	_isChunked = false;
 }
 
 HttpRequest::HttpRequest(const HttpRequest &other) : AHttpMessage(other) { *this = other; }
@@ -31,6 +33,7 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_statusMessage = other._statusMessage;
 		_validity = other._validity;
 		_errors = other._errors;
+		_isChunked = other._isChunked;
 	}
 	return (*this);
 }
@@ -271,4 +274,12 @@ bool HttpRequest::canSendResponse() const
 
 void HttpRequest::addError(HttpRequest::ERRORS error) {
 	_errors.push_back(error);
+}
+
+bool HttpRequest::isChunked() const {
+	return _isChunked;
+}
+
+void HttpRequest::setChunked(bool isChunked) {
+	_isChunked = isChunked;
 }

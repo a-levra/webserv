@@ -65,17 +65,16 @@ void HttpResponse::build() {
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return;
 	}
-	logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " "
-					   + _location->getURI());
-	if (!checkRequestMaxBodySize()) {
-		buildErrorPage(PAYLOAD_TOO_LARGE);
-		return;
-	}
-	if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST) {
-		_rawMessage = "";
-		return;
-	}
-
+    if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST) {
+        logging::debug(B_YELLOW "Request is incomplete" COLOR_RESET);
+        _rawMessage = "";
+        return;
+    }
+    logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " " + _location->getURI());
+    if (!checkRequestMaxBodySize()) {
+        buildErrorPage(PAYLOAD_TOO_LARGE);
+        return;
+    }
 	if (_request.getMethod() == "GET")
 		buildGet();
 	else if (_request.getMethod() == "POST")
@@ -105,6 +104,7 @@ void HttpResponse::buildGet() {
 
 	if (_location->hasReturn()) {
 		_statusCode = _location->getReturn().first;
+        _statusMessage = "OK";
 		setHeader("Location", _location->getReturn().second);
 		buildRawMessage();
 		return;
@@ -115,7 +115,9 @@ void HttpResponse::buildGet() {
 			buildErrorPage(INTERNAL_SERVER_ERROR);
 			return;
 		}
-		buildRawMessage();
+        _statusCode = OK;
+        _statusMessage = "OK";
+        buildRawMessage();
 		return;
 	}
 	if (_location->hasCGI()) {
@@ -394,6 +396,9 @@ void HttpResponse::buildRawMessage() {
 	response += CRLF;
 	response += _body;
 	_rawMessage = response;
+}
+HttpRequest::REQUEST_VALIDITY HttpResponse::getRequestValidity() const {
+	return _request.getValidity();
 }
 
 bool HttpResponse::buildListingDirectory() {

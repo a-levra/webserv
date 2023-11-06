@@ -27,6 +27,7 @@ class HttpResponse : public AHttpMessage {
 		void ExtractImgInsideBoundaries(std::string *boundary,
 										std::string &filename,
 										std::string &fileContent) const;
+		HttpRequest::REQUEST_VALIDITY getRequestValidity() const;
 		const std::string& getCGIPath() const;
 		const std::string& getCGIFile() const;
 		const std::string& getCGIPathInfo() const;

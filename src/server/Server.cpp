@@ -250,7 +250,8 @@ bool Server::_sendClientRequest(Client &client) {
 	HttpRequest httpRequest = client.getRequest();
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this), client);
-	if (!response.empty()) {
+	if (!response.empty() &&
+	httpResponse.getRequestValidity() == HttpRequest::VALID_AND_COMPLETE_REQUEST) {
 		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 		logging::info(client.getEntryIPAddress() + ":" +
 			toString(client.getEntryPort()) + " " + httpRequest.getMethod()

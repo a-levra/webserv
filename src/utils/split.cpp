@@ -26,7 +26,7 @@ std::vector<std::string> splitDelimiter(const std::string& s, const std::string 
 	while (end != std::string::npos) {
 		if (end != start)
 			result.push_back(s.substr(start, end - start));
-		start = end + 1;
+		start = end + (delimiter.size());
 		end = s.find(delimiter, start);
 	}
 	if (start != s.size())

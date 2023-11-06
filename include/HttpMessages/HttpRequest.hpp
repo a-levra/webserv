@@ -80,10 +80,14 @@ class HttpRequest: public AHttpMessage{
 		bool isInvalid() const;
 		bool canSendResponse() const;
 		std::string getErrors();
+		bool isChunked() const;
+		void setChunked(bool isChunked);
 	private:
+		bool		_isChunked;
 		REQUEST_VALIDITY _validity;
 		std::vector<ERRORS> _errors;
 		std::string getLexerParserError(HttpRequest::ERRORS validity);
+		bool unchunkBody(std::string &unchunkedBody);
 };
 
 #endif

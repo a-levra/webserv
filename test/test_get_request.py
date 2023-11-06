@@ -20,12 +20,12 @@ class TestGetRequest(unittest.TestCase):
         cls.server_process.wait()
 
     def test_simple_get(self):
-        response = requests.get("http://localhost:9000/")
-        self.assertEqual(response.status_code, 404)
+        response = requests.get("http://127.0.0.1:9000/")
+        self.assertEqual(response.status_code, 200)
 
     def test_invalid_port(self):
         with self.assertRaises(requests.RequestException) as cm:
-            response = requests.get("http://localhost:9090")
+            response = requests.get("http://127.0.0.1:5000/")
 
 
 if __name__ == "__main__":

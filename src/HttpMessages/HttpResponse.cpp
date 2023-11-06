@@ -104,6 +104,7 @@ void HttpResponse::buildGet() {
 
 	if (_location->hasReturn()) {
 		_statusCode = _location->getReturn().first;
+        _statusMessage = "OK";
 		setHeader("Location", _location->getReturn().second);
 		buildRawMessage();
 		return;
@@ -114,7 +115,9 @@ void HttpResponse::buildGet() {
 			buildErrorPage(INTERNAL_SERVER_ERROR);
 			return;
 		}
-		buildRawMessage();
+        _statusCode = OK;
+        _statusMessage = "OK";
+        buildRawMessage();
 		return;
 	}
 	if (_location->hasCGI()) {

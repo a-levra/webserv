@@ -251,7 +251,7 @@ bool Server::_sendClientRequest(Client &client) {
 	HttpResponse httpResponse(httpRequest);
 	std::string response = httpResponse.getResponse((*this), client);
 	if (!response.empty() &&
-	httpResponse.getRequestValidity() == HttpRequest::VALID_AND_COMPLETE_REQUEST) {
+		(httpResponse.getRequestValidity() == HttpRequest::VALID_AND_COMPLETE_REQUEST || httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)) {
 		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 		logging::info(client.getEntryIPAddress() + ":" +
 			toString(client.getEntryPort()) + " " + httpRequest.getMethod()
@@ -259,8 +259,9 @@ bool Server::_sendClientRequest(Client &client) {
 			httpRequest.getRequestUri());
 		client.setRawRequest("");
 	}
-	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
+	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE) {
 		return false;
+	}
 	return true;
 }
 

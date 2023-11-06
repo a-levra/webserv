@@ -65,16 +65,16 @@ void HttpResponse::build() {
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return;
 	}
+    if (!checkRequestMaxBodySize()) {
+        buildErrorPage(PAYLOAD_TOO_LARGE);
+        return;
+    }
     if (_request.getValidity() == HttpRequest::VALID_AND_INCOMPLETE_REQUEST) {
         logging::debug(B_YELLOW "Request is incomplete" COLOR_RESET);
         _rawMessage = "";
         return;
     }
     logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " " + _location->getURI());
-    if (!checkRequestMaxBodySize()) {
-        buildErrorPage(PAYLOAD_TOO_LARGE);
-        return;
-    }
 	if (_request.getMethod() == "GET")
 		buildGet();
 	else if (_request.getMethod() == "POST")

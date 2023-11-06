@@ -1,5 +1,8 @@
-#include <fstream>
+#include <dirent.h>
+#include <fcntl.h>
 #include <unistd.h>
+
+#include <fstream>
 #include <cstdlib>
 #include <cstring>
 
@@ -7,9 +10,11 @@
 #include "utils/utils.hpp"
 #include "logger/logging.hpp"
 
-HttpResponse::HttpResponse(class HttpRequest &r) : _location(NULL), _request(r) {}
+HttpResponse::HttpResponse(class HttpRequest &r)
+	: _location(NULL), _request(r) {}
 
-HttpResponse::HttpResponse(const HttpResponse &other) : AHttpMessage(other), _request(other._request) { *this = other; }
+HttpResponse::HttpResponse(const HttpResponse &other)
+	: AHttpMessage(other), _request(other._request) { *this = other; }
 
 HttpResponse::~HttpResponse(void) {}
 
@@ -38,8 +43,8 @@ std::string HttpResponse::getResponse(Server &server, const Client &client) {
 	if (host == NULL)
 		return buildErrorPage(BAD_REQUEST);
 
-	VirtualServer *vs  = server.getVirtualServer(client.getEntryIPAddress(),
-												 client.getEntryPort(), *host);
+	VirtualServer *vs = server.getVirtualServer(client.getEntryIPAddress(),
+												client.getEntryPort(), *host);
 	if (vs == NULL)
 		return buildErrorPage(NOT_FOUND);
 
@@ -60,7 +65,8 @@ void HttpResponse::build() {
 		buildErrorPage(METHOD_NOT_ALLOWED);
 		return;
 	}
-	logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " " + _location->getURI());
+	logging::debug(B_BLUE "Building " THIN + _request.getMethod() + " "
+					   + _location->getURI());
 	if (!checkRequestMaxBodySize()) {
 		buildErrorPage(PAYLOAD_TOO_LARGE);
 		return;
@@ -81,10 +87,13 @@ void HttpResponse::build() {
 }
 
 bool HttpResponse::checkRequestMaxBodySize() {
-	if ((float) _request.getBody().size() / 1000000 > (float) _location->getClientMaxBodySize()) {
+	if ((float) _request.getBody().size() / 1000000
+		> (float) _location->getClientMaxBodySize()) {
 		logging::debug("Payload to large : ");
-		logging::debug("\tBody size : " + toString(_request.getBody().size() / 1000000) + "m");
-		logging::debug("Max body size : " + toString(_location->getClientMaxBodySize()) + "m");
+		logging::debug(
+			"\tBody size : " + toString(_request.getBody().size() / 1000000) + "m");
+		logging::debug(
+			"Max body size : " + toString(_location->getClientMaxBodySize()) + "m");
 		_request.addError(HttpRequest::PAYLOAD_TOO_LARGE_ERROR);
 		return false;
 	}
@@ -97,6 +106,15 @@ void HttpResponse::buildGet() {
 	if (_location->hasReturn()) {
 		_statusCode = _location->getReturn().first;
 		setHeader("Location", _location->getReturn().second);
+		buildRawMessage();
+		return;
+	}
+	if (_requestUri[_requestUri.size() - 1] == '/'
+		&& _location->getAutoIndex()) {
+		if (!buildListingDirectory()) {
+			buildErrorPage(INTERNAL_SERVER_ERROR);
+			return;
+		}
 		buildRawMessage();
 		return;
 	}
@@ -127,7 +145,9 @@ void HttpResponse::generateBody() {
 		return;
 	}
 	bool success;
-	_body = readFileToString(_location->getRoot() + _location->getURI() + "/" + *file, success);
+	_body =
+		readFileToString(_location->getRoot() + _location->getURI() + "/" + *file,
+						 success);
 	if (!success) {
 		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return;
@@ -141,8 +161,8 @@ void HttpResponse::generateBody() {
 
 void HttpResponse::buildPost() {
 	if (_location->hasCGI()) {
-	  buildCGIPost();
-	  return;
+		buildCGIPost();
+		return;
 	}
 	if (!getFileFromPostAndSaveIt()) {
 		buildRawMessage();
@@ -160,12 +180,11 @@ void HttpResponse::buildDelete() {
 	logging::debug("Resource: " + res);
 	std::string file = _location->getRoot() + "/" + _requestUri;
 	if (!fileExists(file)) {
-	  buildErrorPage(NOT_FOUND);
-	  return;
-	}
-	else if (std::remove(file.c_str()) != 0) {
-	  buildErrorPage(INTERNAL_SERVER_ERROR);
-	  return;
+		buildErrorPage(NOT_FOUND);
+		return;
+	} else if (std::remove(file.c_str()) != 0) {
+		buildErrorPage(INTERNAL_SERVER_ERROR);
+		return;
 	}
 	_statusCode = OK;
 	_statusMessage = "OK";
@@ -178,29 +197,21 @@ std::string &HttpResponse::buildErrorPage(int errorCode) {
 	std::string error = toString(errorCode);
 	std::string errorName;
 	switch (errorCode) {
-		case BAD_REQUEST:
-			errorName = "Bad Request";
+		case BAD_REQUEST: errorName = "Bad Request";
 			break;
-		case NOT_FOUND:
-			errorName = "Not Found";
+		case NOT_FOUND: errorName = "Not Found";
 			break;
-		case METHOD_NOT_ALLOWED:
-			errorName = "Method Not Allowed";
+		case METHOD_NOT_ALLOWED: errorName = "Method Not Allowed";
 			break;
-		case PAYLOAD_TOO_LARGE:
-			errorName = "Payload Too Large";
+		case PAYLOAD_TOO_LARGE: errorName = "Payload Too Large";
 			break;
-		case INTERNAL_SERVER_ERROR:
-			errorName = "Internal Server Error";
+		case INTERNAL_SERVER_ERROR: errorName = "Internal Server Error";
 			break;
-		case NOT_IMPLEMENTED:
-			errorName = "Not Implemented";
+		case NOT_IMPLEMENTED: errorName = "Not Implemented";
 			break;
-		case HTTP_VERSION_NOT_SUPPORTED:
-			errorName = "HTTP Version Not Supported";
+		case HTTP_VERSION_NOT_SUPPORTED: errorName = "HTTP Version Not Supported";
 			break;
-		default:
-			errorName = "Unknown Error";
+		default: errorName = "Unknown Error";
 			break;
 	}
 	setStatusMessage(errorName);
@@ -210,7 +221,8 @@ std::string &HttpResponse::buildErrorPage(int errorCode) {
 	return _rawMessage;
 }
 
-void HttpResponse::setHeader(const std::string &header, const std::string &content) {
+void HttpResponse::setHeader(const std::string &header,
+							 const std::string &content) {
 	_headers[header] = content;
 }
 
@@ -221,8 +233,9 @@ const std::string *HttpResponse::getFirstValidIndex() const {
 	std::vector<std::string>::const_iterator it;
 	logging::debug(B_BLUE "Searching a valid index.. " THIN);
 	for (it = index.begin(); it != index.end(); it++) {
-		std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + *it;
-		if (fileExists(pathToFile)){
+		std::string
+			pathToFile = _location->getRoot() + _location->getURI() + "/" + *it;
+		if (fileExists(pathToFile)) {
 			logging::debug(B_GREEN "Index found : " THIN + pathToFile);
 			return &(*it);
 		}
@@ -235,19 +248,19 @@ void HttpResponse::GenerateErrorBody() {
 	std::string specificErrorPage = getSpecificErrorPage(_statusCode);
 	bool success;
 	if (!specificErrorPage.empty()) {
-		setBody(readFileToString(_location->getRoot() + _location->getURI() + "/" + specificErrorPage, success));
-		if (!success){
+		setBody(readFileToString(
+			_location->getRoot() + _location->getURI() + "/" + specificErrorPage,
+			success));
+		if (!success) {
 			logging::debug(B_RED "Failed to open specific error page !" THIN);
-			if (_statusCode != INTERNAL_SERVER_ERROR){
+			if (_statusCode != INTERNAL_SERVER_ERROR) {
 				buildErrorPage(INTERNAL_SERVER_ERROR);
-				return ;
-			}
-			else{
+				return;
+			} else {
 				setStatusCode(INTERNAL_SERVER_ERROR);
 				setStatusMessage("Internal server error");
 			}
-		}
-		else
+		} else
 			return;
 	}
 
@@ -256,9 +269,12 @@ void HttpResponse::GenerateErrorBody() {
 	logging::debug("Error message: " + _statusMessage);
 	std::string additionnalInfo;
 	if (_statusCode == PAYLOAD_TOO_LARGE) {
-		additionnalInfo = "The maximum size of the payload for \"" + _location->getURI() + "\" is "
-			+ toString(this->_location->getClientMaxBodySize()) + " Mb.";
-		additionnalInfo += "</h3><h3>Current payload size: " + toString(_request.getBody().size() / 1000000) + " Mb.";
+		additionnalInfo =
+			"The maximum size of the payload for \"" + _location->getURI()
+				+ "\" is "
+				+ toString(this->_location->getClientMaxBodySize()) + " Mb.";
+		additionnalInfo += "</h3><h3>Current payload size: "
+			+ toString(_request.getBody().size() / 1000000) + " Mb.";
 		if (_request.getHeader(CONTENT_LENGTH)) {
 			additionnalInfo += "</h3><h3>Total payload you tried to send: ";
 			std::string payloadSizeStr = *(_request.getHeader(CONTENT_LENGTH));
@@ -270,7 +286,8 @@ void HttpResponse::GenerateErrorBody() {
 	appendBody("<html>"
 			   "<body>"
 			   "<h1>\n" + toString(_statusCode) + " " + _statusMessage + "\n</h1>" \
-                             "<h2>\n" + _request.getMethod() + " " + _request.getRequestUri() + "\n</h2>" \
+                             "<h2>\n" + _request.getMethod() + " "
+				   + _request.getRequestUri() + "\n</h2>" \
                              "<h3>\n" + additionnalInfo + "\n</h3>" \
                     "</body></html>");
 
@@ -293,7 +310,8 @@ bool HttpResponse::getFileFromPostAndSaveIt() {
 			return false;
 		}
 	}
-	if (!createFile(_location->getRoot() + "/" + _requestUri + "/" + filename, fileContent)) {
+	if (!createFile(_location->getRoot() + "/" + _requestUri + "/" + filename,
+					fileContent)) {
 		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return false;
 	}
@@ -331,7 +349,8 @@ std::string HttpResponse::getResource() const {
 const std::string *HttpResponse::tryGetFile(const std::string &resource) {
 	if (!_location)
 		return NULL;
-	std::string pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
+	std::string
+		pathToFile = _location->getRoot() + _location->getURI() + "/" + resource;
 	logging::debug("path to resource: " + pathToFile);
 	if (fileExists(pathToFile))
 		return &resource;
@@ -345,13 +364,16 @@ std::string HttpResponse::getSpecificErrorPage(int code) {
 	std::pair<std::vector<int>, std::string> errorPage;
 	logging::debug(B_BLUE "Checking if a specific error page exist " COLOR_RESET);
 	logging::debug(B_BLUE "\tfor code : " THIN + toString(code) + COLOR_RESET);
-	logging::debug(B_BLUE "\tand location : " THIN + _location->getURI() + COLOR_RESET);
+	logging::debug(
+		B_BLUE "\tand location : " THIN + _location->getURI() + COLOR_RESET);
 	errorPage = _location->getErrorPage();
 
 	std::vector<int>::iterator it;
 	for (it = errorPage.first.begin(); it != errorPage.first.end(); it++) {
-		if (*it == code){
-			logging::debug(B_GREEN "Specific error page found: " THIN + errorPage.second + COLOR_RESET);
+		if (*it == code) {
+			logging::debug(
+				B_GREEN "Specific error page found: " THIN + errorPage.second
+					+ COLOR_RESET);
 			return errorPage.second;
 		}
 	}
@@ -364,7 +386,7 @@ void HttpResponse::buildRawMessage() {
 	setHeader("Server", "webserv");
 	setHeader("Content-Length", toString(_body.length()));
 	std::string response = HTTP_VERSION  " " + toString(this->_statusCode)
-						   + " " + _statusMessage + CRLF;
+		+ " " + _statusMessage + CRLF;
 	std::map<std::string, std::string>::iterator it;
 	for (it = _headers.begin(); it != _headers.end(); it++) {
 		response += it->first + ": " + it->second + CRLF;
@@ -372,4 +394,45 @@ void HttpResponse::buildRawMessage() {
 	response += CRLF;
 	response += _body;
 	_rawMessage = response;
+}
+
+bool HttpResponse::buildListingDirectory() {
+	std::string directoryPath;
+	std::stringstream directoryListing;
+	DIR *dir;
+	dirent *dirEntry;
+
+	directoryPath = _location->getRoot() + '/' + _requestUri;
+	dir = opendir(directoryPath.c_str());
+	directoryListing << "<html>" << std::endl
+					 << "\t<head>" << std::endl
+					 << "\t\t<title>Index of " << _request.getRequestUri()
+					 << "</title>" << std::endl
+					 << "\t</head>" << std::endl
+					 << "\t<body>" << std::endl
+					 << "\t\t<h1>Index of " << _request.getRequestUri() << "</h1>"
+					 << std::endl
+					 << "\t\t<hr>" << std::endl
+					 << "\t\t<pre>" << std::endl;
+	if (dir == NULL) {
+		return false;
+	}
+	dirEntry = readdir(dir);
+	while (dirEntry) {
+		if (isDirectory(directoryPath + dirEntry->d_name))
+			directoryListing << "\t\t\t<a href=\"" << dirEntry->d_name << "/\">"
+							 << dirEntry->d_name << "/</a>" << std::endl;
+		else
+			directoryListing << "\t\t\t<a href=\"" << dirEntry->d_name << "\">"
+							 << dirEntry->d_name << "</a>" << std::endl;
+		dirEntry = readdir(dir);
+	}
+	closedir(dir);
+	directoryListing << "\t\t</pre>" << std::endl
+					 << "\t\t<hr>" << std::endl
+					 << "\t</body>" << std::endl
+					 << "</html>" << std::endl;
+	_body = directoryListing.str();
+	setHeader("Content-Type", "text/html");
+	return true;
 }

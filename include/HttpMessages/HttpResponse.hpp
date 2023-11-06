@@ -54,6 +54,8 @@ class HttpResponse : public AHttpMessage {
 		bool searchCGIPath();
 		void parseCGIOutput(const std::string& cgiOutput);
 
+		bool buildListingDirectory();
+
 };
 
 #endif

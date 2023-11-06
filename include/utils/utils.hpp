@@ -47,4 +47,7 @@ bool createFile(const std::string &file, const std::string &fileContent);
 bool appendFile(const std::string &filename, const std::string &fileContent);
 
 std::vector<size_t> getPositionsOfWord(const std::string &word, const std::string &src);
-#endif //UTILS_HPP
+
+bool isDirectory(const std::string& path);
+
+#endif

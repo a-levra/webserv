@@ -39,11 +39,13 @@ Server &Server::operator=(const Server &other) {
 bool Server::addVirtualServers(const std::vector<VirtualServer> &virtualServers) {
 	std::vector<VirtualServer>::const_iterator it;
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
-		if (it->getIPAddress() == UNSPECIFIED_ADDRESS && !_createVirtualServer(*it))
+		if (it->getIPAddress() == UNSPECIFIED_ADDRESS
+			&& !_createVirtualServer(*it))
 			return false;
 	}
 	for (it = virtualServers.begin(); it != virtualServers.end(); it++) {
-		if (it->getIPAddress() != UNSPECIFIED_ADDRESS && !_createVirtualServer(*it))
+		if (it->getIPAddress() != UNSPECIFIED_ADDRESS
+			&& !_createVirtualServer(*it))
 			return false;
 	}
 	return true;
@@ -61,7 +63,7 @@ bool Server::listen() {
 		if (poll(_pollFd.data(), _pollFd.size(), CLIENT_TIMEOUT_MS) == -1) {
 			if (exit) {
 				return true;
-		  	}
+			}
 			_printError("server.listen poll() failed");
 			return false;
 		}
@@ -70,24 +72,34 @@ bool Server::listen() {
 	return true;
 }
 
-VirtualServer *Server::getVirtualServer(const std::string& IPAddress,
+VirtualServer *Server::getVirtualServer(const std::string &IPAddress,
 										const unsigned short port,
 										const std::string &serverName) {
 	std::vector<VirtualServer>::iterator vs;
 	logging::debug(B_PURPLE "Host requested: " THIN + serverName + COLOR_RESET);
-	logging::debug(B_PURPLE "Client entry point: " THIN + IPAddress + ":" + toString(port) + THIN);
+	logging::debug(
+		B_PURPLE "Client entry point: " THIN + IPAddress + ":" + toString(port)
+			+ THIN);
 	for (vs = _virtualServers.begin(); vs != _virtualServers.end(); vs++) {
-		bool DoesNotMatchIpAdress = (vs->getIPAddress() != IPAddress && vs->getIPAddress() != "0.0.0.0");
+		bool DoesNotMatchIpAdress = (vs->getIPAddress() != IPAddress
+			&& vs->getIPAddress() != "0.0.0.0");
 		bool DoesNotMatchPort = (vs->getPort() != port);
-		if (DoesNotMatchIpAdress|| DoesNotMatchPort)
+		if (DoesNotMatchIpAdress || DoesNotMatchPort)
 			continue;
 		std::vector<std::string> serverNames = vs->getServerName();
 		std::vector<std::string>::iterator serverNameIt =
 			std::find(serverNames.begin(), serverNames.end(), serverName);
-		if (serverNameIt != serverNames.end()){
-			logging::debug(B_GREEN "Host found: " THIN + *serverNameIt + " " + vs->getIPAddress() + ":" + toString(vs->getPort()) + "" COLOR_RESET);
+		if (serverNameIt != serverNames.end()) {
+			logging::debug(B_GREEN "Host found: " THIN + *serverNameIt + " "
+							   + vs->getIPAddress() + ":"
+							   + toString(vs->getPort()) + "" COLOR_RESET);
 			return &(*vs);
 		}
+	}
+	for (vs = _virtualServers.begin(); vs != _virtualServers.end(); vs++) {
+		if ((vs->getIPAddress() == IPAddress || vs->getIPAddress() == "0.0.0.0")
+			&& vs->getPort() == port)
+			return &(*vs);
 	}
 	logging::debug(B_RED "No hosts found" COLOR_RESET);
 	return NULL;
@@ -96,12 +108,14 @@ VirtualServer *Server::getVirtualServer(const std::string& IPAddress,
 void Server::displayVirtualServers() {
 	logging::debug("Webserv virtual servers(hosts): ");
 	for (size_t i = 0; i < _virtualServers.size(); i++) {
-		logging::debug("\thost [" + toString(i) + "]: " + _virtualServers[i].getServerName()[0]);
+		logging::debug("\thost [" + toString(i) + "]: "
+						   + _virtualServers[i].getServerName()[0]);
 	}
 }
 
 bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
-	if (_existListenerSocket(virtualServer.getIPAddress(), virtualServer.getPort())) {
+	if (_existListenerSocket(virtualServer.getIPAddress(),
+							 virtualServer.getPort())) {
 		_virtualServers.push_back(virtualServer);
 		return true;
 	}
@@ -121,7 +135,8 @@ bool Server::_createVirtualServer(const VirtualServer &virtualServer) {
 	return true;
 }
 
-bool Server::_existListenerSocket(const std::string &IPAddress, unsigned short port) {
+bool Server::_existListenerSocket(const std::string &IPAddress,
+								  unsigned short port) {
 	std::vector<Socket>::const_iterator it;
 	for (it = _listeners.begin(); it != _listeners.end(); it++) {
 		if ((it->getIPAddress() == UNSPECIFIED_ADDRESS && it->getPort() == port)
@@ -147,7 +162,8 @@ bool Server::_tryListenSocket(Socket &socket) {
 	for (int i = 0; i < PERSISTENCE_TRIALS; i++) {
 		if (socket.listening())
 			return true;
-		_printError("socket.listening() to " + socket.getIPAndPort() + " failed");
+		_printError(
+			"socket.listening() to " + socket.getIPAndPort() + " failed");
 		ftSleep(PERSISTENCE_SLEEP_MS);
 	}
 	return false;
@@ -170,10 +186,10 @@ void Server::_handleSockets() {
 }
 
 bool Server::_acceptNewClient(struct pollfd listener) {
-	struct sockaddr_in	serverAddress;
-	struct sockaddr_in	clientAddress;
-	socklen_t			serverAddressLength = sizeof(serverAddress);
-	socklen_t			clientAddressLength = sizeof(clientAddressLength);
+	struct sockaddr_in serverAddress;
+	struct sockaddr_in clientAddress;
+	socklen_t serverAddressLength = sizeof(serverAddress);
+	socklen_t clientAddressLength = sizeof(clientAddressLength);
 
 	int clientSocket = accept(listener.fd, (struct sockaddr *) &clientAddress,
 							  &clientAddressLength);
@@ -237,9 +253,10 @@ bool Server::_sendClientRequest(Client &client) {
 	if (!response.empty() &&
 	httpResponse.getRequestValidity() == HttpRequest::VALID_AND_COMPLETE_REQUEST) {
 		send(client.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
-		logging::info(client.getEntryIPAddress()+ ":" +
-		toString(client.getEntryPort()) + " " + httpRequest.getMethod() + " "+
-		httpRequest.getRequestUri());
+		logging::info(client.getEntryIPAddress() + ":" +
+			toString(client.getEntryPort()) + " " + httpRequest.getMethod()
+						  + " " +
+			httpRequest.getRequestUri());
 		client.setRawRequest("");
 	}
 	if (httpResponse.getStatusCode() == PAYLOAD_TOO_LARGE)
@@ -247,8 +264,7 @@ bool Server::_sendClientRequest(Client &client) {
 	return true;
 }
 
-void	Server::_disconnectClient(std::vector<Client>::iterator clientIt)
-{
+void Server::_disconnectClient(std::vector<Client>::iterator clientIt) {
 	if (clientIt == _clients.end())
 		return;
 	clientIt->disconnect();

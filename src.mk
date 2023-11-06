@@ -28,6 +28,7 @@ LIST_SRC	=\
         utils/fileExist.cpp				\
         utils/createFile.cpp			\
         utils/getPositionsOfWord.cpp	\
+        utils/isDirectory.cpp			\
         \
         virtualServer/Location.cpp 		\
         virtualServer/VirtualServer.cpp	\

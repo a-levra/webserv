@@ -15,6 +15,6 @@ COPY . /app
 
 WORKDIR /app
 
-EXPOSE 8000
+EXPOSE 4243
 
-CMD ["sh", "-c", "make re && ./webserv -l0 resources/leuleu.conf"]
+CMD ["sh", "-c", "make re && ./webserv -l0 -c resources/webserv.conf"]

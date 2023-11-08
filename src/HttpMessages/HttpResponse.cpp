@@ -299,21 +299,28 @@ bool HttpResponse::getFileFromPostAndSaveIt() {
 	logging::debug("Building POST response ");
 
 	std::string *boundary = _request.getHeader("Content-Type");
-	std::string filename = "file";
+	std::string fullPath;
 	std::string fileContent;
-	if (boundary == NULL || boundary->find("boundary=") == std::string::npos)
+	if (boundary == NULL || boundary->find("boundary=") == std::string::npos) {
+		if (_requestUri[_requestUri.size() - 1] == '/') {
+			fullPath = _location->getRoot() + "/" + _requestUri + "/file";
+		} else {
+			fullPath = _location->getRoot() + "/" + _requestUri;
+		}
 		fileContent = _request.getBody();
+	}
 	else {
 		try {
-			ExtractImgInsideBoundaries(boundary, filename, fileContent);
+			std::string fileName;
+			ExtractImgInsideBoundaries(boundary, fileName, fileContent);
+			fullPath = _location->getRoot() + "/" + _requestUri + "/" + fileName;
 		}
 		catch (std::exception &e) {
 			this->buildErrorPage(INTERNAL_SERVER_ERROR);
 			return false;
 		}
 	}
-	if (!createFile(_location->getRoot() + "/" + _requestUri + "/" + filename,
-					fileContent)) {
+	if (!createFile(fullPath, fileContent)) {
 		buildErrorPage(INTERNAL_SERVER_ERROR);
 		return false;
 	}

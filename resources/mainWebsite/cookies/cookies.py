@@ -18,6 +18,9 @@ default_page = """
     <a href="/upload/">Upload</a>
     <a href="/delete/">Delete</a>
     <a href="/cookies/">Cookies</a>
+    <a href="/google/">Google</a>
+    <a href="/listing-directory/">Listing Directory</a>
+    <a href="/curl/">Curl</a>
 </div>
     <h2>Connexion</h2>
     <form action="cookies.py" method="post">

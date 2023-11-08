@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome</title>
+  <link rel="stylesheet" type="text/css" href="../css/style.css">
+  <style>
+    .welcome-text {
+      font-size: 24px;
+      text-align: center;
+    }
+  </style>
+
+</head>
+<body>
+<div class="navbar">
+  <a href="/">Home</a>
+  <a href="/upload/">Upload</a>
+  <a href="/delete/">Delete</a>
+  <a href="/cookies/">Cookies</a>
+  <a href="/google/">Google</a>
+  <a href="/listing-directory/">Listing Directory</a>
+  <a href="/curl/">Curl</a>
+</div>
+<div class="welcome-text">
+  <pre>
+    <code>
+      curl -i -X GET http://127.0.0.1:4243/
+      curl -i -X POST http://127.0.0.1:4243/listing-directory/post.txt -d 'post body'
+      curl -i -X DELETE http://127.0.0.1:4243/listing-directory/post.txt
+      curl -i -X GET http://127.0.0.1:4243/404page
+    </code>
+  </pre>
+</div>
+</body>
+</html>

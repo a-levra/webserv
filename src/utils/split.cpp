@@ -1,6 +1,7 @@
 #include "utils/utils.hpp"
 
 #include <algorithm>
+#include <functional>
 
 std::vector<std::string> splitDelimiter(const std::string& s, char delimiter) {
 	std::vector<std::string> result;

@@ -1,6 +1,7 @@
 #include "utils/utils.hpp"
 
 #include <algorithm>
+#include <functional>
 
 std::string &trim(std::string &s) {
 	return (ltrim(rtrim(s)));

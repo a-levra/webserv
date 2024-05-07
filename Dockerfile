@@ -1,20 +1,17 @@
-FROM ubuntu:jammy
+FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
     g++ \
     make \
-    curl \
-    telnet \
-    cmake \
-    gdb \
+    python3 \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /app/uploadedFiles
 
-
 COPY . /app
-
 WORKDIR /app
+
+RUN make re
 
 EXPOSE 4243
 
-CMD ["sh", "-c", "make re && ./webserv -l0 -c resources/webserv.conf"]
+CMD ["sh", "-c", "./webserv -l1 -c resources/webserv.conf"]

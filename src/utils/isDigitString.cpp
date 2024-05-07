@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <string>
+#include <functional>
 
 bool	isDigitString(const std::string& s) {
 	return (std::find_if(s.begin(), s.end(),

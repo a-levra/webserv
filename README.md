@@ -1,4 +1,4 @@
-# 42 Webserv
+# 42 Webserv - an Nginx clone in C++
 
 Webserv is a project from School 42 aiming to implement an HTTP server in C++
 according to the specifications of the HTTP/1.1
